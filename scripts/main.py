@@ -44,4 +44,4 @@ def main(user, directory):
     #     bridge.delete_local(full_target)
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1:])
