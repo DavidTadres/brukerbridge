@@ -17,47 +17,45 @@ sock = socket()
 sock.bind((SERVER_HOST, SERVER_PORT))
 sock.listen(1)
 
-def main():
-    while True:
-        print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-        print("[*] Ready to receive files from Bruker client")
-        client,address = sock.accept()
 
-        print(f"[+] {address} is connected.")
-        with client,client.makefile('rb') as clientfile:
-            while True:
-                raw = clientfile.readline()
-                if not raw: break # no more files, server closed connection.
+while True:
+    print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
+    print("[*] Ready to receive files from Bruker client")
+    client,address = sock.accept()
 
-                filename = raw.strip().decode()
-                length = int(clientfile.readline())
-                print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
+    print(f"[+] {address} is connected.")
+    with client,client.makefile('rb') as clientfile:
+        while True:
+            raw = clientfile.readline()
+            if not raw: break # no more files, server closed connection.
 
-                path = os.path.join(target_directory,filename)
-                os.makedirs(os.path.dirname(path),exist_ok=True)
+            filename = raw.strip().decode()
+            length = int(clientfile.readline())
+            print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
 
-                # Read the data in chunks so it can handle large files.
-                with open(path,'wb') as f:
-                    while length:
-                        chunk = min(length,CHUNKSIZE)
-                        data = clientfile.read(chunk)
-                        if not data: break
-                        f.write(data)
-                        length -= len(data)
-                    else: # only runs if while doesn't break and length==0
-                        print('Complete')
-                        continue
-        # close the client socket
-        client.close()
+            path = os.path.join(target_directory,filename)
+            os.makedirs(os.path.dirname(path),exist_ok=True)
 
-        # Launch main file processing
-        user, directory = filename.split('/')[0], filename.split('/')[1]
-        #print("USER: {}".format(user))
-        #print("DIRECTORY: {}".format(directory))
-        os.system("python C:/Users/User/projects/brukerbridge/scripts/main.py {} {}".format(user, directory))
-        #subprocess.Popen([sys.executable, 'C:/Users/User/projects/brukerbridge/scripts/main.py', user, directory])
+            # Read the data in chunks so it can handle large files.
+            with open(path,'wb') as f:
+                while length:
+                    chunk = min(length,CHUNKSIZE)
+                    data = clientfile.read(chunk)
+                    if not data: break
+                    f.write(data)
+                    length -= len(data)
+                else: # only runs if while doesn't break and length==0
+                    print('Complete')
+                    continue
+    # close the client socket
+    client.close()
 
-    # close the server socket
-    #sock.close()
-if __name__ == "__main__":
-    main()
+    # Launch main file processing
+    user, directory = filename.split('/')[0], filename.split('/')[1]
+    #print("USER: {}".format(user))
+    #print("DIRECTORY: {}".format(directory))
+    os.system("python C:/Users/User/projects/brukerbridge/scripts/main.py {} {}".format(user, directory))
+    #subprocess.Popen([sys.executable, 'C:/Users/User/projects/brukerbridge/scripts/main.py', user, directory])
+
+# close the server socket
+#sock.close()
