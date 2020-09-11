@@ -5,7 +5,6 @@ from matplotlib.pyplot import imread
 from xml.etree import ElementTree as ET
 import sys
 from tqdm import tqdm
-from dataflow.utils import timing
 import psutil
 from PIL import Image
 import time

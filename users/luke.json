@@ -1,4 +1,5 @@
 {
     "oak_target": "X:/data/Brezovec/2P_Imaging/imports",
-    "convert_to": "nii"
+    "convert_to": "nii",
+    "email": "brezovec@stanford.edu"
 }

@@ -1,7 +1,6 @@
 import os
 import sys
 from shutil import copyfile
-from dataflow.utils import timing
 
 def transfer_to_oak(source, target, allowable_extensions): 
     for item in os.listdir(source):
@@ -35,7 +34,6 @@ def transfer_to_oak(source, target, allowable_extensions):
             else:
                 pass
 
-@timing
 def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_flag=True):
     directory_to = os.path.join(oak_target, os.path.split(directory_from)[-1])
     try:

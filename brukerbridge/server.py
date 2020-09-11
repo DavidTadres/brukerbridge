@@ -54,7 +54,9 @@ while True:
     #print("USER: {}".format(user))
     #print("DIRECTORY: {}".format(directory))
     os.system("python C:/Users/User/projects/brukerbridge/scripts/main.py {} {}".format(user, directory))
-    #subprocess.Popen([sys.executable, 'C:/Users/User/projects/brukerbridge/scripts/main.py', user, directory])
+
+    # email user informing of success or failure, and send relevant log file info
+    os.system("python C:/Users/User/projects/brukerbridge/scripts/final_email.py")
 
 # close the server socket
 #sock.close()

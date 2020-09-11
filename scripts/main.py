@@ -14,27 +14,36 @@ users_directory = "C:/Users/User/projects/brukerbridge/users"
 def main(args):
     user = args[0]
     directory = args[1]
+    full_target = os.path.join(root_directory, user, directory)
+
+    #####################
+    ### Setup logging ###
+    #####################
 
     sys.stdout = bridge.Logger_stdout()
     sys.stderr = bridge.Logger_stderr()
 
-    ###########################################################################################################
-    print("TADA")
-    print("main user: {}".format(user))
-    print("main directory: {}".format(directory))
+    #########################
+    ### Get user settings ###
+    #########################
 
-    # Get user settings
-    user = "luke"
+    user = "luke" # UPDATE
     if user + '.json' in os.listdir(users_directory):
         json_file = os.path.join(users_directory, user + '.json')
         with open(json_file) as file:
             settings = json.load(file)
+    print(settings) # remove
+    oak_target = settings['oak_target']
+    convert_to = settings['convert_to']
+    email = settings['email']
 
-    print(settings)
+    ######################################
+    ### Save email for error reporting ###
+    ######################################
 
-    ## todo - get settings
-
-    full_target = os.path.join(root_directory, user, directory)
+    email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
+    with open(email_file, 'w') as f:
+        f.write(email)
 
     #################################
     ### Convert from raw to tiffs ###

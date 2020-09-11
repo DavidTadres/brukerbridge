@@ -2,8 +2,6 @@ import brukerbridge as bridge
 
 extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json'] # last 4 chars
 
-
-
 ### Directory on this computer to process ###
 full_target = 'F:/ftp_imports/20200130'
 

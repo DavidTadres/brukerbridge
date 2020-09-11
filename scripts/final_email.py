@@ -1,9 +1,9 @@
-import dataflow as flow
+import brukerbridge as bridge
 import os
 from time import sleep
 
 my_email = ["brezovec@stanford.edu"]
-email_file = 'C:/Users/User/projects/dataflow/scripts/email.txt'
+email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
 
 try:
     with open(email_file, 'r') as f:
@@ -27,11 +27,11 @@ try:
         with open(error_file, 'r') as f:
             error_info = f.read()
         for email in emails:
-            flow.send_email(subject='Dataflow FAILED', message=error_info, recipient=email)
+            bridge.send_email(subject='BrukerBridge FAILED', message=error_info, recipient=email)
             sleep(1)
     else:
         for email in emails:
-            flow.send_email(subject='Dataflow SUCCESS', message=' ', recipient=email)
+            bridge.send_email(subject='BrukerBridge SUCCESS', message=' ', recipient=email)
             sleep(1)
     try:
         os.remove(email_file)
