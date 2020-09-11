@@ -20,14 +20,13 @@ sock.listen(1)
 # Make a directory for the received files.
 #os.makedirs('server',exist_ok=True)
 
+sys.stdout = bridge.Logger_stdout()
+sys.stderr = bridge.Logger_stderr()
+
 while True:
     print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
     print("[*] Ready to receive files from Bruker client")
     client,address = sock.accept()
-
-    # Setup logging
-    sys.stdout = bridge.Logger_stdout()
-    sys.stderr = bridge.Logger_stderr()
 
     print(f"[+] {address} is connected.")
     with client,client.makefile('rb') as clientfile:
