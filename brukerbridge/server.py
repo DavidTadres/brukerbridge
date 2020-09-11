@@ -1,5 +1,8 @@
 from socket import *
 import os
+import sys
+import subprocess
+import brukerbridge as bridge
 
 CHUNKSIZE = 1_000_000
 SERVER_HOST = "0.0.0.0"
@@ -19,7 +22,13 @@ sock.listen(1)
 
 while True:
     print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
+    print("[*] Ready to receive files from Bruker client")
     client,address = sock.accept()
+
+    # Setup logging
+    sys.stdout = bridge.Logger_stdout()
+    sys.stderr = bridge.Logger_stderr()
+
     print(f"[+] {address} is connected.")
     with client,client.makefile('rb') as clientfile:
         while True:
@@ -46,6 +55,13 @@ while True:
                     continue
     # close the client socket
     client.close()
+
+    # Launch main file processing
+    user, directory = filename.split('/')[0], filename.split('/')[1]
+    print("USER: {}".format(user))
+    print("DIRECTORY: {}".format(directory))
+    subprocess.Popen([sys.executable, 'C:/Users/User/projects/brukerbridge/scripts/main.py', user, directory])
+
 
 # close the server socket
 #sock.close()
