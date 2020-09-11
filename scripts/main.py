@@ -27,7 +27,7 @@ def main(args):
     if user + '.json' in os.listdir(users_directory):
         json_file = os.path.join(users_directory, user + '.json')
         with open(json_file) as file:
-            settings = json.load(json_file)
+            settings = json.load(file)
 
     print(settings)
 
