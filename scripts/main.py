@@ -11,6 +11,9 @@ def main(args):
     user = args[0]
     directory = args[1]
 
+    sys.stdout = bridge.Logger_stdout()
+    sys.stderr = bridge.Logger_stderr()
+    
     extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff'] # needs to be 4 char
     ###########################################################################################################
     print("TADA")
