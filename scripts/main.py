@@ -2,10 +2,13 @@ import sys
 import os
 import warnings
 import subprocess
+import json
 import brukerbridge as bridge
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff'] # needs to be 4 char
+users_directory = "C:/Users/User/projects/brukerbridge/users"
 
 def main(args):
     user = args[0]
@@ -14,16 +17,19 @@ def main(args):
     sys.stdout = bridge.Logger_stdout()
     sys.stderr = bridge.Logger_stderr()
 
-    extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff'] # needs to be 4 char
     ###########################################################################################################
     print("TADA")
     print("main user: {}".format(user))
     print("main directory: {}".format(directory))
 
-    
+    # Get user settings
+    if user + '.json' in os.listdir(users_directory):
+        json_file = os.path.join(users_directory, user + '.json')
+        with open(json_file) as file:
+            settings = json.load(json_file)
 
+    print(settings)
 
-    
     #################################
     ### Convert from raw to tiffs ###
     #################################
