@@ -23,6 +23,7 @@ def main(args):
     print("main directory: {}".format(directory))
 
     # Get user settings
+    user = "luke"
     if user + '.json' in os.listdir(users_directory):
         json_file = os.path.join(users_directory, user + '.json')
         with open(json_file) as file:
