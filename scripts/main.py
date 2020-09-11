@@ -19,6 +19,11 @@ def main(args):
     print("TADA")
     print("main user: {}".format(user))
     print("main directory: {}".format(directory))
+
+    
+
+
+    
     #################################
     ### Convert from raw to tiffs ###
     #################################

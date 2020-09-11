@@ -17,11 +17,7 @@ sock = socket()
 sock.bind((SERVER_HOST, SERVER_PORT))
 sock.listen(1)
 
-# Make a directory for the received files.
-#os.makedirs('server',exist_ok=True)
 def main():
-    sys.stdout = bridge.Logger_stdout()
-    sys.stderr = bridge.Logger_stderr()
     while True:
         print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
         print("[*] Ready to receive files from Bruker client")
@@ -58,9 +54,6 @@ def main():
         user, directory = filename.split('/')[0], filename.split('/')[1]
         #print("USER: {}".format(user))
         #print("DIRECTORY: {}".format(directory))
-
-        sys.stdout.flush()
-
         os.system("python C:/Users/User/projects/brukerbridge/scripts/main.py {} {}".format(user, directory))
         #subprocess.Popen([sys.executable, 'C:/Users/User/projects/brukerbridge/scripts/main.py', user, directory])
 
