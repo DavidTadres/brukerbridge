@@ -23,12 +23,12 @@ sock.bind((SERVER_HOST, SERVER_PORT))
 sock.listen(1)
 
 
-# while True:
-#     print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-#     print("[*] Ready to receive files from Bruker client")
-#     client,address = sock.accept()
+while True:
+    print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
+    print("[*] Ready to receive files from Bruker client")
+    client,address = sock.accept()
 
-#     print(f"[+] {address} is connected.")
+    print(f"[+] {address} is connected.")
 #     with client,client.makefile('rb') as clientfile:
 #         while True:
 #             raw = clientfile.readline()
