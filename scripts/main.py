@@ -8,6 +8,7 @@ import brukerbridge as bridge
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff'] # needs to be 4 char
+root_directory = "G:/ftp_imports"
 users_directory = "C:/Users/User/projects/brukerbridge/users"
 
 def main(args):
@@ -31,30 +32,33 @@ def main(args):
 
     print(settings)
 
+    ## todo - get settings
+
+    full_target = os.path.join(root_directory, user, directory)
+
     #################################
     ### Convert from raw to tiffs ###
     #################################
+    
+    bridge.convert_raw_to_tiff(full_target)
 
+    #########################################
+    ### Convert tiff to nii or tiff stack ###
+    #########################################
 
+    if convert_to == 'nii':
+        bridge.convert_tiff_collections_to_nii(full_target)
+    elif convert_to == 'tiff':
+        bridge.convert_tiff_collections_to_stack(full_target)
+    else:
+        print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
+        print("Must be nii or tiff, with no period")
 
-    # bridge.convert_raw_to_tiff(full_target)
+    #######################
+    ### Transfer to Oak ###
+    #######################
 
-    # #########################################
-    # ### Convert tiff to nii or tiff stack ###
-    # #########################################
-
-    # if convert_to in ['.nii', 'nii', 'nifti']:
-    #     bridge.start_convert_tiff_collections(full_target)
-    # elif convert_to in ['.tiff', 'tiff', '.tif', 'tif']:
-    #     bridge.convert_tiff_collections_to_stack(full_target)
-    # else:
-    #     print('{} is an invalid convert_to variable from metadata.'.format(convert_to))
-
-    # #######################
-    # ### Transfer to Oak ###
-    # #######################
-
-    # bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer)
+    bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer)
 
     # ### Delete files locally
     # if delete_local:

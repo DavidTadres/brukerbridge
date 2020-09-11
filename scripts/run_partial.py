@@ -12,7 +12,6 @@ full_target = 'F:/ftp_imports/20200130'
 #oak_target = 'X:/data/Ashley2/imports'
 oak_target = 'X:/data/Max/ImagingData/Bruker/imports'
 
-
 ### raw to tiff ###
 bridge.convert_raw_to_tiff(full_target)
 
