@@ -7,7 +7,9 @@ import brukerbridge as bridge
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-def main(user, directory):
+def main(args):
+    user = args[0]
+    directory = args[1]
 
     extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff'] # needs to be 4 char
     ###########################################################################################################
