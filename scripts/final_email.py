@@ -31,7 +31,7 @@ try:
             sleep(1)
     else:
         for email in emails:
-            bridge.send_email(subject='BrukerBridge SUCCESS', message=' ', recipient=email)
+            bridge.send_email(subject='BrukerBridge SUCCESS', message='.', recipient=email)
             sleep(1)
     try:
         os.remove(email_file)

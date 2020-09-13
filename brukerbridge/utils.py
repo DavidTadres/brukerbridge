@@ -38,7 +38,7 @@ def send_email(subject='', message='', recipient="brezovec@stanford.edu"):
     Returns
     -------
     Nothing. """
-    print('Sending email to {}'.format(recipient))
+    print('Sending email to {} ({})'.format(recipient, subject))
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login("python.notific@gmail.com", "9!tTT77x!ma8cGy")
