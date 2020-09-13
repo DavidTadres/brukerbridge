@@ -39,4 +39,4 @@ try:
         print('Could not remove email file.')
 
 except:
-    print('No email file, probably due to no flagged folders.')
+    print('No email file, probably due to incorrectly setup user metadata.')
