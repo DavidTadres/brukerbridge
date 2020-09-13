@@ -10,10 +10,16 @@ How do I use it?
   - navigate to C:\Users\User\projects\brukerbridge\users
   - each user has a .json file. Simply copy an existing user file, rename the file with your name, and adjust the preferences as desired
 - When you are done with imaging for the day, simply double click the shortcut icon on the Bruker desktop "brukerbridge.bat". You will be prompted to select the folder you want to process. Upon selection, a terminal window will open and begin printing file transfer progress. Now, all you have to do is wait for the processing steps to complete. You will be notified via email upon success or failure of the pipeline.
+- The pipeline assumes your Bruker directory will be located as Drive:\user\DIR, ie
+  1. your username should be at the root of the drive, and 
+  2. the directory you want to process must have your user directory as it's immediate parent, and
+  3. your username must match the name of the .json preferences file created on the workhorse computer
 
 Some more details:
-- The pipeline assumes your Bruker directory will be located as drive:\user\DIR, ie
-  1. your username should be at the root of the drive, and 
-  2. the directory you want to process must have your user directory as it's immediate parent
-- This pipeline will retain the sub-directory structure of the directory you select for processing.
-- 
+- The sub-directory structure of the directory you select for processing will be retained
+- All (important) files will be transfered (Bruker .xml files, any .csv files for Voltage Recording or Output)
+- There is currently no file deletion implemented, so after you *personally* verify the success of the processing, please delete the your Bruker directory to free-up space for other users.
+- I don't personally convert to tif stacks, so have not yet verified the success of this option. Please let me know if this indeed works for you.
+- Currently, the pipeline makes separate nii files for each color channel imaged. Multichannel-support could be easily implemented, but may not work on large files due to memory constraints on workhorse computer.
+- Bi-directional scans are correctly parsed
+- I only process volume imaging data, but I see someone has reasonably added single-plane support. Can you please confirm if this works?
