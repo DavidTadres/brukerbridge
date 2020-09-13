@@ -146,7 +146,7 @@ def convert_tiff_collections_to_nii(directory):
 
         # Check if item is a directory
         if os.path.isdir(new_path):
-            convert_tiff_collections(new_path)
+            convert_tiff_collections_to_nii(new_path)
             
         # If the item is a file
         else:
