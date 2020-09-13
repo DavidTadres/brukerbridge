@@ -26,7 +26,7 @@ Some more details:
 - I only process volume imaging data, but I see someone has reasonably added single-plane support. Can you please confirm if this works?
 
 Current user preferences:
-oak_target - upload directory on Oak
-convert_to - must be "nii" or "tiff"
-email - will send success or failure message here
-add_to_build_que - "False" unless you know otherwise
+- oak_target - upload directory on Oak
+- convert_to - must be "nii" or "tiff"
+- email - will send success or failure message here
+- add_to_build_que - "False" unless you know otherwise
