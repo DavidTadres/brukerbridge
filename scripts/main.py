@@ -27,7 +27,7 @@ def main(args):
     ### Get user settings ###
     #########################
 
-    user = "luke" # UPDATE
+    #user = "luke" # UPDATE
     if user + '.json' in os.listdir(users_directory):
         json_file = os.path.join(users_directory, user + '.json')
         with open(json_file) as file:
