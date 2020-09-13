@@ -7,7 +7,7 @@ import brukerbridge as bridge
 CHUNKSIZE = 1_000_000
 SERVER_HOST = "0.0.0.0"
 SERVER_PORT = 5001
-target_directory = "G:/ftp_imports"
+target_directory = "G:/"
 
 # SERVER_HOST = ""
 # SERVER_PORT = 5000
