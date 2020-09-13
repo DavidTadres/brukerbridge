@@ -36,6 +36,7 @@ def main(args):
     oak_target = settings['oak_target']
     convert_to = settings['convert_to']
     email = settings['email']
+    add_to_build_que = bool(settings['add_to_build_que'])
 
     ######################################
     ### Save email for error reporting ###
@@ -67,7 +68,7 @@ def main(args):
     ### Transfer to Oak ###
     #######################
 
-    bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer)
+    bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que)
 
     # ### Delete files locally
     # if delete_local:

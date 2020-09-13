@@ -34,7 +34,7 @@ def transfer_to_oak(source, target, allowable_extensions):
             else:
                 pass
 
-def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_flag=True):
+def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_build_que):
     directory_to = os.path.join(oak_target, os.path.split(directory_from)[-1])
     try:
         os.mkdir(directory_to)
@@ -46,7 +46,7 @@ def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_fla
     print('Moving to  {}'.format(directory_to))
     transfer_to_oak(directory_from, directory_to, allowable_extensions)
     print('Copy completed.')
-    if add_flag:
+    if add_to_build_que:
         folder = os.path.split(directory_to)[-1]
         queue_file = os.path.join(oak_target, 'build_queue', folder)
         file = open(queue_file,'w+')
