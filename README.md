@@ -30,3 +30,7 @@ Current user preferences:
 - convert_to - must be "nii" or "tiff"
 - email - will send success or failure message here
 - add_to_build_que - "False" unless you know otherwise
+
+Troubleshooting:
+- failed connection error when running brukerbridge.bat?
+    - There is a python server running on the workhorse computer that waits to recieve info from Bruker computer. This server must be running. A terminal should be open and say "Ready to recieve files from Bruker client." If this is not running, you must start the server by navigating to "C:\Users\User\projects\brukerbridge\brukerbridge" and running python server.py on the command line.
