@@ -8,7 +8,6 @@ CHUNKSIZE = 1_000_000
 SERVER_HOST = "0.0.0.0"
 SERVER_PORT = 5001
 target_directory = "G:/ftp_imports"
-root_dir = None
 
 # SERVER_HOST = ""
 # SERVER_PORT = 5000
@@ -51,7 +50,10 @@ while True:
     client.close()
 
     # Launch main file processing
-    user, directory = filename.split('/')[0], filename.split('/')[1]
+    #user, directory = filename.split('/')[0], filename.split('/')[1]
+    filename = os.path.normpath(filename)
+    user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
+
     print("USER: {}".format(user))
     print("DIRECTORY: {}".format(directory))
     sys.stdout.flush()
