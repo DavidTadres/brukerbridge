@@ -12,7 +12,7 @@ root_directory = "G:/"
 users_directory = "C:/Users/User/projects/brukerbridge/users"
 
 def main(args):
-    user = args[0]
+    user = args[0].lower()
     directory = args[1]
     full_target = os.path.join(root_directory, user, directory)
 
@@ -28,7 +28,7 @@ def main(args):
     #########################
 
     #user = "luke" # UPDATE
-    if user + '.json' in os.listdir(users_directory):
+    if user + '.json' in [x.lower() for x in os.listdir(users_directory)]:
         json_file = os.path.join(users_directory, user + '.json')
         with open(json_file) as file:
             settings = json.load(file)
