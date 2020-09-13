@@ -12,13 +12,13 @@ CHUNKSIZE = 1_000_000
 
 host = "171.65.17.84"
 port = 5001
-source_directory = "/Users/lukebrezovec/Desktop/test"
+#source_directory = "/Users/lukebrezovec/Desktop/test"
 
 #source_directory = "G:/luke/20200725__flag__"
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-filename = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
-print(filename)
+source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
+print(source_directory)
 
 sock = socket()
 sock.connect((host,port))
