@@ -14,6 +14,7 @@ How do I use it?
   1. your username should be at the root of the drive, and 
   2. the directory you want to process must have your user directory as it's immediate parent, and
   3. your username must match the name of the .json preferences file created on the workhorse computer
+- When collecting bruker data, do not automatically convert to tif, since they take forever to transfer - the pipeline wants bruker raw files. This setting is in Prairie View Preferences/Automatically Convert Raw Files/Never
 
 Some more details:
 - The sub-directory structure of the directory you select for processing will be retained
@@ -21,5 +22,11 @@ Some more details:
 - There is currently no file deletion implemented, so after you *personally* verify the success of the processing, please delete the your Bruker directory to free-up space for other users.
 - I don't personally convert to tif stacks, so have not yet verified the success of this option. Please let me know if this indeed works for you.
 - Currently, the pipeline makes separate nii files for each color channel imaged. Multichannel-support could be easily implemented, but may not work on large files due to memory constraints on workhorse computer.
-- Bi-directional scans are correctly parsed
+- Bi-directional scans are correctly identified and parsed
 - I only process volume imaging data, but I see someone has reasonably added single-plane support. Can you please confirm if this works?
+
+Current user preferences:
+oak_target - upload directory on Oak
+convert_to - must be "nii" or "tiff"
+email - will send success or failure message here
+add_to_build_que - "False" unless you know otherwise
