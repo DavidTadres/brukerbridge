@@ -18,12 +18,12 @@ How do I use it?
 
 Some more details:
 - The sub-directory structure of the directory you select for processing will be retained
-- All (important) files will be transfered (Bruker .xml files, any .csv files for Voltage Recording or Output)
+- All files will be transfered (including Bruker .xml files, any .csv files for Voltage Recording or Output)
 - There is currently no file deletion implemented, so after you *personally* verify the success of the processing, please delete the your Bruker directory to free-up space for other users.
 - I don't personally convert to tif stacks, so have not yet verified the success of this option. Please let me know if this indeed works for you.
 - Currently, the pipeline makes separate nii files for each color channel imaged. Multichannel-support could be easily implemented, but may not work on large files due to memory constraints on workhorse computer.
 - Bi-directional scans are correctly identified and parsed
-- I only process volume imaging data, but I see someone has reasonably added single-plane support. Can you please confirm if this works?
+- Single-plane imaging is supported.
 
 Current user preferences:
 - oak_target - upload directory on Oak
