@@ -15,6 +15,7 @@ def main(args):
     user = args[0].lower()
     directory = args[1]
     full_target = os.path.join(root_directory, user, directory)
+    print("full target: {}".format(full_target))
 
     #####################
     ### Setup logging ###
@@ -36,7 +37,7 @@ def main(args):
     oak_target = settings['oak_target']
     convert_to = settings['convert_to']
     email = settings['email']
-    add_to_build_que = bool(settings['add_to_build_que'])
+    add_to_build_que = settings['add_to_build_que']
 
     ######################################
     ### Save email for error reporting ###

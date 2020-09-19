@@ -57,7 +57,7 @@ while True:
     print("USER: {}".format(user))
     print("DIRECTORY: {}".format(directory))
     sys.stdout.flush()
-    os.system("python C:/Users/User/projects/brukerbridge/scripts/main.py {} {}".format(user, directory))
+    os.system("python C:/Users/User/projects/brukerbridge/scripts/main.py '{}' '{}'".format(user, directory))
 
     # email user informing of success or failure, and send relevant log file info
     os.system("python C:/Users/User/projects/brukerbridge/scripts/final_email.py")
