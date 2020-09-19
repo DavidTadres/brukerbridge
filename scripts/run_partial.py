@@ -5,6 +5,7 @@ extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json'] # last 4 chars
 ### Directory on this computer to process ###
 full_target = 'G:/Ashley/20200913__flag__'
 
+
 ### Oak target ###
 # oak_target = 'X:/data/Brezovec/2P_Imaging/imports'
 oak_target = 'X:/data/Ashley2/imports'
