@@ -12,8 +12,8 @@ root_directory = "G:/"
 users_directory = "C:/Users/User/projects/brukerbridge/users"
 
 def main(args):
-    user = args[0].lower()
-    directory = args[1]
+    user = args[0].lower().strip("'")
+    directory = args[1].strip("'")
     full_target = os.path.join(root_directory, user, directory)
     print("full target: {}".format(full_target))
 
