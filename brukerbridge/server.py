@@ -54,6 +54,13 @@ while True:
     filename = os.path.normpath(filename)
     user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
 
+    # make sure there is no email file left from aborted or failed processing rounds
+    try:
+        email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
+        os.remove(email_file)
+    except:
+        pass
+
     print("USER: {}".format(user))
     print("DIRECTORY: {}".format(directory))
     sys.stdout.flush()
