@@ -53,7 +53,7 @@ def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_
         file.close()
         print('Added {} to build queue.'.format(folder))
     else:
-        prnit('Add to build queue is False.')
+        print('Add to build queue is False.')
         #os.rename(directory_to, directory_to + '__done__')
         #print('Added __done__ flag')
 
