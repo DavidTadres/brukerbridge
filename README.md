@@ -6,7 +6,7 @@ This boutique package is used to make processing Bruker output files more conven
 - Upload of files to desired Oak (our lab's data storage) directory
 
 How do I use it?
-- New users must add their preferences on the workhorse computer in D217
+- New users must add their preferences on the workhorse computer in D217 (this only needs to be done once)
   - navigate to C:\Users\User\projects\brukerbridge\users
   - each user has a .json file. Simply copy an existing user file, rename the file with your name, and adjust the preferences as desired
 - When you are done with imaging for the day, simply double click the shortcut icon on the Bruker desktop "brukerbridge.bat". You will be prompted to select the folder you want to process. Upon selection, a terminal window will open and begin printing file transfer progress. Now, all you have to do is wait for the processing steps to complete. You will be notified via email upon success or failure of the pipeline.
