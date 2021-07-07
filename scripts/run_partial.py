@@ -3,7 +3,7 @@ import brukerbridge as bridge
 extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json'] # last 4 chars
 
 ### Directory on this computer to process ###
-full_target = 'G:/Ashley/20200913__flag__'
+full_target = 'G:/Ashley/20210702'
 
 
 ### Oak target ###
@@ -15,7 +15,7 @@ oak_target = 'X:/data/Ashley2/imports'
 #bridge.convert_raw_to_tiff(full_target)
 
 ### tiffs to nii or tiff stack ###
-#bridge.convert_tiff_collections_to_nii(full_target)
+bridge.convert_tiff_collections_to_nii(full_target)
 #bridge.convert_tiff_collections_to_stack(full_target)
 
 ### Transfer to oak ###
