@@ -10,9 +10,11 @@ full_target = 'G:/Ashley/20210702'
 # oak_target = 'X:/data/Brezovec/2P_Imaging/imports'
 oak_target = 'X:/data/Ashley2/imports'
 #oak_target = 'X:/data/Max/ImagingData/Bruker/imports'
+#oak_target = 'X/data/Ina/bruker_data/imports'
+#oak_target = X:/data/Avery/bruker_data/imports'
 
 ### raw to tiff ###
-#bridge.convert_raw_to_tiff(full_target)
+bridge.convert_raw_to_tiff(full_target)
 
 ### tiffs to nii or tiff stack ###
 bridge.convert_tiff_collections_to_nii(full_target)
