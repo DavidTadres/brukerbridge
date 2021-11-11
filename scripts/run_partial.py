@@ -4,7 +4,7 @@ extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json'] # last 4 chars
 
 ### Directory on this computer to process ###
 #full_target = 'G:/Ashley/20210702'
-full_target = 'G:/Max/20210820'
+full_target = 'G:/Max/20210825'
 # full_target = 'F:/Michelle/210805'
 
 
@@ -20,7 +20,7 @@ oak_target = 'X:/data/Max/ImagingData/Bruker/imports'
 # bridge.convert_raw_to_tiff(full_target)
 
 ### tiffs to nii or tiff stack ###
-# bridge.convert_tiff_collections_to_nii(full_target)
+bridge.convert_tiff_collections_to_nii(full_target)
 #bridge.convert_tiff_collections_to_stack(full_target)
 
 ### Transfer to oak ###
