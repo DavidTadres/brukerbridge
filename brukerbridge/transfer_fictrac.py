@@ -18,7 +18,7 @@ def transfer_fictrac():
     print('Starting download of fictrac files.')
     ftp_host = ftputil.FTPHost(ip, username, passwd)
     all_fictrac_files = ftp_host.listdir(fictrac_source)
-    # of the form:
+    # of the form:#
     #fictrac-20181116_172030.log
     #fictrac-20181116_172038-debug.avi
     #fictrac-20181116_172038-raw.avi
