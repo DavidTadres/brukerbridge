@@ -11,9 +11,9 @@ def transfer_fictrac():
     username = 'clandininlab'
     passwd = 'jointhelab@'
     fictrac_target = 'H:/fictrac' #### MAKE THIS
-    fictrac_source = 'home/clandininlab/fictrac_data' ###### WHAT DIRECTORY <------------------- ?
+    fictrac_source = 'fictrac_data' ###### WHAT DIRECTORY <------------------- ?
     allowable_extensions = ['.log', '.avi', '.dat', '.txt']
-    oak_target = 'X:/data/fictrac' # MAKE THIS
+    oak_target = 'X:/data' # MAKE THIS
 
     print('Starting download of fictrac files.')
     ftp_host = ftputil.FTPHost(ip, username, passwd)
