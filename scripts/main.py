@@ -38,6 +38,10 @@ def main(args):
     convert_to = settings['convert_to']
     email = settings['email']
     add_to_build_que = settings['add_to_build_que']
+    try:
+        transfer_fictrac = settings['transfer_fictrac']
+    except:
+        transfer_fictrac = False
 
     ######################################
     ### Save email for error reporting ###
@@ -74,8 +78,8 @@ def main(args):
     ##############################
     ### Transfer fictrac files ###
     ##############################
-
-    bridge.transfer_fictrac()
+    if transfer_fictrac:
+        bridge.transfer_fictrac()
 
     # ### Delete files locally
     # if delete_local:

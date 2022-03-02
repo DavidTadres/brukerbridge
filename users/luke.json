@@ -2,5 +2,6 @@
     "oak_target": "X:/data/Brezovec/2P_Imaging/imports",
     "convert_to": "nii",
     "email": "brezovec@stanford.edu",
-    "add_to_build_que": "True"
+    "add_to_build_que": "True",
+    "transfer_fictrac": "True"
 }
