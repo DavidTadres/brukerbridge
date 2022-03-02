@@ -11,7 +11,7 @@ def transfer_fictrac():
     username = 'clandininlab'
     passwd = 'jointhelab@'
     fictrac_target = 'H:/fictrac' #### MAKE THIS
-    fictrac_source = 'fictrac/bin' ###### WHAT DIRECTORY <------------------- ?
+    fictrac_source = 'home/clandininlab/fictrac_data' ###### WHAT DIRECTORY <------------------- ?
     allowable_extensions = ['.log', '.avi', '.dat', '.txt']
     oak_target = 'X:/data/fictrac' # MAKE THIS
 
