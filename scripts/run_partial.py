@@ -26,5 +26,8 @@ oak_target = 'X:/data/Max/ImagingData/Bruker/imports'
 bridge.convert_tiff_collections_to_nii(full_target)
 #bridge.convert_tiff_collections_to_stack(full_target)
 
+### Transfer fictrac ###
+bridge.transfer_fictrac()
+
 ### Transfer to oak ###
-bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, "False")
+#bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, "False")
