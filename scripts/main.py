@@ -71,6 +71,12 @@ def main(args):
 
     bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que)
 
+    ##############################
+    ### Transfer fictrac files ###
+    ##############################
+
+    bridge.transfer_fictrac()
+
     # ### Delete files locally
     # if delete_local:
     #     bridge.delete_local(full_target)
