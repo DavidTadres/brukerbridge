@@ -38,6 +38,6 @@ def transfer_fictrac():
                 ftp_host.download(source_path, target_path)
 
     # Send fictrac files to oak
-    bridge.start_oak_transfer(fictrac_target, oak_target, allowable_extensions=None, add_flag=False)
+    bridge.start_oak_transfer(fictrac_target, oak_target, allowable_extensions=None, add_to_build_que=False)
 
     print('Finished upload of fictrac files to oak.')
