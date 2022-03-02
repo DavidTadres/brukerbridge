@@ -79,7 +79,10 @@ def main(args):
     ### Transfer fictrac files ###
     ##############################
     if transfer_fictrac:
-        bridge.transfer_fictrac()
+        try:
+            bridge.transfer_fictrac()
+        except:
+            print("-----------> FICTRAC TRANSFER FAILED <-----------")
 
     # ### Delete files locally
     # if delete_local:
