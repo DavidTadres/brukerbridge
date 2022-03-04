@@ -42,6 +42,8 @@ def tiff_to_nii(xml_file):
         isVolumeSeries = True
 
     print('isVolumeSeries is {}'.format(isVolumeSeries))
+    print('num_timepoints {}'.format(num_timepoints))
+    print('num_z {}'.format(num_z))
 
     num_channels = get_num_channels(sequences[0])
     test_file = sequences[0].findall('Frame')[0].findall('File')[0].get('filename')
@@ -64,7 +66,7 @@ def tiff_to_nii(xml_file):
         for i in range(num_timepoints):
             if i%10 == 0:
                 print('{}/{}'.format(i+1, num_timepoints))
-            
+
             if isVolumeSeries: # For a given volume, get all frames
                 frames = sequences[i].findall('Frame')
                 current_num_z = len(frames)
@@ -126,7 +128,7 @@ def tiff_to_nii(xml_file):
         if isVolumeSeries:
             img = nib.Nifti1Image(image_array, aff) # 32 bit: maxes out at 32767 in any one dimension
         else:
-            img = nib.Nifti2Image(image_array, aff) # 64 bit 
+            img = nib.Nifti2Image(image_array, aff) # 64 bit
         image_array = None # for memory
         print('Saving nii as {}'.format(save_name))
         img.to_filename(save_name)
@@ -140,14 +142,14 @@ def get_num_channels(sequence):
     files = frame.findall('File')
     return len(files)
 
-def convert_tiff_collections_to_nii(directory): 
+def convert_tiff_collections_to_nii(directory):
     for item in os.listdir(directory):
         new_path = directory + '/' + item
 
         # Check if item is a directory
         if os.path.isdir(new_path):
             convert_tiff_collections_to_nii(new_path)
-            
+
         # If the item is a file
         else:
             # If the item is an xml file

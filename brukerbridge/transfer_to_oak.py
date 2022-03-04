@@ -45,7 +45,7 @@ def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_
     print('Moving from  {}'.format(directory_from))
     print('Moving to  {}'.format(directory_to))
     transfer_to_oak(directory_from, directory_to, allowable_extensions)
-    print('Copy completed.')
+    print('*** Oak Upload Complete ***')
     if add_to_build_que in ['True', 'true']:
         folder = os.path.split(directory_to)[-1]
         queue_file = os.path.join(oak_target, 'build_queue', folder)
@@ -53,7 +53,7 @@ def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_
         file.close()
         print('Added {} to build queue.'.format(folder))
     else:
-        prnit('Add to build queue is False.')
+        print('Add to build queue is False.')
         #os.rename(directory_to, directory_to + '__done__')
         #print('Added __done__ flag')
 

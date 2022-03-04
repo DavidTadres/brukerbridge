@@ -7,8 +7,8 @@ import brukerbridge as bridge
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff'] # needs to be 4 char
-root_directory = "G:/"
+extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff', 'hdf5'] # needs to be 4 char
+root_directory = "H:/"
 users_directory = "C:/Users/User/projects/brukerbridge/users"
 
 def main(args):
@@ -38,6 +38,10 @@ def main(args):
     convert_to = settings['convert_to']
     email = settings['email']
     add_to_build_que = settings['add_to_build_que']
+    try:
+        transfer_fictrac = settings['transfer_fictrac']
+    except:
+        transfer_fictrac = False
 
     ######################################
     ### Save email for error reporting ###
@@ -70,6 +74,15 @@ def main(args):
     #######################
 
     bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que)
+
+    ##############################
+    ### Transfer fictrac files ###
+    ##############################
+    if transfer_fictrac:
+        try:
+            bridge.transfer_fictrac()
+        except:
+            print("-----------> FICTRAC TRANSFER FAILED <-----------")
 
     # ### Delete files locally
     # if delete_local:
