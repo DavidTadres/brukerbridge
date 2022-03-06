@@ -61,8 +61,8 @@ while True:
             continue
     print(F'all_checksums_match is {all_checksums_match}')
     
-    time.sleep(1)
-    client.send("hi friend!".encode())
+    # time.sleep(1)
+    # client.send("hi friend!".encode())
 
     # close the client socket
     client.close()

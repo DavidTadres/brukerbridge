@@ -49,10 +49,10 @@ for path,dirs,files in os.walk(source_directory):
                 sock.sendall(data)
 
 print('hello here')
-time.sleep(1)
-msg = sock.recv(1024)
-while msg:
-    print('Received:' + msg.decode())
-    msg = sock.recv(1024)
+time.sleep(5)
+# msg = sock.recv(1024)
+# while msg:
+#     print('Received:' + msg.decode())
+#     msg = sock.recv(1024)
 
 print('Done.')
