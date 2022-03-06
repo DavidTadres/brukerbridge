@@ -12,15 +12,21 @@ from time import sleep
 from functools import wraps
 import numpy as np
 import nibabel as nib
-from scipy.ndimage import imread
 from xml.etree import ElementTree as ET
 import subprocess
+import hashlib
 
 # only imports on linux, which is fine since only needed for sherlock
 try:
     import fcntl
 except ImportError:
     pass
+
+def get_checksum(filename):
+    with open(filename, "rb") as f:
+        bytes = f.read()  # read file as bytes
+        readable_hash = hashlib.md5(bytes).hexdigest()
+    return readable_hash
 
 def get_json_data(file_path):
     with open(file_path) as f:  

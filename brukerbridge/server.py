@@ -9,9 +9,11 @@ SERVER_HOST = "0.0.0.0"
 SERVER_PORT = 5001
 target_directory = "H:/"
 
-# SERVER_HOST = ""
-# SERVER_PORT = 5000
-# target_directory = "/Users/lukebrezovec/projects/dataflow/dataflow/target"
+####
+SERVER_HOST = ""
+SERVER_PORT = 5000
+target_directory = "/Users/luke/Desktop/test_recieve"
+####
 
 sock = socket()
 sock.bind((SERVER_HOST, SERVER_PORT))
@@ -23,13 +25,16 @@ while True:
     client,address = sock.accept()
 
     print(f"[+] {address} is connected.")
+    all_checksums_match = True
     with client,client.makefile('rb') as clientfile:
         while True:
             raw = clientfile.readline()
             if not raw: break # no more files, server closed connection.
 
             filename = raw.strip().decode()
-            length = int(clientfile.readline())
+            length = int(clientfile.readline()) # don't need to decode because casting as int
+            checksum_original = str(clientfile.readline().strip().decode())
+
             print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
 
             path = os.path.join(target_directory,filename)
@@ -45,7 +50,16 @@ while True:
                     length -= len(data)
                 else: # only runs if while doesn't break and length==0
                     print('Complete')
-                    continue
+
+            checksum_copy = bridge.get_checksum(path)
+            if checksum_original == checksum_copy:
+                print('CHECKSUMS MATCH')
+            else:
+                print('CHECKSUMS DO NOT MATCH')
+                all_checksums_match = False
+            continue
+    print(F'all_checksums_match is {all_checksums_match}')
+
     # close the client socket
     client.close()
 
