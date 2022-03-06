@@ -22,6 +22,8 @@ port = 5001
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
 print(source_directory)
+source_directory = str(os.sep).join(source_directory.split('/'))
+print(source_directory)
 
 sock = socket()
 sock.connect((host,port))
@@ -52,13 +54,10 @@ for path,dirs,files in os.walk(source_directory):
 
 
 sock.sendall("ALL_FILES_TRANSFERED".encode() + b'\n')
-print('hello here')
 message = sock.recv(1024).decode()
-print(message)
 num_of_files_recieved = int(message.split('.')[0])
 all_checksums_true = bool(message.split('.')[1])
 
-print(message, num_of_files_recieved, all_checksums_true)
 if num_files_sent == num_of_files_recieved:
     if all_checksums_true:
         print('Confirmed correct number of files recieved and all checksums match.')

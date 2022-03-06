@@ -31,14 +31,13 @@ while True:
         while True:
             raw = clientfile.readline()
 
-            ### Check for file message to be sent ###
+            ### This is what will finally break the loop when this message is recieved ###
             if raw.strip().decode() == "ALL_FILES_TRANSFERED":
                 print('ALL_FILES_TRANSFERED')
                 all_checksums_true = False not in do_checksums_match
                 message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
                 client.sendall(message.encode())
                 break
-            #if not raw: break # no more files, server closed connection. This is just a backup should break above.
 
             filename = raw.strip().decode()
             length = int(clientfile.readline()) # don't need to decode because casting as int
@@ -58,14 +57,14 @@ while True:
                     f.write(data)
                     length -= len(data)
                 else: # only runs if while doesn't break and length==0
-                    print('Complete')
+                    print('Complete',end='')
 
             checksum_copy = bridge.get_checksum(path)
             if checksum_original == checksum_copy:
-                print('CHECKSUMS MATCH')
+                print('[CHECKSUMS MATCH]')
                 do_checksums_match.append(True)
             else:
-                print('CHECKSUMS DO NOT MATCH')
+                print('!!!!!! WARNING CHECKSUMS DO NOT MATCH !!!!!!')
                 do_checksums_match.append(False)
             continue
 
