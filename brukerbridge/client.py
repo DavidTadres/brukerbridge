@@ -1,27 +1,24 @@
-from socket import *
 import os
+import time
+import shutil
+import brukerbridge as bridge
+from socket import *
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askdirectory
-import brukerbridge as bridge
-import time
-
 
 CHUNKSIZE = 1_000_000
 
+### Luke testing
 # host = 'localhost'
 # port = 5000
 # source_directory = "/Users/luke/Desktop/test_send"
 
-
+### Brukerbridge computer
 host = "171.65.17.84"
 port = 5001
 
-#source_directory = "/Users/lukebrezovec/Desktop/test"
-#source_directory = "G:/luke/20200725__flag__"
-
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
-print(source_directory)
 source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
 
@@ -31,16 +28,12 @@ sock.connect((host,port))
 num_files_sent = 0
 for path,dirs,files in os.walk(source_directory):
     for file in files:
-        filename = os.path.join(path,file)
-        print(F"filename: {filename}",flush=True)
-        #relpath = "/".join(filename.split("/")[1:])
-        relpath = str(os.sep).join(filename.split(os.sep)[1:])
-        print(F"relpath: {relpath}",flush=True)
-        #relpath = os.path.join(user_folder,file)
-        #relpath = os.path.relpath(filename,source_directory)
-        filesize = os.path.getsize(filename)
 
+        filename = os.path.join(path,file)
+        relpath = str(os.sep).join(filename.split(os.sep)[1:])
+        filesize = os.path.getsize(filename)
         print(f'Sending {relpath}')
+
         checksum = bridge.get_checksum(filename)
 
         with open(filename,'rb') as f:
@@ -53,6 +46,7 @@ for path,dirs,files in os.walk(source_directory):
                 data = f.read(CHUNKSIZE)
                 if not data: break
                 sock.sendall(data)
+
         num_files_sent += 1
 
 
@@ -65,6 +59,7 @@ if num_files_sent == num_of_files_recieved:
     if all_checksums_true:
         print('Confirmed correct number of files recieved and all checksums match.')
         print('DELETING BRUKER DATA...')
+        shutil.rmtree(source_directory)
     else:
         print('!!! Correct number of files but at least one checksum does not match !!!')
 else:

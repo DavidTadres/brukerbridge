@@ -61,7 +61,7 @@ while True:
 
             checksum_copy = bridge.get_checksum(path)
             if checksum_original == checksum_copy:
-                print('[CHECKSUMS MATCH]')
+                print(' [CHECKSUMS MATCH]')
                 do_checksums_match.append(True)
             else:
                 print('!!!!!! WARNING CHECKSUMS DO NOT MATCH !!!!!!')
@@ -74,7 +74,6 @@ while True:
     client.close()
 
     # Launch main file processing
-    #user, directory = filename.split('/')[0], filename.split('/')[1]
     filename = os.path.normpath(filename)
     user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
 
