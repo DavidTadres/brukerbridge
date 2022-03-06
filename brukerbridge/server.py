@@ -32,6 +32,7 @@ while True:
             raw = clientfile.readline()
             if raw.strip().decode() == "ALL_FILES_TRANSFERED":
                 print('ALL_FILES_TRANSFERED')
+                sleep(5)
                 break
             if not raw: break # no more files, server closed connection.
 
