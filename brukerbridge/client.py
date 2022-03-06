@@ -21,7 +21,7 @@ port = 5001
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
-#source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
+source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
 
 sock = socket()
@@ -32,7 +32,8 @@ for path,dirs,files in os.walk(source_directory):
     for file in files:
         filename = os.path.join(path,file)
         print(F"filename: {filename}",flush=True)
-        relpath = "/".join(filename.split("/")[1:])
+        #relpath = "/".join(filename.split("/")[1:])
+        relpath = str(os.sep).join(filename.split(os.sep)[1:])
         print(F"relpath: {relpath}",flush=True)
         #relpath = os.path.join(user_folder,file)
         #relpath = os.path.relpath(filename,source_directory)
