@@ -63,7 +63,9 @@ while True:
                 all_checksums_match = False
             continue
     print(F'all_checksums_match is {all_checksums_match}')
-    client.sendall("BOO".encode())
+
+    with client:
+        client.sendall("BOO".encode())
 
     # time.sleep(1)
     # client.send("hi friend!".encode())
