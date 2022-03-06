@@ -49,7 +49,7 @@ for path,dirs,files in os.walk(source_directory):
                 sock.sendall(data)
 
 
-sock.sendall("ALL_FILES_TRANSFERED".encode())
+sock.sendall("ALL_FILES_TRANSFERED".encode() + b'\n')
 
 
 print('hello here')
