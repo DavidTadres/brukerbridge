@@ -26,6 +26,7 @@ print(source_directory)
 sock = socket()
 sock.connect((host,port))
 
+num_files_sent = 0
 for path,dirs,files in os.walk(source_directory):
     for file in files:
         filename = os.path.join(path,file)
@@ -47,12 +48,22 @@ for path,dirs,files in os.walk(source_directory):
                 data = f.read(CHUNKSIZE)
                 if not data: break
                 sock.sendall(data)
+        num_files_sent += 1
 
 
 sock.sendall("ALL_FILES_TRANSFERED".encode() + b'\n')
 print('hello here')
-print(sock.recv(1024).decode())
-#print(sock.readline().decode())
-#print(sock.readline().decode())
+message = sock.recv(1024).decode()
+num_of_files_recieved = int(message.split('.')[0])
+all_checksums_true = bool(message.split('.')[1])
+if num_files_sent == num_of_files_recieved:
+    if all_checksums_true:
+        print('Confirmed correct number of files recieved and all checksums match.')
+        print('DELETING BRUKER DATA...')
+    else:
+        print('!!! Correct number of files but at least one checksum does not match !!!')
+else:
+    print('!!! Number of files sent and recieve do not match !!!')
+    print(F"Sent: {num_files_sent}; Recieved: {num_of_files_recieved}")
 
 print('Done.')
