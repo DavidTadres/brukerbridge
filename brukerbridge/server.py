@@ -33,6 +33,7 @@ while True:
             if raw.strip().decode() == "ALL_FILES_TRANSFERED":
                 print('ALL_FILES_TRANSFERED')
                 time.sleep(5)
+                client.sendall("BOO".encode())
                 break
             if not raw: break # no more files, server closed connection.
 
@@ -65,7 +66,7 @@ while True:
             continue
     print(F'all_checksums_match is {all_checksums_match}')
 
-    client.sendall("BOO".encode())
+    
 
     # time.sleep(1)
     # client.send("hi friend!".encode())
