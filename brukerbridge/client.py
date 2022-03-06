@@ -7,19 +7,19 @@ import brukerbridge as bridge
 
 CHUNKSIZE = 1_000_000
 
-host = 'localhost'
-port = 5000
-source_directory = "/Users/luke/Desktop/test_send"
+# host = 'localhost'
+# port = 5000
+# source_directory = "/Users/luke/Desktop/test_send"
 
 
-###### host = "171.65.17.84"
-###### port = 5001
+host = "171.65.17.84"
+port = 5001
 
 #source_directory = "/Users/lukebrezovec/Desktop/test"
 #source_directory = "G:/luke/20200725__flag__"
 
-######Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-#####source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
+Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
+source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
 print(source_directory)
 
 sock = socket()

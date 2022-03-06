@@ -10,9 +10,9 @@ SERVER_PORT = 5001
 target_directory = "H:/"
 
 ####
-SERVER_HOST = ""
-SERVER_PORT = 5000
-target_directory = "/Users/luke/Desktop/test_recieve"
+# SERVER_HOST = ""
+# SERVER_PORT = 5000
+# target_directory = "/Users/luke/Desktop/test_recieve"
 ####
 
 sock = socket()
