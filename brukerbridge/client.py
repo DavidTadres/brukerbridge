@@ -46,4 +46,11 @@ for path,dirs,files in os.walk(source_directory):
                 data = f.read(CHUNKSIZE)
                 if not data: break
                 sock.sendall(data)
+
+time.sleep(1)
+msg = sock.recv(1024)
+while msg:
+    print('Received:' + msg.decode())
+    msg = sock.recv(1024)
+
 print('Done.')

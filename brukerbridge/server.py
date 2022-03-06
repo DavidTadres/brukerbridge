@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import brukerbridge as bridge
+import time
 
 CHUNKSIZE = 1_000_000
 SERVER_HOST = "0.0.0.0"
@@ -59,6 +60,9 @@ while True:
                 all_checksums_match = False
             continue
     print(F'all_checksums_match is {all_checksums_match}')
+    
+    time.sleep(1)
+    client.send("hi friend!".encode())
 
     # close the client socket
     client.close()
