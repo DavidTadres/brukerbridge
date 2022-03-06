@@ -51,7 +51,7 @@ for path,dirs,files in os.walk(source_directory):
 
 
 print('hello here')
-print(sock.readline().decode())
+print(sock.recv().decode())
 #time.sleep(5)
 # msg = sock.recv(1024)
 # while msg:
