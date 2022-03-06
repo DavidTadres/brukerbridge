@@ -32,8 +32,10 @@ while True:
             raw = clientfile.readline()
             if raw.strip().decode() == "ALL_FILES_TRANSFERED":
                 print('ALL_FILES_TRANSFERED')
-                client.sendall(str(len(all_checksums_match)).encode() + b'\n' )
-                client.sendall(str(False in all_checksums_match).encode() + b'\n' )
+                succeful_transfer = False not in all_checksums_match
+                message = str(len(all_checksums_match)) + str(succeful_transfer)
+                client.sendall(message.encode())
+                #client.sendall(str(False in all_checksums_match).encode() + b'\n' )
                 break
             if not raw: break # no more files, server closed connection.
 
