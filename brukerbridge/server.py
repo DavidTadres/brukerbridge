@@ -26,14 +26,14 @@ while True:
     client,address = sock.accept()
 
     print(f"[+] {address} is connected.")
-    all_checksums_match = True
+    all_checksums_match = []
     with client,client.makefile('rb') as clientfile:
         while True:
             raw = clientfile.readline()
             if raw.strip().decode() == "ALL_FILES_TRANSFERED":
                 print('ALL_FILES_TRANSFERED')
-                time.sleep(5)
-                client.sendall("BOO".encode())
+                client.sendall(str(len(all_checksums_match)).encode() + b'\n' )
+                client.sendall(str(False in all_checksums_match).encode() + b'\n' )
                 break
             if not raw: break # no more files, server closed connection.
 
@@ -60,9 +60,11 @@ while True:
             checksum_copy = bridge.get_checksum(path)
             if checksum_original == checksum_copy:
                 print('CHECKSUMS MATCH')
+                all_checksums_match.append(True)
             else:
                 print('CHECKSUMS DO NOT MATCH')
-                all_checksums_match = False
+                all_checksums_match.append(False)
+                #all_checksums_match = False
             continue
     print(F'all_checksums_match is {all_checksums_match}')
 
