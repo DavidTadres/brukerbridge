@@ -56,6 +56,8 @@ print('hello here')
 message = sock.recv(1024).decode()
 num_of_files_recieved = int(message.split('.')[0])
 all_checksums_true = bool(message.split('.')[1])
+
+print(message, num_of_files_recieved, all_checksums_true)
 if num_files_sent == num_of_files_recieved:
     if all_checksums_true:
         print('Confirmed correct number of files recieved and all checksums match.')
