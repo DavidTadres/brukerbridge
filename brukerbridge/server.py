@@ -33,7 +33,7 @@ while True:
             if raw.strip().decode() == "ALL_FILES_TRANSFERED":
                 print('ALL_FILES_TRANSFERED')
                 all_checksums_true = False not in all_checksums_match
-                message = str(len(all_checksums_match)) + "." + str(succeful_transfer)
+                message = str(len(all_checksums_match)) + "." + str(all_checksums_true)
                 client.sendall(message.encode())
                 #client.sendall("BOO".encode())
                 break
