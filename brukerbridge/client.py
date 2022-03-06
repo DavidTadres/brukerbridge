@@ -48,6 +48,7 @@ for path,dirs,files in os.walk(source_directory):
                 if not data: break
                 sock.sendall(data)
 
+print('hello here')
 time.sleep(1)
 msg = sock.recv(1024)
 while msg:
