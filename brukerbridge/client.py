@@ -21,6 +21,7 @@ port = 5001
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
+print(source_directory)
 source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
 
