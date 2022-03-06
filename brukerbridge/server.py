@@ -34,7 +34,7 @@ while True:
                 print('ALL_FILES_TRANSFERED')
                 all_checksums_true = False not in all_checksums_match
                 message = str(len(all_checksums_true)) + "." + str(succeful_transfer)
-                client.sendall(message.encode())
+                #client.sendall(message.encode())
                 client.sendall("BOO".encode())
                 break
             if not raw: break # no more files, server closed connection.
