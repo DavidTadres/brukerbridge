@@ -30,8 +30,8 @@ while True:
     with client,client.makefile('rb') as clientfile:
         while True:
             raw = clientfile.readline()
-            if raw.strip().decode() == "FINISHED":
-                print('FINISHED')
+            if raw.strip().decode() == "ALL_FILES_TRANSFERED":
+                print('ALL_FILES_TRANSFERED')
                 break
             if not raw: break # no more files, server closed connection.
 
@@ -63,6 +63,7 @@ while True:
                 all_checksums_match = False
             continue
     print(F'all_checksums_match is {all_checksums_match}')
+    client.sendall("BOO".encode())
 
     # time.sleep(1)
     # client.send("hi friend!".encode())

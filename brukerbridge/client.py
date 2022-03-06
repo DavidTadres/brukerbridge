@@ -47,11 +47,12 @@ for path,dirs,files in os.walk(source_directory):
                 data = f.read(CHUNKSIZE)
                 if not data: break
                 sock.sendall(data)
-    sock.sendall("FINISHED".encode())
+    sock.sendall("ALL_FILES_TRANSFERED".encode())
 
 
 print('hello here')
-time.sleep(5)
+print(sock.readline().decode())
+#time.sleep(5)
 # msg = sock.recv(1024)
 # while msg:
 #     print('Received:' + msg.decode())
