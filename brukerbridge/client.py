@@ -51,8 +51,8 @@ for path,dirs,files in os.walk(source_directory):
 
 sock.sendall("ALL_FILES_TRANSFERED".encode() + b'\n')
 print('hello here')
-#print(sock.recv(1024).decode())
-print(sock.readline().decode())
-print(sock.readline().decode())
+print(sock.recv(1024).decode())
+#print(sock.readline().decode())
+#print(sock.readline().decode())
 
 print('Done.')
