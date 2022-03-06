@@ -26,18 +26,19 @@ while True:
     client,address = sock.accept()
 
     print(f"[+] {address} is connected.")
-    all_checksums_match = []
+    do_checksums_match = []
     with client,client.makefile('rb') as clientfile:
         while True:
             raw = clientfile.readline()
+
+            ### Check for file message to be sent ###
             if raw.strip().decode() == "ALL_FILES_TRANSFERED":
                 print('ALL_FILES_TRANSFERED')
-                all_checksums_true = False not in all_checksums_match
-                message = str(len(all_checksums_match)) + "." + str(all_checksums_true)
+                all_checksums_true = False not in do_checksums_match
+                message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
                 client.sendall(message.encode())
-                #client.sendall("BOO".encode())
                 break
-            if not raw: break # no more files, server closed connection.
+            #if not raw: break # no more files, server closed connection. This is just a backup should break above.
 
             filename = raw.strip().decode()
             length = int(clientfile.readline()) # don't need to decode because casting as int
@@ -62,13 +63,13 @@ while True:
             checksum_copy = bridge.get_checksum(path)
             if checksum_original == checksum_copy:
                 print('CHECKSUMS MATCH')
-                all_checksums_match.append(True)
+                do_checksums_match.append(True)
             else:
                 print('CHECKSUMS DO NOT MATCH')
-                all_checksums_match.append(False)
-                #all_checksums_match = False
+                do_checksums_match.append(False)
             continue
-    print(F'all_checksums_match is {all_checksums_match}')
+
+    print(F'all_checksums_true is {all_checksums_true}')
 
     # close the client socket
     client.close()
