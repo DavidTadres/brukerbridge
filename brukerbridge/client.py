@@ -47,7 +47,9 @@ for path,dirs,files in os.walk(source_directory):
                 data = f.read(CHUNKSIZE)
                 if not data: break
                 sock.sendall(data)
-    sock.sendall("ALL_FILES_TRANSFERED".encode())
+
+
+sock.sendall("ALL_FILES_TRANSFERED".encode())
 
 
 print('hello here')
