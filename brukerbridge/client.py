@@ -54,6 +54,7 @@ for path,dirs,files in os.walk(source_directory):
 sock.sendall("ALL_FILES_TRANSFERED".encode() + b'\n')
 print('hello here')
 message = sock.recv(1024).decode()
+print(message)
 num_of_files_recieved = int(message.split('.')[0])
 all_checksums_true = bool(message.split('.')[1])
 
