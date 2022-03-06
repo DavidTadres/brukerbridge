@@ -3,6 +3,7 @@ import os
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askdirectory
 import brukerbridge as bridge
+import time
 
 
 CHUNKSIZE = 1_000_000
