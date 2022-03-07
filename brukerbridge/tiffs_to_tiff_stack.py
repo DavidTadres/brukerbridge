@@ -2,7 +2,8 @@ from xml.etree import ElementTree as ET
 import os
 import sys
 import glob
-from skimage.external import tifffile
+#from skimage.external import tifffile # this is deprecated in new skimage. directly import tifffile.
+import tifffile
 
 def convert_tiff_collections_to_stack(directory):
     for item in os.listdir(directory):
