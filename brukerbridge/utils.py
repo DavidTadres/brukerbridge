@@ -86,13 +86,20 @@ def timing(f):
         return result
     return wrapper
 
+def progress_bar(iteration, total, length, fill = '█'):
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    fraction = F"{str(iteration):^4}" + '/' + F"{str(total):^4}"
+    bar_string = f"{bar}"
+    return bar_string
+
 class Logger_stdout(object):
-    def __init__(self):
+    def __init__(self, full_log_file):
         self.terminal = sys.stdout
-        log_folder = 'C:/Users/User/Desktop/dataflow_logs'
-        log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
-        self.full_log_file = os.path.join(log_folder, log_file)
-        self.log = open(self.full_log_file, "a")
+        # log_folder = 'C:/Users/User/Desktop/dataflow_logs'
+        # log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
+        # self.full_log_file = os.path.join(log_folder, log_file)
+        self.log = open(full_log_file, "a")
 
     def write(self, message):
         self.terminal.write(message)
@@ -121,3 +128,4 @@ class Logger_stderr(object):
         #this handles the flush command by doing nothing.
         #you might want to specify some extra behavior here.
         pass
+

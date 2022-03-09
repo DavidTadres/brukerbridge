@@ -8,6 +8,7 @@ from tqdm import tqdm
 import psutil
 from PIL import Image
 import time
+import brukerbridge as bridge
 
 def tiff_to_nii(xml_file):
     aborted = False
@@ -64,8 +65,9 @@ def tiff_to_nii(xml_file):
         print('Created empty array of shape {}'.format(image_array.shape))
         # loop over time
         for i in range(num_timepoints):
-            if i%10 == 0:
-                print('{}/{}'.format(i+1, num_timepoints))
+
+            #if i%10 == 0:
+            #    print('{}/{}'.format(i+1, num_timepoints))
 
             if isVolumeSeries: # For a given volume, get all frames
                 frames = sequences[i].findall('Frame')
@@ -98,10 +100,23 @@ def tiff_to_nii(xml_file):
                 image_array[i,j,:,:] = img
 
             # print memory info periodically
-            if i%10 == 0:
-                memory_usage = psutil.Process(os.getpid()).memory_info().rss*10**-9
-                print('Current memory usage: {:.2f}GB'.format(memory_usage))
-                sys.stdout.flush()
+            #if i%10 == 0:
+            #    memory_usage = psutil.Process(os.getpid()).memory_info().rss*10**-9
+            #    print('Current memory usage: {:.2f}GB'.format(memory_usage))
+            #    sys.stdout.flush()
+
+            ##########################
+            ### Print Progress Bar ###
+            ##########################
+
+            bar_length = 80
+            if i != 0 :
+                print('\r', end='', flush=True) # Carriage return
+            bar_string = bridge.progress_bar(i, num_timepoints, bar_length)
+            vol_frac_string = "{:0{}d} {}".format(i, len(str(num_timepoints)), num_timepoints)
+            memory_string = 'Current memory usage: {:5.2f}GB'.format(psutil.Process(os.getpid()).memory_info().rss*10**-9)
+            full_string = vol_frac_string + ' ' + bar_string + ' ' + memory_string
+            print(full_string, end='', flush=True)
 
         if isVolumeSeries:
             # Will start as t,z,x,y. Want y,x,z,t

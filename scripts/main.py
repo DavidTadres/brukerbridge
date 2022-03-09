@@ -21,7 +21,11 @@ def main(args):
     ### Setup logging ###
     #####################
 
-    sys.stdout = bridge.Logger_stdout()
+    log_folder = 'C:/Users/User/Desktop/dataflow_logs'
+    log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
+    full_log_file = os.path.join(log_folder, log_file)
+    sys.stdout = bridge.Logger_stdout(full_log_file)
+
     sys.stderr = bridge.Logger_stderr()
 
     #########################
