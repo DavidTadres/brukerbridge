@@ -55,10 +55,10 @@ while True:
                 source_directory_size = int(float(clientfile.readline().strip().decode()))
                 total_num_files = clientfile.readline().strip().decode()
 
-            filename = clientfile.readline().strip().decode()
+            raw = clientfile.readline()
 
             ### This is what will finally break the loop when this message is recieved ###
-            if filename == "ALL_FILES_TRANSFERED":
+            if raw.strip().decode() == "ALL_FILES_TRANSFERED":
 
                 print('ALL_FILES_TRANSFERED')
                 all_checksums_true = False not in do_checksums_match
@@ -66,7 +66,9 @@ while True:
                 client.sendall(message.encode())
                 break
             
+            filename = raw.strip().decode()
             length = int(clientfile.readline()) # don't need to decode because casting as int
+            size_in_gb = length*10**-9
             checksum_original = str(clientfile.readline().strip().decode())
 
             if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
@@ -97,7 +99,7 @@ while True:
                 raise SystemExit
 
             num_files_transfered += 1
-            total_gb_transfered += length*10**-9
+            total_gb_transfered += size_in_gb
 
             ##########################
             ### Print Progress Bar ###
