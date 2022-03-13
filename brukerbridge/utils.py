@@ -133,7 +133,7 @@ class Logger_stderr(object):
         # log_folder = 'C:/Users/User/Desktop/dataflow_error'
         # log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
         # self.full_log_file = os.path.join(log_folder, log_file)
-        self.log = open(self.full_log_file, "a")
+        self.log = open(full_log_file, "a")
 
     def write(self, message):
         self.terminal.write(message)
