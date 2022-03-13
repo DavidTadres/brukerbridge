@@ -22,7 +22,7 @@ try:
 except ImportError:
     pass
 
-def progress_bar(iteration, total, length, fill = '█'):
+def progress_bar(iteration, total, length, fill = '#'):#'█'):
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
     fraction = F"{str(iteration):^4}" + '/' + F"{str(total):^4}"
