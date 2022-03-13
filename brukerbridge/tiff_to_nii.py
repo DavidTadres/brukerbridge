@@ -113,7 +113,7 @@ def tiff_to_nii(xml_file):
             if i != 0 :
                 print('\r', end='', flush=True) # Carriage return
             bar_string = bridge.progress_bar(i, num_timepoints, bar_length)
-            vol_frac_string = "{:0{}d} {}".format(i, len(str(num_timepoints)), num_timepoints)
+            vol_frac_string = "{: {}d} {}".format(i, len(str(num_timepoints)), num_timepoints)
             memory_string = 'Current memory usage: {:5.2f}GB'.format(psutil.Process(os.getpid()).memory_info().rss*10**-9)
             full_string = vol_frac_string + ' ' + bar_string + ' ' + memory_string
             print(full_string, end='', flush=True)

@@ -8,22 +8,46 @@ from tkinter.filedialog import askdirectory
 
 CHUNKSIZE = 1_000_000
 
-### Luke testing
+### Luke testing ###
 # host = 'localhost'
 # port = 5000
 # source_directory = "/Users/luke/Desktop/test_send"
 
-### Brukerbridge computer
+### Brukerbridge computer ###
 host = "171.65.17.84"
 port = 5001
+
+##################################
+### WHAT DIRECTORY TO PROCESS? ###
+##################################
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
 source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
 
+#########################
+### CONNECT TO SERVER ###
+#########################
+
 sock = socket()
 sock.connect((host,port))
+
+##########################
+### GET DIRECTORY SIZE ###
+##########################
+
+print('Calculating directory size... ', end='')
+source_directory_size = brainsss.get_dir_size(source_directory)
+num_files = brainsss.get_num_files(source_directory)
+print('Done   |  {} GB   |   {} Files'.format(source_directory_size, num_files))
+
+sock.sendall(source_directory_size.encode() + b'\n')
+sock.sendall(num_files.encode() + b'\n')
+
+######################
+### BEGIN TRASNFER ###
+######################
 
 num_files_sent = 0
 for path,dirs,files in os.walk(source_directory):
@@ -49,11 +73,18 @@ for path,dirs,files in os.walk(source_directory):
 
         num_files_sent += 1
 
+#########################
+### TRANSFER COMPLETE ###
+#########################
 
 sock.sendall("ALL_FILES_TRANSFERED".encode() + b'\n')
 message = sock.recv(1024).decode()
 num_of_files_recieved = int(message.split('.')[0])
 all_checksums_true = bool(message.split('.')[1])
+
+#############################
+### FINAL CLIENT PRINTING ###
+#############################
 
 if num_files_sent == num_of_files_recieved:
     if all_checksums_true:

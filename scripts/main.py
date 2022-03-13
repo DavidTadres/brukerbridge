@@ -12,21 +12,23 @@ root_directory = "H:/"
 users_directory = "C:/Users/User/projects/brukerbridge/users"
 
 def main(args):
-    user = args[0].lower().strip('"')
-    directory = args[1].strip('"')
-    full_target = os.path.join(root_directory, user, directory)
-    print("full target: {}".format(full_target))
 
     #####################
     ### Setup logging ###
     #####################
 
-    log_folder = 'C:/Users/User/Desktop/dataflow_logs'
-    log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
-    full_log_file = os.path.join(log_folder, log_file)
+    full_log_file = args[2].strip('"')
     sys.stdout = bridge.Logger_stdout(full_log_file)
+    sys.stderr = bridge.Logger_stderr(full_log_file)
 
-    sys.stderr = bridge.Logger_stderr()
+    ############################
+    ### Get target directory ###
+    ############################
+
+    user = args[0].lower().strip('"')
+    directory = args[1].strip('"')
+    full_target = os.path.join(root_directory, user, directory)
+    print("full target: {}".format(full_target))
 
     #########################
     ### Get user settings ###

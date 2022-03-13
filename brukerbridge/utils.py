@@ -22,6 +22,29 @@ try:
 except ImportError:
     pass
 
+def progress_bar(iteration, total, length, fill = '█'):
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    fraction = F"{str(iteration):^4}" + '/' + F"{str(total):^4}"
+    bar_string = f"{bar}"
+    return bar_string
+
+def get_num_files(directory):
+    num_files = 0
+    for path, dirs,files in os.walk(directory):
+        num_files += len(files)
+    return num_files
+
+def get_dir_size(directory):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+    return total_size*10**-9 #report in GB
+
 def get_checksum(filename):
     with open(filename, "rb") as f:
         bytes = f.read()  # read file as bytes
@@ -86,13 +109,6 @@ def timing(f):
         return result
     return wrapper
 
-def progress_bar(iteration, total, length, fill = '█'):
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
-    fraction = F"{str(iteration):^4}" + '/' + F"{str(total):^4}"
-    bar_string = f"{bar}"
-    return bar_string
-
 class Logger_stdout(object):
     def __init__(self, full_log_file):
         self.terminal = sys.stdout
@@ -112,11 +128,11 @@ class Logger_stdout(object):
         pass 
 
 class Logger_stderr(object):
-    def __init__(self):
+    def __init__(self, full_log_file):
         self.terminal = sys.stderr
-        log_folder = 'C:/Users/User/Desktop/dataflow_error'
-        log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
-        self.full_log_file = os.path.join(log_folder, log_file)
+        # log_folder = 'C:/Users/User/Desktop/dataflow_error'
+        # log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
+        # self.full_log_file = os.path.join(log_folder, log_file)
         self.log = open(self.full_log_file, "a")
 
     def write(self, message):
