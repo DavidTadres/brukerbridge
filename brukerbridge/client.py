@@ -42,8 +42,8 @@ source_directory_size = bridge.get_dir_size(source_directory)
 num_files = bridge.get_num_files(source_directory)
 print('Done   |  {} GB   |   {} Files'.format(source_directory_size, num_files))
 
-sock.sendall(source_directory_size.encode() + b'\n')
-sock.sendall(num_files.encode() + b'\n')
+sock.sendall(str(source_directory_size).encode() + b'\n')
+sock.sendall(str(num_files).encode() + b'\n')
 
 ######################
 ### BEGIN TRASNFER ###
