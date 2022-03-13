@@ -4,6 +4,7 @@ import sys
 import subprocess
 import brukerbridge as bridge
 import time
+from time import strftime
 
 verbose = False
 CHUNKSIZE = 1_000_000
