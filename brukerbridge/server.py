@@ -52,7 +52,7 @@ while True:
         while True:
 
             if first_loop:
-                source_directory_size = int(clientfile.readline().strip().decode())
+                source_directory_size = int(float(clientfile.readline().strip().decode()))
                 total_num_files = clientfile.readline().strip().decode()
 
             filename = clientfile.readline().strip().decode()
