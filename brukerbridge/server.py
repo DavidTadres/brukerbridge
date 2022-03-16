@@ -24,124 +24,123 @@ sock.listen(1)
 
 while True:
 
-    print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-    print("[*] Ready to receive files from Bruker client")
+	print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}", flush=True)
+	print("[*] Ready to receive files from Bruker client", flush=True)
+	client,address = sock.accept()
 
-    ############
+	log_folder = 'C:/Users/User/Desktop/dataflow_logs'
+	log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
+	full_log_file = os.path.join(log_folder, log_file)
+	# sys.stdout = open(full_log_file, 'a')
+	# sys.stderr = open(full_log_file, 'a')
 
-    client,address = sock.accept()
+	print(f"[+] {address} is connected.", flush=True)
 
-    log_folder = 'C:/Users/User/Desktop/dataflow_logs'
-    log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
-    full_log_file = os.path.join(log_folder, log_file)
-    sys.stdout = bridge.Logger_stdout(full_log_file)
-    sys.stderr = bridge.Logger_stderr(full_log_file)
+	do_checksums_match = []
 
-    print(f"[+] {address} is connected.")
+	first_loop = True
+	num_files_transfered = 0 
+	total_gb_transfered = 0
+	with client,client.makefile('rb') as clientfile:
 
-    ############
+	    while True:
 
+	        if first_loop:
+	            source_directory_size = int(float(clientfile.readline().strip().decode()))
+	            total_num_files = clientfile.readline().strip().decode()
 
-    do_checksums_match = []
+	        raw = clientfile.readline()
 
-    first_loop = True
-    num_files_transfered = 0 
-    total_gb_transfered = 0
-    with client,client.makefile('rb') as clientfile:
+	        ### This is what will finally break the loop when this message is recieved ###
+	        if raw.strip().decode() == "ALL_FILES_TRANSFERED":
 
-        while True:
+	            print('ALL_FILES_TRANSFERED', flush=True)
+	            all_checksums_true = False not in do_checksums_match
+	            message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
+	            client.sendall(message.encode())
+	            break
+	        
+	        filename = raw.strip().decode()
+	        length = int(clientfile.readline()) # don't need to decode because casting as int
+	        size_in_gb = length*10**-9
+	        checksum_original = str(clientfile.readline().strip().decode())
 
-            if first_loop:
-                source_directory_size = int(float(clientfile.readline().strip().decode()))
-                total_num_files = clientfile.readline().strip().decode()
+	        if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
 
-            raw = clientfile.readline()
+	        path = os.path.join(target_directory,filename)
+	        os.makedirs(os.path.dirname(path),exist_ok=True)
 
-            ### This is what will finally break the loop when this message is recieved ###
-            if raw.strip().decode() == "ALL_FILES_TRANSFERED":
+	        # Read the data in chunks so it can handle large files.
+	        with open(path,'wb') as f:
+	            while length:
+	                chunk = min(length,CHUNKSIZE)
+	                data = clientfile.read(chunk)
+	                if not data: break
+	                f.write(data)
+	                length -= len(data)
+	            else: # only runs if while doesn't break and length==0
+	                if verbose: print('Complete', end='', flush=True)
 
-                print('ALL_FILES_TRANSFERED')
-                all_checksums_true = False not in do_checksums_match
-                message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
-                client.sendall(message.encode())
-                break
-            
-            filename = raw.strip().decode()
-            length = int(clientfile.readline()) # don't need to decode because casting as int
-            size_in_gb = length*10**-9
-            checksum_original = str(clientfile.readline().strip().decode())
+	        checksum_copy = bridge.get_checksum(path)
 
-            if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
+	        if checksum_original == checksum_copy:
+	            if verbose: print(' [CHECKSUMS MATCH]', flush=True)
+	            do_checksums_match.append(True)
 
-            path = os.path.join(target_directory,filename)
-            os.makedirs(os.path.dirname(path),exist_ok=True)
+	        else:
+	            print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!', flush=True)
+	            do_checksums_match.append(False)
+	            raise SystemExit
 
-            # Read the data in chunks so it can handle large files.
-            with open(path,'wb') as f:
-                while length:
-                    chunk = min(length,CHUNKSIZE)
-                    data = clientfile.read(chunk)
-                    if not data: break
-                    f.write(data)
-                    length -= len(data)
-                else: # only runs if while doesn't break and length==0
-                    if verbose: print('Complete', end='')
+	        num_files_transfered += 1
+	        total_gb_transfered += size_in_gb
 
-            checksum_copy = bridge.get_checksum(path)
+	        ##########################
+	        ### Print Progress Bar ###
+	        ##########################
 
-            if checksum_original == checksum_copy:
-                if verbose: print(' [CHECKSUMS MATCH]')
-                do_checksums_match.append(True)
+	        bar_length = 80
+	        if not first_loop:
+	            #print('\r', end='', flush=True) # Carriage return
+	           	print("\r", flush=True) # Carriage return
 
-            else:
-                print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!')
-                do_checksums_match.append(False)
-                raise SystemExit
+	        bar_string = bridge.progress_bar(int(total_gb_transfered), source_directory_size, bar_length)
+	        vol_frac_string = "{:0{}d} {} Files".format(num_files_transfered, len(str(total_num_files)), total_num_files)
+	        mem_frac_string = "{:0{}d} {} GB".format(int(total_gb_transfered), len(str(source_directory_size)), source_directory_size)
+	        full_string = vol_frac_string + ' ' + bar_string + ' ' + mem_frac_string
+	        
+	        print("\r\r\r" + full_string + "\r\r\r", end='', flush=True)
+	        # print("\r", flush=True)
 
-            num_files_transfered += 1
-            total_gb_transfered += size_in_gb
+	        first_loop = False
+	        continue
+	# break ## REMOVE <---------------------------
 
-            ##########################
-            ### Print Progress Bar ###
-            ##########################
+	print(F'all_checksums_true is {all_checksums_true}', flush=True)
 
-            bar_length = 80
-            if not first_loop:
-                print('\r', end='', flush=True) # Carriage return
-            bar_string = bridge.progress_bar(int(total_gb_transfered), source_directory_size, bar_length)
-            vol_frac_string = "{:0{}d} {} Files".format(num_files_transfered, len(str(total_num_files)), total_num_files)
-            mem_frac_string = "{:0{}d} {} GB".format(int(total_gb_transfered), len(str(source_directory_size)), source_directory_size)
-            full_string = vol_frac_string + ' ' + bar_string + ' ' + mem_frac_string
-            print(full_string, end='', flush=True)
+	# close the client socket
+	client.close()
 
-            first_loop = False
-            continue
+	# Launch main file processing
+	filename = os.path.normpath(filename)
+	user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
 
-    print(F'all_checksums_true is {all_checksums_true}')
+	# make sure there is no email file left from aborted or failed processing rounds
+	try:
+	    email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
+	    os.remove(email_file)
+	except:
+	    pass
 
-    # close the client socket
-    client.close()
+	print("USER: {}".format(user), flush=True)
+	print("DIRECTORY: {}".format(directory), flush=True)
+	print("LOGFILE: {}".format(full_log_file), flush=True)
+	sys.stdout.flush()
+	os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" "{}" "{}"'.format(user, directory, full_log_file))
+	# added double quotes to accomidate spaces in directory name
 
-    # Launch main file processing
-    filename = os.path.normpath(filename)
-    user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
+	# email user informing of success or failure, and send relevant log file info
+	os.system("python C:/Users/User/projects/brukerbridge/scripts/final_email.py")
 
-    # make sure there is no email file left from aborted or failed processing rounds
-    try:
-        email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
-        os.remove(email_file)
-    except:
-        pass
-
-    print("USER: {}".format(user))
-    print("DIRECTORY: {}".format(directory))
-    print("LOGFILE: {}".format(full_log_file))
-    sys.stdout.flush()
-    os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" "{}" "{}"'.format(user, directory, full_log_file))
-    # added double quotes to accomidate spaces in directory name
-
-    # email user informing of success or failure, and send relevant log file info
-    os.system("python C:/Users/User/projects/brukerbridge/scripts/final_email.py")
-
-# close the server socket
-#sock.close()
+	# close the server socket
+	#sock.close()

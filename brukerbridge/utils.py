@@ -22,7 +22,9 @@ try:
 except ImportError:
     pass
 
-def progress_bar(iteration, total, length, fill = '#'):#'█'):
+def progress_bar(iteration, total, length, fill = '#'):
+    if total == 0:
+        total = 1        
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
     fraction = F"{str(iteration):^4}" + '/' + F"{str(total):^4}"
@@ -111,14 +113,17 @@ def timing(f):
 
 class Logger_stdout(object):
     def __init__(self, full_log_file):
-        self.terminal = sys.stdout
+        # self.terminal = sys.stdout
         # log_folder = 'C:/Users/User/Desktop/dataflow_logs'
         # log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
         # self.full_log_file = os.path.join(log_folder, log_file)
         self.log = open(full_log_file, "a")
+        self.log = sys.stdout
 
     def write(self, message):
-        self.terminal.write(message)
+        #  self.terminal.write(message)
+        #self.terminal.write('boo')
+        #self.log.write('boo2')
         self.log.write(message)  
 
     def flush(self):
@@ -126,6 +131,26 @@ class Logger_stdout(object):
         #this handles the flush command by doing nothing.
         #you might want to specify some extra behavior here.
         pass 
+
+# class Logger_stdout(object):
+#     def __init__(self, full_log_file):
+#         self.terminal = sys.stdout
+#         # log_folder = 'C:/Users/User/Desktop/dataflow_logs'
+#         # log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
+#         # self.full_log_file = os.path.join(log_folder, log_file)
+#         self.log = open(full_log_file, "a")
+
+#     def write(self, message):
+#         self.terminal.write(message)
+#         #self.terminal.write('boo')
+#         #self.log.write('boo2')
+#         self.log.write(message)  
+
+#     def flush(self):
+#         #this flush method is needed for python 3 compatibility.
+#         #this handles the flush command by doing nothing.
+#         #you might want to specify some extra behavior here.
+#         pass 
 
 class Logger_stderr(object):
     def __init__(self, full_log_file):
