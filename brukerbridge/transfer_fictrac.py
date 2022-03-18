@@ -16,6 +16,7 @@ def transfer_fictrac():
     oak_target = 'X:/data' # MAKE THIS
 
     print('Starting download of fictrac files.')
+    print("FICTRACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
     ftp_host = ftputil.FTPHost(ip, username, passwd)
     all_fictrac_files = ftp_host.listdir(fictrac_source)
     # of the form:#
@@ -32,7 +33,8 @@ def transfer_fictrac():
             target_path = fictrac_target + '/' + file
             source_path = fictrac_source + '/' + file
             if os.path.isfile(target_path):
-                print('File already exists. Skipping.  {}'.format(target_path))
+                pass
+                # print('File already exists. Skipping.  {}'.format(target_path))
             else:
                 print('Downloading {}'.format(target_path))
                 ftp_host.download(source_path, target_path)

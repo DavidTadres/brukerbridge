@@ -38,14 +38,14 @@ while True:
 
 	do_checksums_match = []
 
-	first_loop = True
+	loop_iteration = 1
 	num_files_transfered = 0 
 	total_gb_transfered = 0
 	with client,client.makefile('rb') as clientfile:
 
 	    while True:
 
-	        if first_loop:
+	        if loop_iteration == 1:
 	            source_directory_size = int(float(clientfile.readline().strip().decode()))
 	            total_num_files = clientfile.readline().strip().decode()
 
@@ -100,19 +100,17 @@ while True:
 	        ##########################
 
 	        bar_length = 80
-	        if not first_loop:
-	            #print('\r', end='', flush=True) # Carriage return
-	           	print("\r", flush=True) # Carriage return
+	        print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096,136192]
 
-	        bar_string = bridge.progress_bar(int(total_gb_transfered), source_directory_size, bar_length)
-	        vol_frac_string = "{:0{}d} {} Files".format(num_files_transfered, len(str(total_num_files)), total_num_files)
-	        mem_frac_string = "{:0{}d} {} GB".format(int(total_gb_transfered), len(str(source_directory_size)), source_directory_size)
-	        full_string = vol_frac_string + ' ' + bar_string + ' ' + mem_frac_string
-	        
-	        print("\r\r\r" + full_string + "\r\r\r", end='', flush=True)
-	        # print("\r", flush=True)
+	        if loop_iteration in print_iters:
+		        bar_string = bridge.progress_bar(int(total_gb_transfered), source_directory_size, bar_length)
+		        vol_frac_string = "{:0{}d} {} Files".format(num_files_transfered, len(str(total_num_files)), total_num_files)
+		        mem_frac_string = "{:0{}d} {} GB".format(int(total_gb_transfered), len(str(source_directory_size)), source_directory_size)
+		        full_string = vol_frac_string + ' ' + bar_string + ' ' + mem_frac_string
+		        
+		        print(full_string, flush=True)
 
-	        first_loop = False
+	        loop_iteration += 1
 	        continue
 	# break ## REMOVE <---------------------------
 
@@ -134,9 +132,9 @@ while True:
 
 	print("USER: {}".format(user), flush=True)
 	print("DIRECTORY: {}".format(directory), flush=True)
-	print("LOGFILE: {}".format(full_log_file), flush=True)
+	#print("LOGFILE: {}".format(full_log_file), flush=True)
 	sys.stdout.flush()
-	os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" "{}" "{}"'.format(user, directory, full_log_file))
+	os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" "{}"'.format(user, directory))
 	# added double quotes to accomidate spaces in directory name
 
 	# email user informing of success or failure, and send relevant log file info
