@@ -5,18 +5,17 @@ import ftputil
 from datetime import datetime
 import brukerbridge as bridge
 
-def transfer_fictrac():
+def transfer_fictrac(user):
 
     ip ='171.65.17.246'
     username = 'clandininlab'
     passwd = 'jointhelab@'
-    fictrac_target = 'H:/fictrac' #### MAKE THIS
-    fictrac_source = 'fictrac_data' ###### WHAT DIRECTORY <------------------- ?
+    fictrac_target = 'H:/fictrac/{}'.format(user)
+    fictrac_source = 'fictrac_data/{}'.format(user)
     allowable_extensions = ['.log', '.avi', '.dat', '.txt']
-    oak_target = 'X:/data' # MAKE THIS
+    oak_target = 'X:/data'
 
     print('Starting download of fictrac files.')
-    print("FICTRACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
     ftp_host = ftputil.FTPHost(ip, username, passwd)
     all_fictrac_files = ftp_host.listdir(fictrac_source)
     # of the form:#
@@ -40,6 +39,6 @@ def transfer_fictrac():
                 ftp_host.download(source_path, target_path)
 
     # Send fictrac files to oak
-    bridge.start_oak_transfer(fictrac_target, oak_target, allowable_extensions=None, add_to_build_que=False)
+    bridge.start_oak_transfer(fictrac_target, oak_target, allowable_extensions=None, add_to_build_que=False, verbose=False)
 
     print('Finished upload of fictrac files to oak.')

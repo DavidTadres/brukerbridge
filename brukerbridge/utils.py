@@ -22,6 +22,39 @@ try:
 except ImportError:
     pass
 
+def sec_to_hms(t):
+    secs=F"{np.floor(t%60):02.0f}"
+    mins=F"{np.floor((t/60)%60):02.0f}"
+    hrs=F"{np.floor((t/3600)%60):02.0f}"
+    return ':'.join([hrs, mins, secs])
+
+def print_progress_table(start_time, current_iteration, total_iterations, current_mem, total_mem):
+    print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096]
+
+    fraction_complete = current_iteration/total_iterations
+    elapsed = time()-start_time
+    elapsed_hms = sec_to_hms(elapsed)
+    try:
+        remaining = elapsed/fraction_complete - elapsed
+    except ZeroDivisionError:
+        remaining = 0
+    remaining_hms = sec_to_hms(remaining)
+    
+    if current_iteration == 1:
+        print("|  Print Frequency  |     Num / Total   |         GB / Total      | Elapsed Time / Remaining   |", flush=True)
+    
+    print_freq_string = "       {:05d}       ".format(current_iteration)
+    iteration_string = "   {:05d} / {:05d}   ".format(current_iteration, total_iterations)
+    memory_string = "        {:03d} / {:03d}        ".format(current_mem, total_mem)
+    time_string = F"     {elapsed_hms} / {remaining_hms}    "
+    full_string = '|'.join(['', print_freq_string, iteration_string, memory_string, time_string, ''])
+    
+    if current_iteration in print_iters:
+        print(full_string, flush=True)
+        
+    if current_iteration == total_iterations:
+        print(full_string, flush=True)
+
 def progress_bar(iteration, total, length, fill = '#'):
     if total == 0:
         total = 1        

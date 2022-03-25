@@ -22,32 +22,27 @@ sock = socket()
 sock.bind((SERVER_HOST, SERVER_PORT))
 sock.listen(1)
 
+# this while loop handles the server being ready for the next set of transfers
 while True:
 
 	print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}", flush=True)
 	print("[*] Ready to receive files from Bruker client", flush=True)
+
 	client,address = sock.accept()
-
-	log_folder = 'C:/Users/User/Desktop/dataflow_logs'
-	log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
-	full_log_file = os.path.join(log_folder, log_file)
-	# sys.stdout = open(full_log_file, 'a')
-	# sys.stderr = open(full_log_file, 'a')
-
 	print(f"[+] {address} is connected.", flush=True)
 
 	do_checksums_match = []
-
-	loop_iteration = 1
 	num_files_transfered = 0 
 	total_gb_transfered = 0
 	with client,client.makefile('rb') as clientfile:
 
+        # this while loop handles looping over files
 	    while True:
 
-	        if loop_iteration == 1:
+	        if num_files_transfered == 0:
 	            source_directory_size = int(float(clientfile.readline().strip().decode()))
 	            total_num_files = clientfile.readline().strip().decode()
+                start_time = time.time()
 
 	        raw = clientfile.readline()
 
@@ -95,50 +90,50 @@ while True:
 	        num_files_transfered += 1
 	        total_gb_transfered += size_in_gb
 
-	        ##########################
-	        ### Print Progress Bar ###
-	        ##########################
+	        ######################
+	        ### Print Progress ###
+	        ######################
+            bridge.print_progress_table(start_time=start_time,
+                                        current_iteration=num_files_transfered,
+                                        total_iterations=total_num_files,
+                                        current_mem=total_gb_transfered,
+                                        total_mem=source_directory_size)
 
-	        bar_length = 80
-	        print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096,136192]
-
-	        if loop_iteration in print_iters:
-		        bar_string = bridge.progress_bar(int(total_gb_transfered), source_directory_size, bar_length)
-		        vol_frac_string = "{:0{}d} {} Files".format(num_files_transfered, len(str(total_num_files)), total_num_files)
-		        mem_frac_string = "{:0{}d} {} GB".format(int(total_gb_transfered), len(str(source_directory_size)), source_directory_size)
-		        full_string = vol_frac_string + ' ' + bar_string + ' ' + mem_frac_string
-		        
-		        print(full_string, flush=True)
-
-	        loop_iteration += 1
 	        continue
-	# break ## REMOVE <---------------------------
 
 	print(F'all_checksums_true is {all_checksums_true}', flush=True)
+    print('{} min duration, with average transfer speed {:2f} MB/sec'.format(int(time.time()/60), source_directory_size * 1000 / (time.time() - start_time)))
+
+    dir_to_flag = '\\'.join(path.split('\\')[:3])
+    print(dir_to_flag)
+    #os.rename(dir_to_flag, dir_to_flag + '__queued__')
 
 	# close the client socket
 	client.close()
+    # Now the server will return to the beginning of the while loop and is ready for next transfer
 
-	# Launch main file processing
-	filename = os.path.normpath(filename)
-	user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
 
-	# make sure there is no email file left from aborted or failed processing rounds
-	try:
-	    email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
-	    os.remove(email_file)
-	except:
-	    pass
 
-	print("USER: {}".format(user), flush=True)
-	print("DIRECTORY: {}".format(directory), flush=True)
-	#print("LOGFILE: {}".format(full_log_file), flush=True)
-	sys.stdout.flush()
-	os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" "{}"'.format(user, directory))
-	# added double quotes to accomidate spaces in directory name
+	# # Launch main file processing
+	# filename = os.path.normpath(filename)
+	# user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
 
-	# email user informing of success or failure, and send relevant log file info
-	os.system("python C:/Users/User/projects/brukerbridge/scripts/final_email.py")
+	# # make sure there is no email file left from aborted or failed processing rounds
+	# try:
+	#     email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
+	#     os.remove(email_file)
+	# except:
+	#     pass
+
+	# print("USER: {}".format(user), flush=True)
+	# print("DIRECTORY: {}".format(directory), flush=True)
+	# #print("LOGFILE: {}".format(full_log_file), flush=True)
+	# sys.stdout.flush()
+	# os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" "{}"'.format(user, directory))
+	# # added double quotes to accomidate spaces in directory name
+
+	# # email user informing of success or failure, and send relevant log file info
+	# os.system("python C:/Users/User/projects/brukerbridge/scripts/final_email.py")
 
 	# close the server socket
 	#sock.close()

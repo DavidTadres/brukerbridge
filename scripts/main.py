@@ -3,12 +3,12 @@ import os
 import warnings
 import subprocess
 import json
+import time
 import brukerbridge as bridge
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff', 'hdf5'] # needs to be 4 char
-root_directory = "H:/"
 users_directory = "C:/Users/User/projects/brukerbridge/users"
 
 def main(args):
@@ -17,52 +17,53 @@ def main(args):
 	### Get target directory ###
 	############################
 
-	user = args[0].lower().strip('"')
-	directory = args[1].strip('"')
-	full_target = os.path.join(root_directory, user, directory)
-	print("full target: {}".format(full_target))
+	# user = args[0].lower().strip('"')
+	# directory = args[1].strip('"')
+	# full_target = os.path.join(root_directory, user, directory)
+	# print("full target: {}".format(full_target))
+
+    dir_to_process = args[0].lower().strip('"')
+    dir_to_process = os.path.normpath(dir_to_process)
+    user, directory = dir_to_process.split(os.sep)[1], dir_to_process.split(os.sep)[2]
+    print("Directory to process: {}".format(dir_to_process))
 
 	#########################
 	### Get user settings ###
 	#########################
 
-	#user = "luke" # UPDATE
 	if user + '.json' in [x.lower() for x in os.listdir(users_directory)]:
 		json_file = os.path.join(users_directory, user + '.json')
 		with open(json_file) as file:
 			settings = json.load(file)
-	print(settings) # remove
+
 	oak_target = settings['oak_target']
 	convert_to = settings['convert_to']
-	email = settings['email']
-	add_to_build_que = settings['add_to_build_que']
-	try:
-		transfer_fictrac = settings['transfer_fictrac']
-	except:
-		transfer_fictrac = False
+	email = settings.get('email', False)
+	add_to_build_que = settings.get('add_to_build_que', False)
+	transfer_fictrac = settings.get('transfer_fictrac', False)
 
 	######################################
 	### Save email for error reporting ###
 	######################################
 
-	email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
-	with open(email_file, 'w') as f:
-		f.write(email)
+	# email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
+	# with open(email_file, 'w') as f:
+	# 	f.write(email)
 
 	#################################
 	### Convert from raw to tiffs ###
 	#################################
 	
-	bridge.convert_raw_to_tiff(full_target)
+	bridge.convert_raw_to_tiff(dir_to_process)
 
 	#########################################
 	### Convert tiff to nii or tiff stack ###
 	#########################################
 
 	if convert_to == 'nii':
-		bridge.convert_tiff_collections_to_nii(full_target)
+		bridge.convert_tiff_collections_to_nii(dir_to_process)
 	elif convert_to == 'tiff':
-		bridge.convert_tiff_collections_to_stack(full_target)
+		bridge.convert_tiff_collections_to_stack(dir_to_process)
 	else:
 		print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
 		print("Must be nii or tiff, with no period")
@@ -70,15 +71,17 @@ def main(args):
 	#######################
 	### Transfer to Oak ###
 	#######################
-
-	bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que)
+    start_time = time.time()
+	size_transfered = bridge.start_oak_transfer(dir_to_process, oak_target, extensions_for_oak_transfer, add_to_build_que)
+    print('TRANSFER DURATION: {} min'.format(int(time.time() / 60)))
+    print('AVERAGE TRANSFER SPEED WAS {:2f} MB/sec'.format(size_transfered * 1000 / (time.time() - start_time)))
 
 	##############################
 	### Transfer fictrac files ###
 	##############################
 	if transfer_fictrac:
 		try:
-			bridge.transfer_fictrac()
+			bridge.transfer_fictrac(user)
 		except:
 			print("-----------> FICTRAC TRANSFER FAILED <-----------")
 

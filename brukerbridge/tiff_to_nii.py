@@ -64,6 +64,7 @@ def tiff_to_nii(xml_file):
         image_array = np.zeros((num_timepoints, num_z, num_y, num_x), dtype=np.uint16)
         print('Created empty array of shape {}'.format(image_array.shape))
         # loop over time
+        start_time = time.time()
         for i in range(num_timepoints):
 
             #if i%10 == 0:
@@ -99,24 +100,15 @@ def tiff_to_nii(xml_file):
                 img = imread(fullfile)
                 image_array[i,j,:,:] = img
 
-            # print memory info periodically
-            #if i%10 == 0:
-            #    memory_usage = psutil.Process(os.getpid()).memory_info().rss*10**-9
-            #    print('Current memory usage: {:.2f}GB'.format(memory_usage))
-            #    sys.stdout.flush()
-
-            ##########################
-            ### Print Progress Bar ###
-            ##########################
-
-            bar_length = 80
-            if i != 0 :
-                print('\r', end='', flush=True) # Carriage return
-            bar_string = bridge.progress_bar(i, num_timepoints, bar_length)
-            vol_frac_string = "{: {}d} {}".format(i, len(str(num_timepoints)), num_timepoints)
-            memory_string = 'Current memory usage: {:5.2f}GB'.format(psutil.Process(os.getpid()).memory_info().rss*10**-9)
-            full_string = vol_frac_string + ' ' + bar_string + ' ' + memory_string
-            print(full_string, end='', flush=True)
+            ######################
+            ### Print Progress ###
+            ######################
+            memory_usage = int(psutil.Process(os.getpid()).memory_info().rss*10**-9)
+            bridge.print_progress_table(start_time=start_time,
+                                        current_iteration=i,
+                                        total_iterations=num_timepoints,
+                                        current_mem=memory_usage,
+                                        total_mem=32)
 
         if isVolumeSeries:
             # Will start as t,z,x,y. Want y,x,z,t
@@ -133,10 +125,6 @@ def tiff_to_nii(xml_file):
             image_array = np.swapaxes(image_array, 0, 1) # y, x, t
 
         print('Final array shape = {}'.format(image_array.shape))
-
-        memory_usage = psutil.Process(os.getpid()).memory_info().rss*10**-9
-        print('Current memory usage: {:.2f}GB'.format(memory_usage))
-        sys.stdout.flush()
 
         aff = np.eye(4)
         save_name = xml_file[:-4] + '_channel_{}'.format(channel+1) + '.nii'
