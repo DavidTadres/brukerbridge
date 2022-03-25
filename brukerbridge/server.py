@@ -36,81 +36,81 @@ while True:
 	total_gb_transfered = 0
 	with client,client.makefile('rb') as clientfile:
 
-        # this while loop handles looping over files
-	    while True:
+		# this while loop handles looping over files
+		while True:
 
-	        if num_files_transfered == 0:
-	            source_directory_size = int(float(clientfile.readline().strip().decode()))
-	            total_num_files = clientfile.readline().strip().decode()
-                start_time = time.time()
+			if num_files_transfered == 0:
+				source_directory_size = int(float(clientfile.readline().strip().decode()))
+				total_num_files = int(clientfile.readline().strip().decode())
+				start_time = time.time()
 
-	        raw = clientfile.readline()
+			raw = clientfile.readline()
 
-	        ### This is what will finally break the loop when this message is recieved ###
-	        if raw.strip().decode() == "ALL_FILES_TRANSFERED":
+			### This is what will finally break the loop when this message is recieved ###
+			if raw.strip().decode() == "ALL_FILES_TRANSFERED":
 
-	            print('ALL_FILES_TRANSFERED', flush=True)
-	            all_checksums_true = False not in do_checksums_match
-	            message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
-	            client.sendall(message.encode())
-	            break
-	        
-	        filename = raw.strip().decode()
-	        length = int(clientfile.readline()) # don't need to decode because casting as int
-	        size_in_gb = length*10**-9
-	        checksum_original = str(clientfile.readline().strip().decode())
+				print('ALL_FILES_TRANSFERED', flush=True)
+				all_checksums_true = False not in do_checksums_match
+				message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
+				client.sendall(message.encode())
+				break
+			
+			filename = raw.strip().decode()
+			length = int(clientfile.readline()) # don't need to decode because casting as int
+			size_in_gb = length*10**-9
+			checksum_original = str(clientfile.readline().strip().decode())
 
-	        if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
+			if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
 
-	        path = os.path.join(target_directory,filename)
-	        os.makedirs(os.path.dirname(path),exist_ok=True)
+			path = os.path.join(target_directory,filename)
+			os.makedirs(os.path.dirname(path),exist_ok=True)
 
-	        # Read the data in chunks so it can handle large files.
-	        with open(path,'wb') as f:
-	            while length:
-	                chunk = min(length,CHUNKSIZE)
-	                data = clientfile.read(chunk)
-	                if not data: break
-	                f.write(data)
-	                length -= len(data)
-	            else: # only runs if while doesn't break and length==0
-	                if verbose: print('Complete', end='', flush=True)
+			# Read the data in chunks so it can handle large files.
+			with open(path,'wb') as f:
+				while length:
+					chunk = min(length,CHUNKSIZE)
+					data = clientfile.read(chunk)
+					if not data: break
+					f.write(data)
+					length -= len(data)
+				else: # only runs if while doesn't break and length==0
+					if verbose: print('Complete', end='', flush=True)
 
-	        checksum_copy = bridge.get_checksum(path)
+			checksum_copy = bridge.get_checksum(path)
 
-	        if checksum_original == checksum_copy:
-	            if verbose: print(' [CHECKSUMS MATCH]', flush=True)
-	            do_checksums_match.append(True)
+			if checksum_original == checksum_copy:
+				if verbose: print(' [CHECKSUMS MATCH]', flush=True)
+				do_checksums_match.append(True)
 
-	        else:
-	            print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!', flush=True)
-	            do_checksums_match.append(False)
-	            raise SystemExit
+			else:
+				print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!', flush=True)
+				do_checksums_match.append(False)
+				raise SystemExit
 
-	        num_files_transfered += 1
-	        total_gb_transfered += size_in_gb
+			num_files_transfered += 1
+			total_gb_transfered += size_in_gb
 
-	        ######################
-	        ### Print Progress ###
-	        ######################
-            bridge.print_progress_table(start_time=start_time,
-                                        current_iteration=num_files_transfered,
-                                        total_iterations=total_num_files,
-                                        current_mem=total_gb_transfered,
-                                        total_mem=source_directory_size)
+			######################
+			### Print Progress ###
+			######################
+			bridge.print_progress_table(start_time=start_time,
+										current_iteration=num_files_transfered,
+										total_iterations=total_num_files,
+										current_mem=int(total_gb_transfered),
+										total_mem=source_directory_size)
 
-	        continue
+			continue
 
 	print(F'all_checksums_true is {all_checksums_true}', flush=True)
-    print('{} min duration, with average transfer speed {:2f} MB/sec'.format(int(time.time()/60), source_directory_size * 1000 / (time.time() - start_time)))
+	print('{} min duration, with average transfer speed {:2f} MB/sec'.format(int((time.time()-start_time)/60), source_directory_size * 1000 / (time.time() - start_time)))
 
-    dir_to_flag = '\\'.join(path.split('\\')[:3])
-    print(dir_to_flag)
-    #os.rename(dir_to_flag, dir_to_flag + '__queued__')
+	dir_to_flag = '\\'.join(path.split('\\')[:2])
+	print(dir_to_flag)
+	os.rename(dir_to_flag, dir_to_flag + '__queued__')
 
 	# close the client socket
 	client.close()
-    # Now the server will return to the beginning of the while loop and is ready for next transfer
+	# Now the server will return to the beginning of the while loop and is ready for next transfer
 
 
 
