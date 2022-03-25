@@ -13,7 +13,8 @@ import brukerbridge as bridge
 def tiff_to_nii(xml_file):
     aborted = False
     data_dir, _ = os.path.split(xml_file)
-    print('Converting tiffs to nii in directory: \n{}'.format(data_dir))
+    print("\n\n")
+    print('Converting tiffs to nii in directory: {}'.format(data_dir))
 
     tree = ET.parse(xml_file)
     root = tree.getroot()
@@ -136,9 +137,10 @@ def tiff_to_nii(xml_file):
         print('Saving nii as {}'.format(save_name))
         img.to_filename(save_name)
         img = None # for memory
-        print('Saved! sleeping for 10 sec to help memory reconfigure...')
-        time.sleep(10)
+        print('Saved! sleeping for 2 sec to help memory reconfigure...',end='')
+        time.sleep(2)
         print('Sleep over')
+        print('\n\n')
 
 def get_num_channels(sequence):
     frame = sequence.findall('Frame')[0]

@@ -22,10 +22,10 @@ def main(args):
 	# full_target = os.path.join(root_directory, user, directory)
 	# print("full target: {}".format(full_target))
 
-    dir_to_process = args[0].lower().strip('"')
-    dir_to_process = os.path.normpath(dir_to_process)
-    user, directory = dir_to_process.split(os.sep)[1], dir_to_process.split(os.sep)[2]
-    print("Directory to process: {}".format(dir_to_process))
+	dir_to_process = args[0].lower().strip('"')
+	dir_to_process = os.path.normpath(dir_to_process)
+	user, directory = dir_to_process.split(os.sep)[1], dir_to_process.split(os.sep)[2]
+	print("Directory to process: {}".format(dir_to_process))
 
 	#########################
 	### Get user settings ###
@@ -71,10 +71,10 @@ def main(args):
 	#######################
 	### Transfer to Oak ###
 	#######################
-    start_time = time.time()
+	start_time = time.time()
 	size_transfered = bridge.start_oak_transfer(dir_to_process, oak_target, extensions_for_oak_transfer, add_to_build_que)
-    print('TRANSFER DURATION: {} min'.format(int(time.time() / 60)))
-    print('AVERAGE TRANSFER SPEED WAS {:2f} MB/sec'.format(size_transfered * 1000 / (time.time() - start_time)))
+	print('TRANSFER DURATION: {} min'.format(int(time.time() / 60)))
+	print('AVERAGE TRANSFER SPEED WAS {:2f} MB/sec'.format(size_transfered * 1000 / (time.time() - start_time)))
 
 	##############################
 	### Transfer fictrac files ###

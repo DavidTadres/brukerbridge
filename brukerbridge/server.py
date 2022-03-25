@@ -106,7 +106,7 @@ while True:
 
 	dir_to_flag = '\\'.join(path.split('\\')[:2])
 	print(dir_to_flag)
-	os.rename(dir_to_flag, dir_to_flag + '__queued__')
+	os.rename(dir_to_flag, dir_to_flag + '__queue__')
 
 	# close the client socket
 	client.close()
