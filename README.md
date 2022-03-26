@@ -9,7 +9,7 @@ How do I use it?
 - New users must add their preferences on the workhorse computer in D217 (this only needs to be done once)
   - navigate to C:\Users\User\projects\brukerbridge\users
   - each user has a .json file. Simply copy an existing user file, rename the file with your name, and adjust the preferences as desired
-- When you are done with imaging for the day, simply double click the shortcut icon on the Bruker desktop "brukerbridge.bat". You will be prompted to select the folder you want to process. Upon selection, a terminal window will open and begin printing file transfer progress. Now, all you have to do is wait for the processing steps to complete. You will be notified via email upon success or failure of the pipeline.
+- When you are done with imaging for the day, simply double click the shortcut icon on the Bruker desktop "brukerbridge.bat". You will be prompted to select the folder you want to process. Upon selection, a terminal window will open and begin printing file transfer progress. Now, all you have to do is wait for the processing steps to complete.
 - The pipeline assumes your Bruker directory will be located as Drive:\user\DIR, ie
   1. your username should be at the root of the drive, and 
   2. the directory you want to process must have your user directory as it's immediate parent, and
