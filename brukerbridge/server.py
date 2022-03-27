@@ -30,6 +30,7 @@ while True:
 
 	client,address = sock.accept()
 	print(f"[+] {address} is connected.", flush=True)
+	print(strftime("%Y%m%d-%H%M%S"))
 
 	do_checksums_match = []
 	num_files_transfered = 0 
