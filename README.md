@@ -16,8 +16,12 @@ How do I use it?
   3. your username must match the name of the .json preferences file created on the bridge computer
 - When collecting bruker data, do not automatically convert to tif, since they take forever to transfer - the pipeline wants bruker raw files. This setting is in Prairie View Preferences/Automatically Convert Raw Files/Never
 - To implement a queue, brukerbridge now consists of two main loops.
-	1) server.py - this should always be running but if it hit an error you can restart it from the desktop shortcut LAUNCH SERVER.
-	the server's only job is to transfer files from the bruker computer to the bridge computer. 
+	1) **server.py** - this should always be running but if it hit an error you can restart it from the desktop shortcut LAUNCH SERVER.
+	The server's only job is to transfer files from the bruker computer to the bridge computer. It is listening for the bruker computer client to send files.
+	After it has downloaded a set of files, it will append "__queue__" to end of the directory name. This is what the second loop (next point) is waiting and looking for. The server logs all output (stdout and stderr) to dataflow_logs\server_log.txt in append mode.
+	2) **queue_watcher.py** - this should always be running but if it hit an error you can restart it from the desktop shortcut QUEUE WATCHER. This script is waiting to see a directory with a __queue__ flag. If it sees one it will launch main.py on this directory, which will do all the real data processing. The output of every new proccessing job will be saved to a new datetime.txt file in dataflow_logs.
+- To view the output of these two loops in real time use the program mTAIL. This watches a text file and displays updates in real time. Open one window that watches server_log.txt, and another window that watches dataflow_log_\*.txt. The wildcard (\*) will let mTAIL track the most recently created log.
+- If you have a backlog of directories to process, manually add \_\_lowqueue__ to the end of the directories you want processed (so like 20220325__lowqueue__). queue_watcher will pick this directory to process as long as there is no directory with \_\_queue__.
 
 Some more details:
 - The sub-directory structure of the directory you select for processing will be retained
