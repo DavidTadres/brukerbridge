@@ -50,7 +50,7 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
         title_string = "| Current Time |  Print Frequency  |     Num / Total   |         GB / Total      | Elapsed Time / Remaining   |"
         # if mode == 'server':
         #     title_string += "  MB / SEC  |"
-        print(, flush=True)
+        print(title_string, flush=True)
     
     now = datetime.now()
     current_time_string = "   {}   ".format(now.strftime("%H:%M:%S"))
