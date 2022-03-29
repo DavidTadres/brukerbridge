@@ -1,6 +1,8 @@
 import os
 import sys
+import time
 from shutil import copyfile
+from datetime import datetime
 
 def transfer_to_oak(source, target, allowable_extensions, verbose, size_transfered): 
     for item in os.listdir(source):
@@ -25,16 +27,30 @@ def transfer_to_oak(source, target, allowable_extensions, verbose, size_transfer
         # If the item is a file
         else:
             if os.path.isfile(target_path):
+
                 if verbose:
                     print('File already exists. Skipping.  {}'.format(target_path))
-            elif allowable_extensions is None:
-                print('Transfering file {}'.format(target_path))
-                copyfile(source_path, target_path)
-                size_transfered += os.path.getsize(target_path)
+                
             elif source_path[-4:] in allowable_extensions:
-                print('Transfering file {}'.format(target_path))
-                copyfile(source_path, target_path)
+
+                #####################
+                ### TRANSFER FILE ###
+                #####################
+
                 size_transfered += os.path.getsize(target_path)
+                size_transfered_MB = size_transfered*10**-6
+
+                now = datetime.now()
+                current_time = now.strftime("%H:%M:%S")
+
+                print('{} | Transfering file {}; size = {} MB'.format(current_time, target_path, size_transfered_MB))
+
+                t0 = time.time()
+                copyfile(source_path, target_path)
+                duration = time.time()-t0
+
+                print('done. duration: {} sec; {} MB/SEC'.format(duration, size_transfered_MB/duration))
+                
             else:
                 pass
 

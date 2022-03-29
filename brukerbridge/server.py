@@ -97,7 +97,8 @@ while True:
 										current_iteration=num_files_transfered,
 										total_iterations=total_num_files,
 										current_mem=int(total_gb_transfered),
-										total_mem=source_directory_size)
+										total_mem=source_directory_size,
+                                        mode='server')
 
 			continue
 

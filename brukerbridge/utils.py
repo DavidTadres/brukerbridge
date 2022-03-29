@@ -15,6 +15,7 @@ import nibabel as nib
 from xml.etree import ElementTree as ET
 import subprocess
 import hashlib
+from datetime import datetime
 
 # only imports on linux, which is fine since only needed for sherlock
 try:
@@ -28,8 +29,12 @@ def sec_to_hms(t):
     hrs=F"{np.floor((t/3600)%60):02.0f}"
     return ':'.join([hrs, mins, secs])
 
-def print_progress_table(start_time, current_iteration, total_iterations, current_mem, total_mem):
-    print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096]
+def print_progress_table(start_time, current_iteration, total_iterations, current_mem, total_mem, mode):
+    if mode == 'server':
+        print_iters = [1,2,4,8,16,32,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,500,600,700,800,900,1000,5000,10000,10000]
+    if mode == 'tiff_convert':
+        print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096]
+    
 
     fraction_complete = current_iteration/total_iterations
     elapsed = time()-start_time
@@ -40,14 +45,23 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
         remaining = 0
     remaining_hms = sec_to_hms(remaining)
     
+    ### PRINT TABLE TITLE ###
     if current_iteration == 1:
-        print("|  Print Frequency  |     Num / Total   |         GB / Total      | Elapsed Time / Remaining   |", flush=True)
+        title_string = "| Current Time |  Print Frequency  |     Num / Total   |         GB / Total      | Elapsed Time / Remaining   |"
+        if mode == 'server':
+            title_string += "  MB / SEC  |"
+        print(, flush=True)
     
+    now = datetime.now()
+    current_time_string = "   {}   ".format(now.strftime("%H:%M:%S"))
     print_freq_string = "       {:05d}       ".format(current_iteration)
     iteration_string = "   {:05d} / {:05d}   ".format(current_iteration, total_iterations)
     memory_string = "        {:03d} / {:03d}        ".format(current_mem, total_mem)
     time_string = F"     {elapsed_hms} / {remaining_hms}    "
-    full_string = '|'.join(['', print_freq_string, iteration_string, memory_string, time_string, ''])
+    full_string = '|'.join(['', current_time_string, print_freq_string, iteration_string, memory_string, time_string, ''])
+    if mode == 'server':
+        speed = 
+        full_string =+ '{}'.format()
     
     if current_iteration in print_iters:
         print(full_string, flush=True)

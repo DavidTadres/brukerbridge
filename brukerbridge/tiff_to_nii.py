@@ -109,7 +109,8 @@ def tiff_to_nii(xml_file):
                                         current_iteration=i,
                                         total_iterations=num_timepoints,
                                         current_mem=memory_usage,
-                                        total_mem=32)
+                                        total_mem=32,
+                                        mode='tiff_convert')
 
         if isVolumeSeries:
             # Will start as t,z,x,y. Want y,x,z,t
