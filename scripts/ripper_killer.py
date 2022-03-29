@@ -4,11 +4,12 @@ from time import sleep
 
 def main(directory):
     raws_exist = True
+    print('RIPPER KILLER IS WATCHING')
     while raws_exist:
-        sleep(5)
         raws_exist = False
         raws_exist = check_for_raw_files(directory, raws_exist)
-        print('raws_exist is {}'.format(raws_exist), flush=True)
+        print('1 min updates... raws_exist is {}'.format(raws_exist), flush=True)
+        sleep(60)
 
     # Kill bruker converter now that no more raws exist
     os.system("C:/Users/User/projects/brukerbridge/scripts/ripper_killer.bat")

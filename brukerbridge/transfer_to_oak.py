@@ -4,7 +4,7 @@ import time
 from shutil import copyfile
 from datetime import datetime
 
-def transfer_to_oak(source, target, allowable_extensions, verbose, size_transfered): 
+def transfer_to_oak(source, target, allowable_extensions, verbose): 
     for item in os.listdir(source):
         # Create full path to item
         source_path = source + '/' + item
@@ -22,7 +22,7 @@ def transfer_to_oak(source, target, allowable_extensions, verbose, size_transfer
                     print('Skipping Directory.')
 
             # RECURSE!
-            transfer_to_oak(source_path, target_path, allowable_extensions, verbose, size_transfered)
+            transfer_to_oak(source_path, target_path, allowable_extensions, verbose, )
         
         # If the item is a file
         else:
@@ -37,19 +37,20 @@ def transfer_to_oak(source, target, allowable_extensions, verbose, size_transfer
                 ### TRANSFER FILE ###
                 #####################
 
-                size_transfered += os.path.getsize(source_path)
-                size_transfered_MB = size_transfered*10**-6
-
+                file_size = os.path.getsize(source_path)
+                file_size_MB = file_size*10**-6
+                file_size_GB = file_size*10**-9
+                
                 now = datetime.now()
                 current_time = now.strftime("%H:%M:%S")
 
-                print('{} | Transfering file {}; size = {} MB'.format(current_time, target_path, size_transfered_MB))
+                print('{} | Transfering file {}; size = {} GB'.format(current_time, target_path, file_size_GB))
 
                 t0 = time.time()
                 copyfile(source_path, target_path)
                 duration = time.time()-t0
 
-                print('done. duration: {} sec; {} MB/SEC'.format(duration, size_transfered_MB/duration))
+                print('done. duration: {} sec; {} MB/SEC'.format(duration, file_size_MB/duration))
                 
             else:
                 pass
@@ -65,7 +66,7 @@ def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_
 
     print('Moving from  {}'.format(directory_from))
     print('Moving to  {}'.format(directory_to))
-    transfer_to_oak(directory_from, directory_to, allowable_extensions, verbose, size_transfered=0)
+    transfer_to_oak(directory_from, directory_to, allowable_extensions, verbose)
     print('*** Oak Upload Complete ***')
     if add_to_build_que in ['True', 'true']:
         folder = os.path.split(directory_to)[-1]
@@ -77,5 +78,4 @@ def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_
         print('Add to build queue is False.')
         #os.rename(directory_to, directory_to + '__done__')
         #print('Added __done__ flag')
-    return size_transfered*10**-9 #report in GB
 

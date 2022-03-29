@@ -54,7 +54,9 @@ def main(args):
 	### Convert from raw to tiffs ###
 	#################################
 	
+	t0 = time.time()
 	bridge.convert_raw_to_tiff(dir_to_process)
+	print("RAW TO TIFF DURATION: {} MIN".format(int((t0-time.time())/60)))
 
 	#########################################
 	### Convert tiff to nii or tiff stack ###
@@ -73,8 +75,7 @@ def main(args):
 	#######################
 	start_time = time.time()
 	size_transfered = bridge.start_oak_transfer(dir_to_process, oak_target, extensions_for_oak_transfer, add_to_build_que)
-	print('TRANSFER DURATION: {} min'.format(int(time.time() / 60)))
-	print('AVERAGE TRANSFER SPEED WAS {:2f} MB/sec'.format(size_transfered * 1000 / (time.time() - start_time)))
+	print('OAK TRANSFER DURATION: {} MIN'.format(int((time.time()-start_time) / 60)))
 
 	##############################
 	### Transfer fictrac files ###

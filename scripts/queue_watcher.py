@@ -34,7 +34,7 @@ def get_queued_folder():
 				if potential_queued_folder.endswith('__lowqueue__'):
 					low_queue = potential_queued_folder
 
-	stripped_dir = low_queue[:-9]
+	stripped_dir = low_queue[:-12]
 	return low_queue, stripped_dir
 
 def launch_main_processing(dir_to_process, stripped_folder, log_folder):
@@ -59,7 +59,7 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 
 
 	#os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" >> {} 2>&1'.format(dir_to_process, full_log_file))
-	time.sleep(100)
+	#time.sleep(5)
 
 if __name__ == '__main__':
 	main()
