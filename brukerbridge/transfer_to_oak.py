@@ -37,7 +37,7 @@ def transfer_to_oak(source, target, allowable_extensions, verbose, size_transfer
                 ### TRANSFER FILE ###
                 #####################
 
-                size_transfered += os.path.getsize(target_path)
+                size_transfered += os.path.getsize(source_path)
                 size_transfered_MB = size_transfered*10**-6
 
                 now = datetime.now()
