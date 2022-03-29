@@ -44,8 +44,6 @@ def tiff_to_nii(xml_file):
         isVolumeSeries = True
 
     print('isVolumeSeries is {}'.format(isVolumeSeries))
-    print('num_timepoints {}'.format(num_timepoints))
-    print('num_z {}'.format(num_z))
 
     num_channels = get_num_channels(sequences[0])
     test_file = sequences[0].findall('Frame')[0].findall('File')[0].get('filename')

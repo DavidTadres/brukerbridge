@@ -44,10 +44,10 @@ def launch_main_processing(dir_to_process, log_folder):
 	# this command is blocking so this watcher will just wait here until main.py is finished
 	print(F"launching {dir_to_process}")
 	print(F"log file {full_log_file}")
-
-	stderr=subprocess.STDOUT
+	
 	f = open(full_log_file, 'w')
-	exit_status = subprocess.call(['python', 'C:/Users/User/projects/brukerbridge/scripts/main.py', dir_to_process],stdout=f)
+	exit_status = subprocess.call(['python', 'C:/Users/User/projects/brukerbridge/scripts/main.py', dir_to_process],stdout=f,stderr=sys.stdout.buffer)
+	#stderr=subprocess.STDOUT
 	if exit_status != 0:
 		print("ERROR! EXITING!")
 		raise SystemExit
