@@ -48,8 +48,8 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
     ### PRINT TABLE TITLE ###
     if current_iteration == 1:
         title_string = "| Current Time |  Print Frequency  |     Num / Total   |         GB / Total      | Elapsed Time / Remaining   |"
-        if mode == 'server':
-            title_string += "  MB / SEC  |"
+        # if mode == 'server':
+        #     title_string += "  MB / SEC  |"
         print(, flush=True)
     
     now = datetime.now()
@@ -59,9 +59,9 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
     memory_string = "        {:03d} / {:03d}        ".format(current_mem, total_mem)
     time_string = F"     {elapsed_hms} / {remaining_hms}    "
     full_string = '|'.join(['', current_time_string, print_freq_string, iteration_string, memory_string, time_string, ''])
-    if mode == 'server':
-        speed = 
-        full_string =+ '{}'.format()
+    # if mode == 'server':
+    #     speed = 
+    #     full_string =+ '{}'.format()
     
     if current_iteration in print_iters:
         print(full_string, flush=True)

@@ -10,9 +10,9 @@ root_directory = "H:/"
 def main():
 
 	while True:
-		queued_folder = get_queued_folder()
+		queued_folder, stripped_folder = get_queued_folder()
 		if queued_folder is not None:
-			launch_main_processing(queued_folder, log_folder) 
+			launch_main_processing(queued_folder, stripped_folder, log_folder) 
 		time.sleep(0.1)
 
 def get_queued_folder():
@@ -28,14 +28,16 @@ def get_queued_folder():
 				potential_queued_folder = os.path.join(user_folder, potential_queued_folder)
 
 				if potential_queued_folder.endswith('__queue__'):
-					return potential_queued_folder ### Immediately return any queued folder found
+					stripped_dir = potential_queued_folder[:-9]
+					return potential_queued_folder, stripped_dir ### Immediately return any queued folder found
 
 				if potential_queued_folder.endswith('__lowqueue__'):
 					low_queue = potential_queued_folder
 
-	return low_queue
+	stripped_dir = low_queue[:-9]
+	return low_queue, stripped_dir
 
-def launch_main_processing(dir_to_process, log_folder):
+def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 	log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
 	full_log_file = os.path.join(log_folder, log_file)
 
@@ -47,10 +49,13 @@ def launch_main_processing(dir_to_process, log_folder):
 	
 	f = open(full_log_file, 'w')
 	exit_status = subprocess.call(['python', 'C:/Users/User/projects/brukerbridge/scripts/main.py', dir_to_process],stdout=f,stderr=sys.stdout.buffer)
+
 	#stderr=subprocess.STDOUT
 	if exit_status != 0:
 		print("ERROR! EXITING!")
 		raise SystemExit
+
+	os.rename(dir_to_process, stripped_folder)
 
 
 	#os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" >> {} 2>&1'.format(dir_to_process, full_log_file))
