@@ -50,7 +50,7 @@ def transfer_to_oak(source, target, allowable_extensions, verbose):
                 copyfile(source_path, target_path)
                 duration = time.time()-t0
 
-                print('done. duration: {} sec; {} MB/SEC'.format(duration, file_size_MB/duration))
+                print('done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB/duration)))
                 
             else:
                 pass

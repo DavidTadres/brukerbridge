@@ -17,6 +17,7 @@ def main():
 
 def get_queued_folder():
 	low_queue = None
+	stripped_dir = None
 	for user_folder in os.listdir(root_directory):
 		### need to skip this weird file
 		if user_folder == 'System Volume Information':
@@ -34,7 +35,8 @@ def get_queued_folder():
 				if potential_queued_folder.endswith('__lowqueue__'):
 					low_queue = potential_queued_folder
 
-	stripped_dir = low_queue[:-12]
+	if low_queue is not None:
+		stripped_dir = low_queue[:-12]
 	return low_queue, stripped_dir
 
 def launch_main_processing(dir_to_process, stripped_folder, log_folder):
@@ -48,7 +50,7 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 	print(F"log file {full_log_file}")
 	
 	f = open(full_log_file, 'w')
-	exit_status = subprocess.call(['python', 'C:/Users/User/projects/brukerbridge/scripts/main.py', dir_to_process],stdout=f,stderr=sys.stdout.buffer)
+	exit_status = subprocess.call(['python', 'C:/Users/User/projects/brukerbridge/scripts/main.py', dir_to_process],stdout=f,stderr=f)
 
 	#stderr=subprocess.STDOUT
 	if exit_status != 0:
