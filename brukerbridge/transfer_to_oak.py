@@ -67,6 +67,14 @@ def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_
     print('Moving from  {}'.format(directory_from))
     print('Moving to  {}'.format(directory_to))
     transfer_to_oak(directory_from, directory_to, allowable_extensions, verbose)
+
+    if directory_to.endswith('__queue__'):
+        os.rename(directory_to, directory_to[:-9])
+        print('removed __queue__ flag')
+    if directory_to.endswith('__lowqueue__'):
+        os.rename(directory_to, directory_to[:-12])
+        print('removed __lowqueue__ flag')
+
     print('*** Oak Upload Complete ***')
     if add_to_build_que in ['True', 'true']:
         folder = os.path.split(directory_to)[-1]

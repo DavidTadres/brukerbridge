@@ -56,7 +56,7 @@ def main(args):
 	
 	t0 = time.time()
 	bridge.convert_raw_to_tiff(dir_to_process)
-	print("RAW TO TIFF DURATION: {} MIN".format(int((t0-time.time())/60)))
+	print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
 
 	#########################################
 	### Convert tiff to nii or tiff stack ###
