@@ -29,7 +29,8 @@ oak_target = 'X:/data/Brezovec/2P_Imaging/imports'
 #bridge.convert_tiff_collections_to_stack(full_target)
 
 ### Transfer fictrac ###
-# bridge.transfer_fictrac()
+user = 'luke'
+bridge.transfer_fictrac(user)
 
 ### Transfer to oak ###
-bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que="False")
+#bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que="False")

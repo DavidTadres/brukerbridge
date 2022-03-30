@@ -104,7 +104,13 @@ while True:
 			continue
 
 	print(F'all_checksums_true is {all_checksums_true}', flush=True)
-	print('{} min duration, with average transfer speed {:2f} MB/sec'.format(int((time.time()-start_time)/60), source_directory_size * 1000 / (time.time() - start_time)))
+	
+	try:
+		print('{} min duration, with average transfer speed {:2f} MB/sec'.format(int((time.time()-start_time)/60), source_directory_size * 1000 / (time.time() - start_time)))
+	except ZeroDivisionError:
+		print('zero error... ?')
+		print(F"start time: {start_time}")
+		print(F"time minus start time: {time.time()-start_time}")
 
 	dir_to_flag = '\\'.join(path.split('\\')[:2])
 	print(dir_to_flag)

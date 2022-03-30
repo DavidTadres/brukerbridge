@@ -5,6 +5,7 @@ from shutil import copyfile
 from datetime import datetime
 
 def transfer_to_oak(source, target, allowable_extensions, verbose): 
+    print(source)
     for item in os.listdir(source):
         # Create full path to item
         source_path = source + '/' + item
@@ -30,8 +31,12 @@ def transfer_to_oak(source, target, allowable_extensions, verbose):
 
                 if verbose:
                     print('File already exists. Skipping.  {}'.format(target_path))
-                
-            elif source_path[-4:] in allowable_extensions:
+            
+            else:
+
+                if allowable_extensions is not None:
+                    if source_path[-4:] not in allowable_extensions:
+                        continue
 
                 #####################
                 ### TRANSFER FILE ###
@@ -44,16 +49,14 @@ def transfer_to_oak(source, target, allowable_extensions, verbose):
                 now = datetime.now()
                 current_time = now.strftime("%H:%M:%S")
 
-                print('{} | Transfering file {}; size = {} GB'.format(current_time, target_path, file_size_GB))
+                print('{} | Transfering file {}; size = {:.2f} GB'.format(current_time, target_path, file_size_GB),end='')
 
                 t0 = time.time()
                 copyfile(source_path, target_path)
                 duration = time.time()-t0
+                duration += 0.1
 
                 print('done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB/duration)))
-                
-            else:
-                pass
 
 def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_build_que, verbose=True):
     directory_to = os.path.join(oak_target, os.path.split(directory_from)[-1])

@@ -13,7 +13,7 @@ def transfer_fictrac(user):
     fictrac_target = 'H:/fictrac/{}'.format(user)
     fictrac_source = 'fictrac_data/{}'.format(user)
     allowable_extensions = ['.log', '.avi', '.dat', '.txt']
-    oak_target = 'X:/data'
+    oak_target = 'X:/data/fictrac'
 
     print('Starting download of fictrac files.')
     ftp_host = ftputil.FTPHost(ip, username, passwd)
