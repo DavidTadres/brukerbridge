@@ -90,7 +90,7 @@ if num_files_sent == num_of_files_recieved:
     if all_checksums_true:
         print('Confirmed correct number of files recieved and all checksums match.')
         print('DELETING BRUKER DATA...')
-        #shutil.rmtree(source_directory)
+        shutil.rmtree(source_directory)
     else:
         print('!!! Correct number of files but at least one checksum does not match !!!')
 else:
