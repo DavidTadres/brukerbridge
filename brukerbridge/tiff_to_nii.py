@@ -8,11 +8,13 @@ from tqdm import tqdm
 import psutil
 from PIL import Image
 import time
+import brukerbridge as bridge
 
 def tiff_to_nii(xml_file):
     aborted = False
     data_dir, _ = os.path.split(xml_file)
-    print('Converting tiffs to nii in directory: \n{}'.format(data_dir))
+    print("\n\n")
+    print('Converting tiffs to nii in directory: {}'.format(data_dir))
 
     tree = ET.parse(xml_file)
     root = tree.getroot()
@@ -42,8 +44,6 @@ def tiff_to_nii(xml_file):
         isVolumeSeries = True
 
     print('isVolumeSeries is {}'.format(isVolumeSeries))
-    print('num_timepoints {}'.format(num_timepoints))
-    print('num_z {}'.format(num_z))
 
     num_channels = get_num_channels(sequences[0])
     test_file = sequences[0].findall('Frame')[0].findall('File')[0].get('filename')
@@ -63,9 +63,11 @@ def tiff_to_nii(xml_file):
         image_array = np.zeros((num_timepoints, num_z, num_y, num_x), dtype=np.uint16)
         print('Created empty array of shape {}'.format(image_array.shape))
         # loop over time
+        start_time = time.time()
         for i in range(num_timepoints):
-            if i%10 == 0:
-                print('{}/{}'.format(i+1, num_timepoints))
+
+            #if i%10 == 0:
+            #    print('{}/{}'.format(i+1, num_timepoints))
 
             if isVolumeSeries: # For a given volume, get all frames
                 frames = sequences[i].findall('Frame')
@@ -97,11 +99,16 @@ def tiff_to_nii(xml_file):
                 img = imread(fullfile)
                 image_array[i,j,:,:] = img
 
-            # print memory info periodically
-            if i%10 == 0:
-                memory_usage = psutil.Process(os.getpid()).memory_info().rss*10**-9
-                print('Current memory usage: {:.2f}GB'.format(memory_usage))
-                sys.stdout.flush()
+            ######################
+            ### Print Progress ###
+            ######################
+            memory_usage = int(psutil.Process(os.getpid()).memory_info().rss*10**-9)
+            bridge.print_progress_table(start_time=start_time,
+                                        current_iteration=i,
+                                        total_iterations=num_timepoints,
+                                        current_mem=memory_usage,
+                                        total_mem=32,
+                                        mode='tiff_convert')
 
         if isVolumeSeries:
             # Will start as t,z,x,y. Want y,x,z,t
@@ -119,10 +126,6 @@ def tiff_to_nii(xml_file):
 
         print('Final array shape = {}'.format(image_array.shape))
 
-        memory_usage = psutil.Process(os.getpid()).memory_info().rss*10**-9
-        print('Current memory usage: {:.2f}GB'.format(memory_usage))
-        sys.stdout.flush()
-
         aff = np.eye(4)
         save_name = xml_file[:-4] + '_channel_{}'.format(channel+1) + '.nii'
         if isVolumeSeries:
@@ -133,9 +136,10 @@ def tiff_to_nii(xml_file):
         print('Saving nii as {}'.format(save_name))
         img.to_filename(save_name)
         img = None # for memory
-        print('Saved! sleeping for 10 sec to help memory reconfigure...')
-        time.sleep(10)
+        print('Saved! sleeping for 2 sec to help memory reconfigure...',end='')
+        time.sleep(2)
         print('Sleep over')
+        print('\n\n')
 
 def get_num_channels(sequence):
     frame = sequence.findall('Frame')[0]
