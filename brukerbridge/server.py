@@ -27,6 +27,7 @@ while True:
 
 	print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}", flush=True)
 	print("[*] Ready to receive files from Bruker client", flush=True)
+	print(strftime("%Y%m%d-%H%M%S"))
 
 	client,address = sock.accept()
 	print(f"[+] {address} is connected.", flush=True)
@@ -44,6 +45,7 @@ while True:
 				source_directory_size = int(float(clientfile.readline().strip().decode()))
 				total_num_files = int(clientfile.readline().strip().decode())
 				start_time = time.time()
+				print(F"FIRST LOOP START TIME: {start_time}",flush=True)
 
 			raw = clientfile.readline()
 
@@ -108,12 +110,14 @@ while True:
 	try:
 		print('{} min duration, with average transfer speed {:2f} MB/sec'.format(int((time.time()-start_time)/60), source_directory_size * 1000 / (time.time() - start_time)))
 	except ZeroDivisionError:
-		print('zero error... ?')
-		print(F"start time: {start_time}")
-		print(F"time minus start time: {time.time()-start_time}")
+		print('zero error... ?', flush=True)
+		print(F"start time: {start_time}", flush=True)
+		current_time = time.time()
+		print(F"current time: {current_time}", flush=True)
+		print(F"time minus start time: {current_time-start_time}", flush=True)
 
 	dir_to_flag = '\\'.join(path.split('\\')[:2])
-	print(dir_to_flag)
+	print(dir_to_flag, flush=True)
 	os.rename(dir_to_flag, dir_to_flag + '__queue__')
 
 	# close the client socket
