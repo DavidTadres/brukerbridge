@@ -32,6 +32,7 @@ def sec_to_hms(t):
 def print_progress_table(start_time, current_iteration, total_iterations, current_mem, total_mem, mode):
     if mode == 'server':
         print_iters = [1,2,4,8,16,32,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,500,600,700,800,900,1000,5000,10000,10000]
+        print("should print",flush=True)
     if mode == 'tiff_convert':
         print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096]
     
