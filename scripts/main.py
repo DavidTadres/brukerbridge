@@ -41,6 +41,7 @@ def main(args):
 	email = settings.get('email', False)
 	add_to_build_que = settings.get('add_to_build_que', False)
 	transfer_fictrac = settings.get('transfer_fictrac', False)
+	split = settings.get('split', False)
 
 	######################################
 	### Save email for error reporting ###
@@ -63,7 +64,10 @@ def main(args):
 	#########################################
 
 	if convert_to == 'nii':
-		bridge.convert_tiff_collections_to_nii(dir_to_process)
+		if split:
+			bridge.convert_tiff_collections_to_nii_split(dir_to_process)
+		else:
+			bridge.convert_tiff_collections_to_nii(dir_to_process)
 	elif convert_to == 'tiff':
 		bridge.convert_tiff_collections_to_stack(dir_to_process)
 	else:
