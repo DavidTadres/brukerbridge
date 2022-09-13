@@ -12,7 +12,7 @@ def main():
 	while True:
 		queued_folder, stripped_folder = get_queued_folder()
 		if queued_folder is not None:
-			launch_main_processing(queued_folder, stripped_folder, log_folder) 
+			launch_main_processing(queued_folder, stripped_folder, log_folder)
 		time.sleep(0.1)
 
 def get_queued_folder():
@@ -48,7 +48,7 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 	# this command is blocking so this watcher will just wait here until main.py is finished
 	print(F"launching {dir_to_process}")
 	print(F"log file {full_log_file}")
-	
+
 	f = open(full_log_file, 'w')
 	exit_status = subprocess.call(['python', 'C:/Users/User/projects/brukerbridge/scripts/main.py', dir_to_process],stdout=f,stderr=f)
 

@@ -34,7 +34,7 @@ while True:
 	print(strftime("%Y%m%d-%H%M%S"))
 
 	do_checksums_match = []
-	num_files_transfered = 0 
+	num_files_transfered = 0
 	total_gb_transfered = 0
 	with client,client.makefile('rb') as clientfile:
 
@@ -57,7 +57,7 @@ while True:
 				message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
 				client.sendall(message.encode())
 				break
-			
+
 			filename = raw.strip().decode()
 			length = int(clientfile.readline()) # don't need to decode because casting as int
 			size_in_gb = length*10**-9
@@ -106,7 +106,7 @@ while True:
 			continue
 
 	print(F'all_checksums_true is {all_checksums_true}', flush=True)
-	
+
 	try:
 		print('{} min duration, with average transfer speed {:2f} MB/sec'.format(int((time.time()-start_time)/60), source_directory_size * 1000 / (time.time() - start_time)))
 	except ZeroDivisionError:
