@@ -5,7 +5,7 @@ import subprocess
 from time import strftime
 import datetime
 import brukerbridge as bridge
-import numpy
+import numpy as np
 
 log_folder = 'C:/Users/User/Desktop/dataflow_logs'
 users_directory = "C:/Users/User/projects/brukerbridge/users"
