@@ -61,8 +61,8 @@ def main():
 			print(users_old_files)
 
 			message = F"You have the following old directories (older than {age_limit} days):\n {users_old_files}"
-			if user == 'luke'
-			bridge.send_email(subject='BrukerBridge Old Data Troll Says Hello!', message=message, recipient=email)
+			if user == 'luke':
+				bridge.send_email(subject='BrukerBridge Old Data Troll Says Hello!', message=message, recipient=email)
 
 
 		time.sleep(100)
