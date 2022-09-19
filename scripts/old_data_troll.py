@@ -29,7 +29,7 @@ def main():
 				creation_time = os.path.getctime(potential_old_folder)
 				age_in_seconds = time.time() - creation_time
 				age_in_days = age_in_seconds/(60*60*24)
-				if age_in_days > age_limit
+				if age_in_days > age_limit:
 					print(F"{potential_old_folder}: {age_in_days}")
 
 	#time.sleep(0.1)
