@@ -24,6 +24,7 @@ def main():
 
 	#while True:
 	users_with_old_files = []
+	old_files = []
 	for user_folder in os.listdir(root_directory):
 		### need to skip this weird file
 		if user_folder == 'System Volume Information':
@@ -44,15 +45,17 @@ def main():
 					if age_in_days > age_limit and exception_flag not in potential_old_folder:
 						print(F"{potential_old_folder}: {age_in_days}")
 						users_with_old_files.append(user)
-	print(np.unique(users_with_old_files))
+						old_files.append(potential_old_folder)
 
-	for user in users_with_old_files:
+	for user in np.unique(users_with_old_files):
 		json_file = os.path.join(users_directory, user + '.json')
 		with open(json_file) as file:
 			settings = json.load(file)
 		email = settings.get('email')
 		print(email)
 
+		users_old_files = old_files[np.where(user==np.asarray(users_with_old_files))]
+		print(users_old_files)
 
 	#time.sleep(0.1)
 
