@@ -41,6 +41,7 @@ def main():
 					creation_time = os.path.getctime(potential_old_folder)
 					age_in_seconds = time.time() - creation_time
 					age_in_days = age_in_seconds/(60*60*24)
+					print(F"{potential_old_folder}: {age_in_days}")
 					if age_in_days > age_limit and exception_flag not in potential_old_folder:
 						print(F"{potential_old_folder}: {age_in_days}")
 						users_with_old_files.append(user)
