@@ -56,7 +56,7 @@ def main():
 		temp = np.asarray(users_with_old_files)
 		print(temp)
 		print(np.where(user==temp))
-		users_old_files = old_files[]
+		users_old_files = old_files[np.where(user==temp)]
 		print(users_old_files)
 
 	#time.sleep(0.1)
