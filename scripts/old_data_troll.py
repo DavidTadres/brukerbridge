@@ -5,8 +5,10 @@ import subprocess
 from time import strftime
 import datetime
 import brukerbridge as bridge
+import numpy
 
 log_folder = 'C:/Users/User/Desktop/dataflow_logs'
+users_directory = "C:/Users/User/projects/brukerbridge/users"
 root_directory = "H:/"
 
 def main():
@@ -42,6 +44,14 @@ def main():
 						print(F"{potential_old_folder}: {age_in_days}")
 						users_with_old_files.append(user)
 	print(np.unique(users_with_old_files))
+
+	for user in users_with_old_files:
+		json_file = os.path.join(users_directory, user + '.json')
+		with open(json_file) as file:
+			settings = json.load(file)
+		email = settings.get('email')
+		print(email)
+
 
 	#time.sleep(0.1)
 
