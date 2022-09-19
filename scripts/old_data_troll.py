@@ -39,6 +39,7 @@ def main():
 			for potential_old_folder in os.listdir(user_folder):
 				print("hi2")
 				if os.path.isdir(potential_old_folder):
+					print("hi3")
 					potential_old_folder = os.path.join(user_folder, potential_old_folder)
 					creation_time = os.path.getctime(potential_old_folder)
 					age_in_seconds = time.time() - creation_time
