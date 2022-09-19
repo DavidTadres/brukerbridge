@@ -32,6 +32,7 @@ def main():
 
 		user = user_folder
 		user_folder = os.path.join(root_directory, user_folder)
+		print(user_folder)
 
 		if os.path.isdir(user_folder):
 			for potential_old_folder in os.listdir(user_folder):
