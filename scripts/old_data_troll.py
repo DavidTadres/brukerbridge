@@ -53,10 +53,8 @@ def main():
 			settings = json.load(file)
 		email = settings.get('email')
 		print(email)
-		temp = np.asarray(users_with_old_files)
-		print(temp)
-		print(np.where(user==temp))
-		users_old_files = old_files[np.where(user==temp)]
+
+		users_old_files = np.asarray(old_files)[np.where(user==np.asarray(users_with_old_files))[0]]
 		print(users_old_files)
 
 	#time.sleep(0.1)
