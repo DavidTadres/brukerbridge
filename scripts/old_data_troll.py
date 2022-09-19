@@ -6,6 +6,7 @@ from time import strftime
 import datetime
 import brukerbridge as bridge
 import numpy as np
+import json
 
 log_folder = 'C:/Users/User/Desktop/dataflow_logs'
 users_directory = "C:/Users/User/projects/brukerbridge/users"
