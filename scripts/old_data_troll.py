@@ -54,7 +54,7 @@ def main():
 		email = settings.get('email')
 		print(email)
 
-		users_old_files = old_files[np.where(user==np.asarray(users_with_old_files))]
+		users_old_files = old_files[np.where(user==np.asarray(users_with_old_files))[0]]
 		print(users_old_files)
 
 	#time.sleep(0.1)
