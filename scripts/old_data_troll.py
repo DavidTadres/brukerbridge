@@ -24,7 +24,6 @@ def main():
 		users_with_old_files = []
 		old_files = []
 		for user_folder in os.listdir(root_directory):
-			### need to skip this weird file
 			if user_folder == 'System Volume Information':
 				continue
 			if user_folder in exception_folders:
@@ -40,9 +39,7 @@ def main():
 						creation_time = os.path.getctime(potential_old_folder)
 						age_in_seconds = time.time() - creation_time
 						age_in_days = age_in_seconds/(60*60*24)
-						print(F"{potential_old_folder}: {age_in_days}")
 						if age_in_days > age_limit and exception_flag not in potential_old_folder:
-							print(F"{potential_old_folder}: {age_in_days}")
 							users_with_old_files.append(user)
 							old_files.append(potential_old_folder)
 
@@ -57,12 +54,11 @@ def main():
 				continue
 
 			users_old_files = np.asarray(old_files)[np.where(user==np.asarray(users_with_old_files))[0]]
-			print(users_old_files)
 
 			message = F"You have the following old directories (older than {age_limit} days):\n {users_old_files}"
-			if user == 'luke':
-				bridge.send_email(subject='BrukerBridge Old Data Troll Says Hello!', message=message, recipient=email)
-		time.sleep(60*60*24) # sleep 1 day
+			bridge.send_email(subject='BrukerBridge Old Data Troll Says Hello!', message=message, recipient=email)
+			print(F"Emailed {user} at {email}")
+		time.sleep(60*60*24*2) # sleep 2 days
 
 if __name__ == '__main__':
 	main()
