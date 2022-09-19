@@ -12,6 +12,9 @@ root_directory = "H:/"
 def main():
 
 	age_limit = 60 # in days
+	exception_folders = ['fictrac']
+	exception_flag = "_old_"
+
 	email = "brezovec@stanford.edu"
 	error_info = "hello"
 	#bridge.send_email(subject='BrukerBridge FAILED', message=error_info, recipient=email)
@@ -21,6 +24,9 @@ def main():
 		### need to skip this weird file
 		if user_folder == 'System Volume Information':
 			continue
+		if user_folder in exception_folders:
+			continue
+
 		user_folder = os.path.join(root_directory, user_folder)
 
 		if os.path.isdir(user_folder):
@@ -29,7 +35,7 @@ def main():
 				creation_time = os.path.getctime(potential_old_folder)
 				age_in_seconds = time.time() - creation_time
 				age_in_days = age_in_seconds/(60*60*24)
-				if age_in_days > age_limit:
+				if age_in_days > age_limit and exception_flag not in potential_old_folder:
 					print(F"{potential_old_folder}: {age_in_days}")
 
 	#time.sleep(0.1)
