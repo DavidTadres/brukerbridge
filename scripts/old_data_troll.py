@@ -14,13 +14,11 @@ root_directory = "H:/"
 
 def main():
 
+	print("HELLO I AM THE OLD DATA TROLL")
+	
 	age_limit = 60 # in days
 	exception_folders = ['fictrac', '$RECYCLE.BIN']
 	exception_flag = "_old_"
-
-	email = "brezovec@stanford.edu"
-	error_info = "hello"
-	#bridge.send_email(subject='BrukerBridge FAILED', message=error_info, recipient=email)
 
 	while True:
 		users_with_old_files = []
