@@ -24,6 +24,7 @@ def main():
 
 			if os.path.isdir(user_folder):
 				for potential_old_folder in os.listdir(user_folder):
+					potential_old_folder = os.path.join(user_folder, potential_old_folder)
 					creation_time = os.path.getctime(potential_old_folder)
 					age_in_seconds = creation_time - time.time()
 					age_in_days = age_in_seconds/(60*60*24)
