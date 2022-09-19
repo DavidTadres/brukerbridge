@@ -26,11 +26,11 @@ def main():
 				for potential_old_folder in os.listdir(user_folder):
 					potential_old_folder = os.path.join(user_folder, potential_old_folder)
 					creation_time = os.path.getctime(potential_old_folder)
-					age_in_seconds = creation_time - time.time()
+					age_in_seconds = time.time() - creation_time
 					age_in_days = age_in_seconds/(60*60*24)
 					print(F"{potential_old_folder}: {age_in_days}")
 
-		time.sleep(0.1)
+		#time.sleep(0.1)
 
 if __name__ == '__main__':
 	main()
