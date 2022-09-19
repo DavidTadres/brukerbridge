@@ -14,7 +14,7 @@ root_directory = "H:/"
 def main():
 
 	age_limit = 60 # in days
-	exception_folders = ['fictrac']
+	exception_folders = ['fictrac', '$RECYCLE.BIN']
 	exception_flag = "_old_"
 
 	email = "brezovec@stanford.edu"
