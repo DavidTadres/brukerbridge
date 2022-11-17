@@ -48,7 +48,14 @@ def tiff_to_nii(xml_file):
     num_channels = get_num_channels(sequences[0])
     test_file = sequences[0].findall('Frame')[0].findall('File')[0].get('filename')
     fullfile = os.path.join(data_dir, test_file)
-    img = imread(fullfile)
+
+    ### Luke added try except 20221024 because sometimes but rarely a file doesn't exist
+    # somthing to do with bruker xml file
+    try:
+        img = imread(fullfile)
+    except FileNotFoundError as e:
+        print("!!! FileNotFoundError, passing !!!")
+
     num_y = np.shape(img)[0]
     num_x = np.shape(img)[1]
     print('num_channels: {}'.format(num_channels))
