@@ -54,11 +54,11 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 
 	#stderr=subprocess.STDOUT
 	if exit_status != 0:
-		print("ERROR! EXITING!")
-		raise SystemExit
-
-	os.rename(dir_to_process, stripped_folder)
-
+		print("ERROR! Appending __error__ to this folder, then continuing with next in queue.")
+		os.rename(dir_to_process, stripped_folder + "__error__")
+		#raise SystemExit
+	else:
+		os.rename(dir_to_process, stripped_folder)
 
 	#os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" >> {} 2>&1'.format(dir_to_process, full_log_file))
 	#time.sleep(5)
