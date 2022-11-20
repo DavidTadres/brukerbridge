@@ -3,12 +3,14 @@ import sys
 import time
 import subprocess
 from time import strftime
+import json
 
 log_folder = 'C:/Users/User/Desktop/dataflow_logs'
 root_directory = "H:/"
 
 def main():
 
+	#banned_dirs = get_banned_dirs()
 	while True:
 		queued_folder, stripped_folder = get_queued_folder()
 		if queued_folder is not None:
@@ -39,6 +41,21 @@ def get_queued_folder():
 		stripped_dir = low_queue[:-12]
 	return low_queue, stripped_dir
 
+def get_banned_dirs():
+	banned_dir = 'C:/Users/User/projects/brukerbridge/banned_dirs'
+	return os.listdir(banned_dir)
+
+def attempt_rename(source, target):
+	attempts = 3
+	while attempts > 0:
+		attempts-=1
+		try:
+			os.rename(source, target)
+			print(F'Rename successful {source} to {target}')
+		except:
+			print(F"Rename attempt {attempts} failed")
+			time.sleep(60)
+
 def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 	log_file = 'dataflow_log_' + strftime("%Y%m%d-%H%M%S") + '.txt'
 	full_log_file = os.path.join(log_folder, log_file)
@@ -55,10 +72,10 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 	#stderr=subprocess.STDOUT
 	if exit_status != 0:
 		print("ERROR! Appending __error__ to this folder, then continuing with next in queue.")
-		os.rename(dir_to_process, stripped_folder + "__error__")
+		attempt_rename(dir_to_process, stripped_folder + "__error__")
 		#raise SystemExit
 	else:
-		os.rename(dir_to_process, stripped_folder)
+		attempt_rename(dir_to_process, stripped_folder)
 
 	#os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" >> {} 2>&1'.format(dir_to_process, full_log_file))
 	#time.sleep(5)

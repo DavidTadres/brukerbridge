@@ -10,7 +10,7 @@ extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'hdf5', 'tiff'] #
 #full_target = 'H:/luke/20220706__queue__'
 # full_target = 'H:/Minseung/visualattention'
 #full_target = 'H:/Emma/20221006__queue__'
-full_target = 'H:/Alex/221111'
+full_target = 'H:/Alex/221119'
 #full_target = 'H:/Arnaldo/20221011_elavGAL4_3rd_UAS-G6smlsTdtom_2nd_test_run'
 #full_target = 'H:/Avery/20221025'
 
@@ -29,15 +29,15 @@ oak_target = 'X:/data/Yukun/2P_Imaging/imports'
 
 
 ### raw to tiff ###
-#bridge.convert_raw_to_tiff(full_target)
+bridge.convert_raw_to_tiff(full_target)
 
 ### tiffs to nii or tiff stack ###
-#bridge.convert_tiff_collections_to_nii(full_target)
+bridge.convert_tiff_collections_to_nii(full_target)
 #bridge.convert_tiff_collections_to_stack(full_target)
 
 ### Transfer fictrac ###
-user = 'luke'
-bridge.transfer_fictrac(user)
+#user = 'luke'
+#bridge.transfer_fictrac(user)
 
 ### Transfer to oak ###
-#bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que="False")
+bridge.start_oak_transfer(full_target, oak_target, extensions_for_oak_transfer, add_to_build_que="False")
