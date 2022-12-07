@@ -52,6 +52,7 @@ def attempt_rename(source, target):
 		try:
 			os.rename(source, target)
 			print(F'Rename successful {source} to {target}')
+			return
 		except:
 			print(F"Rename attempt {attempts} failed")
 			time.sleep(60)

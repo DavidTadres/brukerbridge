@@ -159,12 +159,14 @@ def convert_tiff_collections_to_nii(directory):
 
         # Check if item is a directory
         if os.path.isdir(new_path):
+            print(1) #debug
             convert_tiff_collections_to_nii(new_path)
 
         # If the item is a file
         else:
             # If the item is an xml file
             if '.xml' in item:
+                print(3) #debug
                 tree = ET.parse(new_path)
                 root = tree.getroot()
                 # If the item is an xml file with scan info
