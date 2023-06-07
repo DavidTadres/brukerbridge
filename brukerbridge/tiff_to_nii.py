@@ -1,12 +1,11 @@
 import numpy as np
 import nibabel as nib
 import os
-from matplotlib.pyplot import imread
 from xml.etree import ElementTree as ET
 import sys
 from tqdm import tqdm
 import psutil
-from PIL import Image
+from skimage import io
 import time
 import brukerbridge as bridge
 
@@ -15,6 +14,15 @@ def tiff_to_nii(xml_file):
     data_dir, _ = os.path.split(xml_file)
     print("\n\n")
     print('Converting tiffs to nii in directory: {}'.format(data_dir))
+
+    # Check if multipage tiff files
+    companion_filepath = xml_file.split('.')[0] + '.companion.ome'
+    if os.path.exists(companion_filepath):
+        isMultiPageTiff = True
+    else:
+        isMultiPageTiff = False
+
+    print('isMultiPageTiff is {}'.format(isMultiPageTiff))
 
     tree = ET.parse(xml_file)
     root = tree.getroot()
@@ -52,12 +60,12 @@ def tiff_to_nii(xml_file):
     ### Luke added try except 20221024 because sometimes but rarely a file doesn't exist
     # somthing to do with bruker xml file
     try:
-        img = imread(fullfile)
+        img = io.imread(fullfile, plugin='pil')
     except FileNotFoundError as e:
         print("!!! FileNotFoundError, passing !!!")
 
-    num_y = np.shape(img)[0]
-    num_x = np.shape(img)[1]
+    num_y = np.shape(img)[-2]
+    num_x = np.shape(img)[-1]
     print('num_channels: {}'.format(num_channels))
     print('num_timepoints: {}'.format(num_timepoints))
     print('num_z: {}'.format(num_z))
@@ -95,17 +103,25 @@ def tiff_to_nii(xml_file):
             else: # Plane series: Get frame
                 frames = [sequences[0].findall('Frame')[i]]
 
-            # loop over depth (z-dim)
-            for j, frame in enumerate(frames):
-                # For a given frame, get filename
-                files = frame.findall('File')
+            if isMultiPageTiff:
+                files = frames[0].findall('File')
                 filename = files[channel].get('filename')
                 fullfile = os.path.join(data_dir, filename)
-
-                # Read in file
-                img = imread(fullfile)
-                image_array[i,j,:,:] = img
-
+                page = int(files[channel].get('page')) - 1  # page number -> array index
+                img = io.imread(fullfile, plugin='pil')  # shape = z, y, x
+                image_array[i,:,:,:] = img
+            else:
+                # loop over depth (z-dim)
+                for j, frame in enumerate(frames):
+                    # For a given frame, get filename
+                    files = frame.findall('File')
+                    filename = files[channel].get('filename')
+                    fullfile = os.path.join(data_dir, filename)
+                   
+                    # Read in file
+                    img = io.imread(fullfile, plugin='pil')
+                    image_array[i,j,:,:] = img
+                            
             ######################
             ### Print Progress ###
             ######################
