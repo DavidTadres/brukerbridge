@@ -13,7 +13,8 @@ def transfer_fictrac(user):
     fictrac_target = 'H:/fictrac/{}'.format(user)
     #fictrac_source = 'fictrac_data/{}'.format(user)
     #fictrac_source = 'fictrac_data'
-    fictrac_source = 'luke_data'
+    #fictrac_source = 'luke_data'
+    fictrac_source = '../../data/luke_data'
     allowable_extensions = ['.log', '.avi', '.dat', '.txt']
     oak_target = 'X:/data/fictrac'
 
