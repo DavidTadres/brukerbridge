@@ -77,61 +77,72 @@ def tiff_to_nii(xml_file):
         last_num_z = None
         image_array = np.zeros((num_timepoints, num_z, num_y, num_x), dtype=np.uint16)
         print('Created empty array of shape {}'.format(image_array.shape))
-        # loop over time
-        start_time = time.time()
-        for i in range(num_timepoints):
+        if isMultiPageTiff and (isVolumeSeries is False):
+             # saved as a single big tif for all time steps
+            print('isMultiPageTiff is {} / isVolumeSeries is {}'.format(isMultiPageTiff, isVolumeSeries))
+            frames = [sequences[0].findall('Frame')[0]]
+            files = frames[0].findall('File')
+            filename = files[channel].get('filename')
+            fullfile = os.path.join(data_dir, filename)
+            img = io.imread(fullfile, plugin='pil')  # shape = t, y, x
+            image_array[:,0,:,:] = img
+           
+        else:
+            # loop over time steps to load one tif at a time
+            start_time = time.time()
+            for i in range(num_timepoints):
 
-            #if i%10 == 0:
-            #    print('{}/{}'.format(i+1, num_timepoints))
+                #if i%10 == 0:
+                #    print('{}/{}'.format(i+1, num_timepoints))
 
-            if isVolumeSeries: # For a given volume, get all frames
-                frames = sequences[i].findall('Frame')
-                current_num_z = len(frames)
-                # Handle aborted scans for volumes
-                if last_num_z is not None:
-                    if current_num_z != last_num_z:
-                        print('Inconsistent number of z-slices (scan aborted).')
-                        print('Tossing last volume.')
-                        aborted = True
-                        break
-                last_num_z = current_num_z
+                if isVolumeSeries: # For a given volume, get all frames
+                    frames = sequences[i].findall('Frame')
+                    current_num_z = len(frames)
+                    # Handle aborted scans for volumes
+                    if last_num_z is not None:
+                        if current_num_z != last_num_z:
+                            print('Inconsistent number of z-slices (scan aborted).')
+                            print('Tossing last volume.')
+                            aborted = True
+                            break
+                    last_num_z = current_num_z
 
-                # Flip frame order if a bidirectionalZ upstroke (odd i)
-                if isBidirectionalZ and (i%2 != 0):
-                    frames = frames[::-1]
+                    # Flip frame order if a bidirectionalZ upstroke (odd i)
+                    if isBidirectionalZ and (i%2 != 0):
+                        frames = frames[::-1]
 
-            else: # Plane series: Get frame
-                frames = [sequences[0].findall('Frame')[i]]
+                else: # Plane series: Get frame
+                    frames = [sequences[0].findall('Frame')[i]]
 
-            if isMultiPageTiff:
-                files = frames[0].findall('File')
-                filename = files[channel].get('filename')
-                fullfile = os.path.join(data_dir, filename)
-                page = int(files[channel].get('page')) - 1  # page number -> array index
-                img = io.imread(fullfile, plugin='pil')  # shape = z, y, x
-                image_array[i,:,:,:] = img
-            else:
-                # loop over depth (z-dim)
-                for j, frame in enumerate(frames):
-                    # For a given frame, get filename
-                    files = frame.findall('File')
+                if isMultiPageTiff:
+                    files = frames[0].findall('File')
                     filename = files[channel].get('filename')
                     fullfile = os.path.join(data_dir, filename)
-                   
-                    # Read in file
-                    img = io.imread(fullfile, plugin='pil')
-                    image_array[i,j,:,:] = img
-                            
-            ######################
-            ### Print Progress ###
-            ######################
-            memory_usage = int(psutil.Process(os.getpid()).memory_info().rss*10**-9)
-            bridge.print_progress_table(start_time=start_time,
-                                        current_iteration=i,
-                                        total_iterations=num_timepoints,
-                                        current_mem=memory_usage,
-                                        total_mem=32,
-                                        mode='tiff_convert')
+                    page = int(files[channel].get('page')) - 1  # page number -> array index
+                    img = io.imread(fullfile, plugin='pil')  # shape = z, y, x
+                    image_array[i,:,:,:] = img
+                else:
+                    # loop over depth (z-dim)
+                    for j, frame in enumerate(frames):
+                        # For a given frame, get filename
+                        files = frame.findall('File')
+                        filename = files[channel].get('filename')
+                        fullfile = os.path.join(data_dir, filename)
+                       
+                        # Read in file
+                        img = io.imread(fullfile, plugin='pil')
+                        image_array[i,j,:,:] = img
+                                
+                ######################
+                ### Print Progress ###
+                ######################
+                memory_usage = int(psutil.Process(os.getpid()).memory_info().rss*10**-9)
+                bridge.print_progress_table(start_time=start_time,
+                                            current_iteration=i,
+                                            total_iterations=num_timepoints,
+                                            current_mem=memory_usage,
+                                            total_mem=32,
+                                            mode='tiff_convert')
 
         if isVolumeSeries:
             # Will start as t,z,x,y. Want y,x,z,t
