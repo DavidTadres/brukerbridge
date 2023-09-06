@@ -1,6 +1,6 @@
 import brukerbridge as bridge
 
-extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'hdf5', 'tiff'] # last 4 chars
+extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'hdf5', 'tiff', '.txt'] # last 4 chars
 
 ### Directory on this computer to process ###
 # full_target = 'H:/Ashley/20230405'
@@ -10,23 +10,23 @@ extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'hdf5', 'tiff'] #
 # full_target = 'H:/luke/20230303__error__'
 # full_target = 'H:/Minseung/visualattention'
 #full_target = 'H:/Emma/20221006__queue__'
-#full_target = 'H:/Alex/230211'
-#full_target = 'H:/Arnaldo/20221011_elavGAL4_3rd_UAS-G6smlsTdtom_2nd_test_run'
-full_target = 'H:/Avery/20230522'
+#full_target = 'H:/Alex/230721'
+full_target = 'H:/Arnaldo/20230715_elavg4-ujrgeco1a_capaexa-lg6S__error__/20230715_elavg4-ujrgeco1a_capaexa-lg6s-005'
+#full_target = 'H:/Avery/20230522'
 
 ### Oak target ###
 #oak_target = 'X:/data/Brezovec/2P_Imaging/imports'
 #oak_target = 'X:/data/Ashley2/imports'
 #oak_target = 'X:/data/Emma/BrukerImaging/imports'
 #oak_target = 'X/data/Ina/bruker_data/imports'
-oak_target = 'X:/data/krave/bruker_data/imports'
+#oak_target = 'X:/data/krave/bruker_data/imports'
 #oak_target = 'X:/data/Michelle/Bruker/imports'
 #oak_target = 'X:/data/Tim/ImagingData/imports'
 # oak_target = 'X:/data/Brezovec/2P_Imaging/imports'
 # oak_target = 'X:/data/minseung/bruker_data/imports'
 #oak_target = 'X:/data/Yukun/2P_Imaging/imports'
-# oak_target = 'X:/data/Arnaldo/2P_Imaging/imports'
-
+oak_target = 'X:/data/Arnaldo/2P_Imaging/imports'
+#oak_target = 'D:/tmp/'
 
 ### raw to tiff ###
 #bridge.convert_raw_to_tiff(full_target)

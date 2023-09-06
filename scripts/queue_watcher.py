@@ -46,6 +46,7 @@ def get_banned_dirs():
 	return os.listdir(banned_dir)
 
 def attempt_rename(source, target):
+	print(F'Attemping rename {source} to {source}')
 	attempts = 3
 	while attempts > 0:
 		attempts-=1
