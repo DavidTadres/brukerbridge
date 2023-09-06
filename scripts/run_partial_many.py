@@ -26,7 +26,7 @@ extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'hdf5', 'tiff', '
 # oak_target = 'X:/data/minseung/bruker_data/imports'
 #oak_target = 'X:/data/Yukun/2P_Imaging/imports'
 # oak_target = 'X:/data/Arnaldo/2P_Imaging/imports'
-oak_target = 'X:/data/Jacob/ImagingData/Bruker/Imports'
+oak_target = 'X:/data/Jacob/ImagingData/Bruker/imports'
 
 
 
