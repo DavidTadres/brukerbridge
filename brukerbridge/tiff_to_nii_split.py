@@ -70,7 +70,7 @@ def tiff_to_nii(xml_file):
         if timepoint_starts[t_index] == timepoint_starts[-1]: #if it's the last element in the list (may also be the first)
             timepoint_ends.append(num_timepoints) #so it goes until the end
         else:
-            timepoint_ends.append(timepoint_starts[t_index+1]-1) #goes until the just before the next timepoint should start
+            timepoint_ends.append(timepoint_starts[t_index+1]) #20231031 NEW EDIT TO FIX INDEXING PROBLEM THAT DROPS A TIMEPOINT
 
     timepoint_ranges = list(zip(timepoint_starts, timepoint_ends))
 
