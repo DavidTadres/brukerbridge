@@ -66,3 +66,6 @@ make environment:
 `conda install scikit-image`
 
 `conda install conda-forge::ftputil`
+
+Find own ip in cmd using 'ipconfig' and change in 'david_client'
+changed windows defender settings: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
