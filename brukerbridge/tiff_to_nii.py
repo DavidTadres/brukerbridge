@@ -3,7 +3,7 @@ import nibabel as nib
 import os
 from xml.etree import ElementTree as ET
 import sys
-from tqdm import tqdm
+#from tqdm import tqdm
 import psutil
 from skimage import io
 import time

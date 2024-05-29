@@ -1,0 +1,22 @@
+TimeStamp: 11/10/2022 11:38:37 PM
+  Exception: Access to the path 'F:\Alex\221111\fly01\RFmap6\TSeries-20221111-020' is denied.
+  BaseException:  System.UnauthorizedAccessException: Access to the path 'F:\Alex\221111\fly01\RFmap6\TSeries-20221111-020' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.FileSystemEnumerableIterator`1.CommonInit()
+   at System.IO.FileSystemEnumerableIterator`1..ctor(String path, String originalUserPath, String searchPattern, SearchOption searchOption, SearchResultHandler`1 resultHandler, Boolean checkHost)
+   at System.IO.Directory.GetDirectories(String path)
+   at Image_Block_Ripping_Utility.frmMain.SearchForFileLists(String strDirectoryPath)
+  StackTrace: at Image_Block_Ripping_Utility.frmMain.SearchForFileLists(String strDirectoryPath)
+  TargetSite: Void WinIOError(Int32, System.String)
+
+TimeStamp: 11/10/2022 11:39:37 PM
+  Exception: Access to the path 'F:\Alex\221111\fly01\RFmap6\TSeries-20221111-020' is denied.
+  BaseException:  System.UnauthorizedAccessException: Access to the path 'F:\Alex\221111\fly01\RFmap6\TSeries-20221111-020' is denied.
+   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.FileSystemEnumerableIterator`1.CommonInit()
+   at System.IO.FileSystemEnumerableIterator`1..ctor(String path, String originalUserPath, String searchPattern, SearchOption searchOption, SearchResultHandler`1 resultHandler, Boolean checkHost)
+   at System.IO.Directory.GetDirectories(String path)
+   at Image_Block_Ripping_Utility.frmMain.SearchForFileLists(String strDirectoryPath)
+  StackTrace: at Image_Block_Ripping_Utility.frmMain.SearchForFileLists(String strDirectoryPath)
+  TargetSite: Void WinIOError(Int32, System.String)
+

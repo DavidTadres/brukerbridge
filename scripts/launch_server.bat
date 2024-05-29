@@ -3,5 +3,5 @@
 @echo LEAVE ME OPEN AND I WILL DO GOOD THINGS.
 @echo YOU MUST START FILE TRANSFER FROM THE BRUKER COMPUTER.
 @echo LOOK AT MY OUTPUT IN DATAFLOW_LOGS\SERVER_LOG.TXT. USING MTAIL PROGRAM IS CONVENIENT.
-C:\Users\User\AppData\Local\Programs\Python\Python37\python.exe C:\Users\User\projects\brukerbridge\brukerbridge\server.py >> C:\Users\User\Desktop\dataflow_logs\server_log.txt 2>&1 
+C:\Users\David\.conda\envs\env_brukerbridge\python.exe C:\Users\David\brukerbridge\brukerbridge\ripping_PC\server.py >> C:\Users\David\Desktop\brukerbridge_datalogs\server_log.txt 2>&1
 cmd /k

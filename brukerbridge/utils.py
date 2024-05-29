@@ -1,9 +1,9 @@
 import sys
 import smtplib
-import re
+#import re
 import os
-import h5py
-import math
+#import h5py
+#import math
 import json
 from email.mime.text import MIMEText
 from time import time
@@ -11,9 +11,9 @@ from time import strftime
 from time import sleep
 from functools import wraps
 import numpy as np
-import nibabel as nib
-from xml.etree import ElementTree as ET
-import subprocess
+#import nibabel as nib
+#from xml.etree import ElementTree as ET
+#import subprocess
 import hashlib
 from datetime import datetime
 

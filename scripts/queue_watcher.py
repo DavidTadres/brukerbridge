@@ -1,12 +1,13 @@
 import os
-import sys
 import time
 import subprocess
 from time import strftime
-import json
+import pathlib
 
-log_folder = 'C:/Users/User/Desktop/dataflow_logs'
-root_directory = "H:/"
+parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
+
+log_folder = pathlib.Path('C:\\Users\\David\\Desktop\\brukerbridge_datalogs')
+root_directory = pathlib.Path("F:\\brukerbridge")
 
 def main():
 
@@ -41,9 +42,11 @@ def get_queued_folder():
 		stripped_dir = low_queue[:-12]
 	return low_queue, stripped_dir
 
+"""
 def get_banned_dirs():
 	banned_dir = 'C:/Users/User/projects/brukerbridge/banned_dirs'
 	return os.listdir(banned_dir)
+"""
 
 def attempt_rename(source, target):
 	print(F'Attemping rename {source} to {source}')
@@ -69,7 +72,9 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 	print(F"log file {full_log_file}")
 
 	f = open(full_log_file, 'w')
-	exit_status = subprocess.call(['python', 'C:/Users/User/projects/brukerbridge/scripts/main.py', dir_to_process],stdout=f,stderr=f)
+	# path to scripts/main.py
+	main_py_path = parent_path + 'scripts/main.py'
+	exit_status = subprocess.call(['python', main_py_path, dir_to_process],stdout=f,stderr=f)
 
 	#stderr=subprocess.STDOUT
 	if exit_status != 0:

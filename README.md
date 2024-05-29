@@ -41,3 +41,28 @@ Current user preferences:
 Troubleshooting:
 - failed connection error when running brukerbridge.bat?
     - There is a python server running on the workhorse computer that waits to recieve info from Bruker computer. This server must be running. A terminal should be open and say "Ready to recieve files from Bruker client." If this is not running, you must start the server by navigating to "C:\Users\User\projects\brukerbridge\brukerbridge" and running python server.py on the command line.
+
+
+##
+Installation
+##
+
+make environment:
+
+`conda install -n env_brukerbridge`
+
+`conda install python=3.8`
+
+`conda install numpy`
+
+`conda install nibabel`
+
+`conda install matplotlib`
+
+`conda install conda-forge::tqdm`
+
+`conda install conda-forge::psutil`
+
+`conda install scikit-image`
+
+`conda install conda-forge::ftputil`

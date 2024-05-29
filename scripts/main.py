@@ -4,12 +4,21 @@ import warnings
 import subprocess
 import json
 import time
-import brukerbridge as bridge
+import pathlib
+parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
+sys.path.insert(0, parent_path)
+# This just imports '*.py' files from the folder 'brainsss'.
+from brukerbridge import raw_to_tiff
+from brukerbridge import tiff_to_nii
+from brukerbridge import tiffs_to_tiff_stack
+from brukerbridge import tiff_to_nii_split
+from brukerbridge import transfer_fictrac
+from brukerbridge import transfer_to_oak
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff', 'hdf5'] # needs to be 4 char
-users_directory = "C:/Users/User/projects/brukerbridge/users"
+users_directory = pathlib.Path(parent_path, 'users')
 
 def main(args):
 
@@ -38,9 +47,9 @@ def main(args):
 
 	oak_target = settings['oak_target']
 	convert_to = settings['convert_to']
-	email = settings.get('email', False)
+	#email = settings.get('email', False)
 	add_to_build_que = settings.get('add_to_build_que', False)
-	transfer_fictrac = settings.get('transfer_fictrac', False)
+	transfer_fictrac_bool = settings.get('transfer_fictrac', False)
 	split = settings.get('split', False)
 
 	######################################
@@ -56,7 +65,7 @@ def main(args):
 	#################################
 	
 	t0 = time.time()
-	bridge.convert_raw_to_tiff(dir_to_process)
+	raw_to_tiff.convert_raw_to_tiff(dir_to_process)
 	print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
 
 	#########################################
@@ -65,11 +74,11 @@ def main(args):
 
 	if convert_to == 'nii':
 		if split:
-			bridge.convert_tiff_collections_to_nii_split(dir_to_process)
+			tiff_to_nii_split.convert_tiff_collections_to_nii_split(dir_to_process)
 		else:
-			bridge.convert_tiff_collections_to_nii(dir_to_process)
+			tiff_to_nii.convert_tiff_collections_to_nii(dir_to_process)
 	elif convert_to == 'tiff':
-		bridge.convert_tiff_collections_to_stack(dir_to_process)
+		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)
 	else:
 		print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
 		print("Must be nii or tiff, with no period")
@@ -78,15 +87,15 @@ def main(args):
 	### Transfer to Oak ###
 	#######################
 	start_time = time.time()
-	size_transfered = bridge.start_oak_transfer(dir_to_process, oak_target, extensions_for_oak_transfer, add_to_build_que)
+	size_transfered = transfer_to_oak.start_oak_transfer(dir_to_process, oak_target, extensions_for_oak_transfer, add_to_build_que)
 	print('OAK TRANSFER DURATION: {} MIN'.format(int((time.time()-start_time) / 60)))
 
 	##############################
 	### Transfer fictrac files ###
 	##############################
-	if transfer_fictrac:
+	if transfer_fictrac_bool:
 		try:
-			bridge.transfer_fictrac(user)
+			transfer_fictrac.transfer_fictrac(user)
 		except:
 			print("-----------> FICTRAC TRANSFER FAILED <-----------")
 
