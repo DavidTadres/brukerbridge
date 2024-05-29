@@ -6,12 +6,17 @@ host = "171.65.16.149" # < change this to point to your own computer
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 import os
-import time
+import sys
 import shutil
-import brukerbridge as bridge
-from socket import *
+import socket
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askdirectory
+import pathlib
+
+parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())
+print(parent_path)
+sys.path.insert(0, parent_path)
+from brukerbridge import utils
 
 CHUNKSIZE = 1_000_000
 
@@ -35,7 +40,7 @@ print(source_directory)
 ### CONNECT TO SERVER ###
 #########################
 
-sock = socket()
+sock = socket.socket()
 sock.connect((host,port))
 
 ##########################
@@ -43,8 +48,8 @@ sock.connect((host,port))
 ##########################
 
 print('Calculating directory size... ', end='')
-source_directory_size = bridge.get_dir_size(source_directory)
-num_files = bridge.get_num_files(source_directory)
+source_directory_size = utils.get_dir_size(source_directory)
+num_files = utils.get_num_files(source_directory)
 print('Done   |  {} GB   |   {} Files'.format(source_directory_size, num_files))
 
 sock.sendall(str(source_directory_size).encode() + b'\n')
@@ -63,7 +68,7 @@ for path,dirs,files in os.walk(source_directory):
         filesize = os.path.getsize(filename)
         print(f'Sending {relpath}')
 
-        checksum = bridge.get_checksum(filename)
+        checksum = utils.get_checksum(filename)
 
         with open(filename,'rb') as f:
             sock.sendall(relpath.encode() + b'\n')
