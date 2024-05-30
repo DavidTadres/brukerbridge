@@ -67,5 +67,7 @@ make environment:
 
 `conda install conda-forge::ftputil`
 
+`conda install h5py`
+
 Find own ip in cmd using 'ipconfig' and change in 'david_client'
-changed windows defender settings: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
+changed windows defender settings on ripping PC: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
