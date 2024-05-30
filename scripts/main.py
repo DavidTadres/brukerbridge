@@ -11,7 +11,6 @@ sys.path.insert(0, parent_path)
 from brukerbridge import raw_to_tiff
 from brukerbridge import tiff_to_nii
 from brukerbridge import tiffs_to_tiff_stack
-from brukerbridge import tiff_to_nii_split
 from brukerbridge import transfer_fictrac
 from brukerbridge import transfer_to_oak
 
@@ -32,18 +31,23 @@ def main(args):
 	# print("full target: {}".format(full_target))
 
 	dir_to_process = args[0].lower().strip('"')
-	dir_to_process = os.path.normpath(dir_to_process)
-	user, directory = dir_to_process.split(os.sep)[1], dir_to_process.split(os.sep)[2]
+	#dir_to_process = os.path.normpath(dir_to_process)
+	dir_to_process = pathlib.Path(dir_to_process)
+	#user, directory = dir_to_process.split(os.sep)[1], dir_to_process.split(os.sep)[2]
+	user, directory = dir_to_process.parts[-2], dir_to_process.parts[-1]
 	print("Directory to process: {}".format(dir_to_process))
 
 	#########################
 	### Get user settings ###
 	#########################
 
-	if user + '.json' in [x.lower() for x in os.listdir(users_directory)]:
-		json_file = os.path.join(users_directory, user + '.json')
-		with open(json_file) as file:
-			settings = json.load(file)
+	#if user + '.json' in [x.lower() for x in os.listdir(users_directory)]:
+	#	json_file = os.path.join(users_directory, user + '.json')
+	#	with open(json_file) as file:
+	#		settings = json.load(file)
+	user_json_path = pathlib.Path(users_directory, user + '.json')
+	with open(user_json_path) as file:
+		settings = json.load(file)
 
 	oak_target = settings['oak_target']
 	convert_to = settings['convert_to']
@@ -72,11 +76,10 @@ def main(args):
 	### Convert tiff to nii or tiff stack ###
 	#########################################
 
+	print(convert_to)
+	print(split)
 	if convert_to == 'nii':
-		if split:
-			tiff_to_nii_split.convert_tiff_collections_to_nii_split(dir_to_process)
-		else:
-			tiff_to_nii.convert_tiff_collections_to_nii(dir_to_process)
+		tiff_to_nii.convert_tiff_collections_to_nii(dir_to_process)
 	elif convert_to == 'tiff':
 		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)
 	else:
@@ -87,7 +90,8 @@ def main(args):
 	### Transfer to Oak ###
 	#######################
 	start_time = time.time()
-	size_transfered = transfer_to_oak.start_oak_transfer(dir_to_process, oak_target, extensions_for_oak_transfer, add_to_build_que)
+	size_transfered = transfer_to_oak.start_oak_transfer(str(dir_to_process), oak_target,
+														 extensions_for_oak_transfer, add_to_build_que)
 	print('OAK TRANSFER DURATION: {} MIN'.format(int((time.time()-start_time) / 60)))
 
 	##############################

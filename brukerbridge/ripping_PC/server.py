@@ -54,7 +54,7 @@ while True:
 
 			raw = clientfile.readline()
 
-			### This is what will finally break the loop when this message is recieved ###
+			### This is what will finally break the loop when this message is received ###
 			if raw.strip().decode() == "ALL_FILES_TRANSFERED":
 
 				print('ALL_FILES_TRANSFERED', flush=True)
@@ -70,15 +70,19 @@ while True:
 
 			if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
 
-			path = os.path.join(target_directory,filename)
-			os.makedirs(os.path.dirname(path),exist_ok=True)
+			path = pathlib.Path(target_directory, filename)
+			path.mkdir(parents=True, exist_ok=True)
+			## Original ##
+			#path = os.path.join(target_directory,filename)
+			#os.makedirs(os.path.dirname(path),exist_ok=True)
 
 			# Read the data in chunks so it can handle large files.
 			with open(path,'wb') as f:
 				while length:
 					chunk = min(length,CHUNKSIZE)
 					data = clientfile.read(chunk)
-					if not data: break
+					if not data:
+						break
 					f.write(data)
 					length -= len(data)
 				else: # only runs if while doesn't break and length==0
@@ -121,7 +125,16 @@ while True:
 		print(F"current time: {current_time}", flush=True)
 		print(F"time minus start time: {current_time-start_time}", flush=True)
 
-	dir_to_flag = '\\'.join(path.split('\\')[:2])
+	# This is not correct anymore!
+	#dir_to_flag = '\\'.join(path.split('\\')[:2])
+
+	# pathlib.Path(path).relative_to(target_directory)
+	# if path = WindowsPath('F:/brukerbridge/David/20240404__queue__/fly3/anat0/TSeries-12172018-1322-002')
+	# and target_directory = WindowsPath('F:/brukerbridge')
+	# pathlib.Path(path).relative_to(target_directory)
+	# would yield i.e. WindowsPath('David/20240404__queue__/fly3/anat0/TSeries-12172018-1322-002')
+	dir_to_flag = pathlib.Path(path).relative_to(target_directory).parts[1]
+
 	print(dir_to_flag, flush=True)
 	os.rename(dir_to_flag, dir_to_flag + '__queue__')
 

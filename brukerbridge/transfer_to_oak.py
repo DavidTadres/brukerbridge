@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from shutil import copyfile
+import shutil
 from datetime import datetime
 
 def transfer_to_oak(source, target, allowable_extensions, verbose): 
@@ -52,7 +52,7 @@ def transfer_to_oak(source, target, allowable_extensions, verbose):
                 print('{} | Transfering file {}; size = {:.2f} GB'.format(current_time, target_path, file_size_GB),end='')
 
                 t0 = time.time()
-                copyfile(source_path, target_path)
+                shutil.copyfile(source_path, target_path)
                 duration = time.time()-t0
                 duration += 0.1
 
