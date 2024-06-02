@@ -56,7 +56,7 @@ def transfer_to_oak(source, target, allowable_extensions, verbose):
                 duration = time.time()-t0
                 duration += 0.1
 
-                print('done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB/duration)))
+                print(' done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB/duration)))
 
 def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_build_que, verbose=True):
     directory_to = os.path.join(oak_target, os.path.split(directory_from)[-1])

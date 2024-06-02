@@ -8,6 +8,7 @@ import psutil
 from skimage import io
 import time
 import pathlib
+import json
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
 sys.path.insert(0, parent_path)
 
@@ -32,7 +33,7 @@ def get_channel_ids(sequence):
 
     return(channels)
 
-def tiff_to_nii(xml_file):
+def tiff_to_nii(xml_file, brukerbridge_version_info):
     aborted = False
     #data_dir, _ = os.path.split(xml_file)
     data_dir = xml_file.parent
@@ -206,6 +207,13 @@ def tiff_to_nii(xml_file):
         time.sleep(2)
         print('Sleep over')
         print('\n\n')
+
+    # Save version info after writing the channel info to understand how exactly
+    # data was analyzed
+    brukerbridge_json = {'brukerbridge version used': brukerbridge_version_info
+                         }
+    with open(pathlib.Path(xml_file.parent, 'brukerbridge_version.json'), 'w') as file:
+        json.dump(brukerbridge_json, file, sort_keys=True, indent=4)
 """
 def get_num_channels(sequence):
     frame = sequence.findall('Frame')[0]

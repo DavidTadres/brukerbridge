@@ -1,3 +1,7 @@
+__project__ = 'brukerbridge'
+__version__ = '0.0.1'
+__date__ = '2nd of June, 2024'
+
 import sys
 import os
 import warnings
@@ -13,6 +17,15 @@ from brukerbridge import tiff_to_nii
 from brukerbridge import tiffs_to_tiff_stack
 from brukerbridge import transfer_fictrac
 from brukerbridge import transfer_to_oak
+
+### Save version of brukerbridge used for running this repo ###
+CURRENT_GIT_BRANCH = subprocess.check_output(["git", "branch", "--show-current"]).strip().decode()
+CURRENT_GIT_HASH = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode()
+# Create one string containing all the information
+VERSION_INFO = 'v' + __version__ + \
+                  ', git branch: ' +  CURRENT_GIT_BRANCH + \
+                  ', git hash: ' + CURRENT_GIT_HASH
+### Use variable VERSION_INFO to track version ###
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -79,7 +92,7 @@ def main(args):
 	print(convert_to)
 	print(split)
 	if convert_to == 'nii':
-		tiff_to_nii.convert_tiff_collections_to_nii(dir_to_process)
+		tiff_to_nii.convert_tiff_collections_to_nii(dir_to_process, brukerbridge_version_info=VERSION_INFO)
 	elif convert_to == 'tiff':
 		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)
 	else:
