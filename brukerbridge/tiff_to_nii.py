@@ -51,9 +51,27 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
 
     tree = ET.parse(xml_file)
     root = tree.getroot()
+
+    ##########
+    # NEW - get x/y/z size to correctly save nii file #
+    # Get rest of data
+    statevalues = root.findall("PVStateShard")[0].findall("PVStateValue")
+    for statevalue in statevalues:
+        key = statevalue.get("key")
+        if key == "micronsPerPixel":
+            indices = statevalue.findall("IndexedValue")
+            for index in indices:
+                axis = index.get("index")
+                if axis == "XAxis":
+                    x_voxel_size = float(index.get("value"))
+                elif axis == "YAxis":
+                    y_voxel_size = float(index.get("value"))
+                elif axis == "ZAxis":
+                    z_voxel_size = float(index.get("value"))
+    ###########
+
     # Get all volumes
     sequences = root.findall('Sequence')
-
      # Check if bidirectional - will affect loading order
     is_bidirectional_z = sequences[0].get('bidirectionalZ')
     if is_bidirectional_z == 'True':
@@ -199,6 +217,13 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             img = nib.Nifti1Image(image_array, aff) # 32 bit: maxes out at 32767 in any one dimension
         else:
             img = nib.Nifti2Image(image_array, aff) # 64 bit
+
+        ##### NEW
+        header_info = img.header # pointer to new header
+        # change the voxel dimensions to [2,2,2]
+        header_info['pixdim'][1:4] = [x_voxel_size, y_voxel_size, z_voxel_size]  # x,y,z
+        ##### NEW END
+
         image_array = None # for memory
         print('Saving nii as {}'.format(save_name))
         img.to_filename(save_name)
@@ -222,7 +247,7 @@ def get_num_channels(sequence):
 """
 
 
-def convert_tiff_collections_to_nii(directory):
+def convert_tiff_collections_to_nii(directory, brukerbridge_version_info):
     #for item in os.listdir(directory):
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item
@@ -233,7 +258,7 @@ def convert_tiff_collections_to_nii(directory):
         #    convert_tiff_collections_to_nii(new_path)
         if current_path.is_dir():
             print(1) # debug
-            convert_tiff_collections_to_nii(current_path)
+            convert_tiff_collections_to_nii(current_path, brukerbridge_version_info)
 
         # If the item is a file
         else:
@@ -259,4 +284,4 @@ def convert_tiff_collections_to_nii(directory):
                             break
                     else:
                         #tiff_to_nii(new_path)
-                        tiff_to_nii(current_path)
+                        tiff_to_nii(current_path, brukerbridge_version_info)

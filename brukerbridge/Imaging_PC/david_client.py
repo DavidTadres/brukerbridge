@@ -25,7 +25,7 @@ CHUNKSIZE = 1_000_000
 # port = 5000
 # source_directory = "/Users/luke/Desktop/test_send"
 
-port = 5001
+port = 5005
 
 ##################################
 ### WHAT DIRECTORY TO PROCESS? ###

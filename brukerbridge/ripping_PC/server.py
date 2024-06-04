@@ -14,7 +14,7 @@ from brukerbridge import utils
 verbose = False
 CHUNKSIZE = 1_000_000
 SERVER_HOST = "0.0.0.0"
-SERVER_PORT = 5001
+SERVER_PORT = 5005
 target_directory = pathlib.Path("F:/brukerbridge")
 
 ####
@@ -71,7 +71,7 @@ while True:
 			if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
 
 			path = pathlib.Path(target_directory, filename)
-			path.mkdir(parents=True, exist_ok=True)
+			path.parent.mkdir(parents=True, exist_ok=True)
 			## Original ##
 			#path = os.path.join(target_directory,filename)
 			#os.makedirs(os.path.dirname(path),exist_ok=True)
@@ -135,8 +135,12 @@ while True:
 	# would yield i.e. WindowsPath('David/20240404__queue__/fly3/anat0/TSeries-12172018-1322-002')
 	dir_to_flag = pathlib.Path(path).relative_to(target_directory).parts[1]
 
-	print(dir_to_flag, flush=True)
-	os.rename(dir_to_flag, dir_to_flag + '__queue__')
+	full_path = pathlib.Path(target_directory, dir_to_flag)
+
+	#print(dir_to_flag, flush=True)
+	#os.rename(dir_to_flag, dir_to_flag + '__queue__')
+	print(full_path, flush=True)
+	os.rename(full_path, full_path + '__queue__')
 
 	# close the client socket
 	client.close()
