@@ -140,7 +140,7 @@ while True:
 	#print(dir_to_flag, flush=True)
 	#os.rename(dir_to_flag, dir_to_flag + '__queue__')
 	print(full_path, flush=True)
-	os.rename(full_path, full_path + '__queue__')
+	os.rename(full_path, pathlib.Path(str(full_path) + '__queue__'))
 
 	# close the client socket
 	client.close()
