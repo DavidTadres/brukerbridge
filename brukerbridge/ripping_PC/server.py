@@ -133,9 +133,12 @@ while True:
 	# and target_directory = WindowsPath('F:/brukerbridge')
 	# pathlib.Path(path).relative_to(target_directory)
 	# would yield i.e. WindowsPath('David/20240404__queue__/fly3/anat0/TSeries-12172018-1322-002')
+	# This will yield i.e. 'David'
+	user_folder = pathlib.Path(path).relative_to(target_directory).parts[0]
+	# This will yield i.e. '20240606'
 	dir_to_flag = pathlib.Path(path).relative_to(target_directory).parts[1]
 
-	full_path = pathlib.Path(target_directory, dir_to_flag)
+	full_path = pathlib.Path(target_directory, user_folder, dir_to_flag)
 
 	#print(dir_to_flag, flush=True)
 	#os.rename(dir_to_flag, dir_to_flag + '__queue__')
