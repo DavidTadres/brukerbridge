@@ -12,6 +12,8 @@ import socket
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askdirectory
 import pathlib
+import json
+import pathlib
 
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())
 print(parent_path)
@@ -32,9 +34,30 @@ port = 5005
 ##################################
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-source_directory = askdirectory(initialdir = "G:/") # show an "Open" dialog box and return the path to the selected file
-source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
+source_directory = pathlib.Path(askdirectory(initialdir = "F:/")) # show an "Open" dialog box and return the path to the selected file
+#source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
+
+#################################
+### LOOK FOR STIMPACK h5 FILE ###
+#################################
+
+# Load fictrac_data_path defined in user settings.
+# Todo: either make user setting file dynamic
+json_path = pathlib.Path(pathlib.Path(parent_path.parent, 'users\\David.json'))
+user_settings = utils.get_json_data(json_path)
+fictrac_data_path = pathlib.Path(user_settings['fictrac_h5_path'])
+# The standard way of fictrac to create files is 2024-05-11.
+date_folder_to_transfer = source_directory.name
+year = date_folder_to_transfer[0:4]
+month = date_folder_to_transfer[4:6]
+day = date_folder_to_transfer[6:8]
+string_to_find = year + '-' + month + '-' + day
+
+fictrac_h5_path = None
+
+if pathlib.Path(fictrac_data_path, string_to_find).is_dir():
+    fictrac_h5_path = pathlib.Path(fictrac_data_path, string_to_find)
 
 #########################
 ### CONNECT TO SERVER ###
@@ -42,6 +65,45 @@ print(source_directory)
 
 sock = socket.socket()
 sock.connect((host,port))
+
+############################
+### SEND FICTRAC H5 DATA ###
+############################
+
+if fictrac_data_path is not None:
+    print('Sending fictrac data folder ' + str(fictrac_data_path))
+
+    h5_directory_size = utils.get_dir_size(fictrac_data_path)
+    h5_num_files = utils.get_num_files(fictrac_data_path)
+
+    sock.sendall(str(h5_directory_size).encode() + b'\n')
+    sock.sendall(str(h5_num_files).encode() + b'\n')
+
+    num_files_sent = 0
+    for path, dirs, files in os.walk(fictrac_data_path):
+        for file in files:
+
+            filename = os.path.join(path, file)
+            relpath = str(os.sep).join(filename.split(os.sep)[1:])
+            filesize = os.path.getsize(filename)
+            print(f'Sending {relpath}')
+
+            checksum = utils.get_checksum(filename)
+
+            with open(filename, 'rb') as f:
+                sock.sendall(relpath.encode() + b'\n')
+                sock.sendall(str(filesize).encode() + b'\n')
+                sock.sendall(str(checksum).encode() + b'\n')
+
+                # Send the file in chunks so large files can be handled.
+                while True:
+                    data = f.read(CHUNKSIZE)
+                    if not data: break
+                    sock.sendall(data)
+
+            num_files_sent += 1
+
+    # Don't delete source data, for now at least - these files are not large anyway!
 
 ##########################
 ### GET DIRECTORY SIZE ###
