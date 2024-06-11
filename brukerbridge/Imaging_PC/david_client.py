@@ -71,16 +71,16 @@ sock.connect((host,port))
 ############################
 
 if fictrac_data_path is not None:
-    print('Sending fictrac data folder ' + str(fictrac_data_path))
+    print('Sending fictrac data folder ' + str(fictrac_h5_path))
 
-    h5_directory_size = utils.get_dir_size(fictrac_data_path)
-    h5_num_files = utils.get_num_files(fictrac_data_path)
+    h5_directory_size = utils.get_dir_size(fictrac_h5_path)
+    h5_num_files = utils.get_num_files(fictrac_h5_path)
 
     sock.sendall(str(h5_directory_size).encode() + b'\n')
     sock.sendall(str(h5_num_files).encode() + b'\n')
 
     num_files_sent = 0
-    for path, dirs, files in os.walk(fictrac_data_path):
+    for path, dirs, files in os.walk(fictrac_h5_path):
         for file in files:
 
             filename = os.path.join(path, file)
