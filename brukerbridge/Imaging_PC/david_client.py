@@ -105,6 +105,7 @@ if fictrac_data_path is not None:
 
     # Don't delete source data, for now at least - these files are not large anyway!
 
+checksum = None
 ##########################
 ### GET DIRECTORY SIZE ###
 ##########################
