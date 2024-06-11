@@ -59,6 +59,8 @@ fictrac_h5_path = None
 if pathlib.Path(fictrac_data_path, string_to_find).is_dir():
     fictrac_h5_path = pathlib.Path(fictrac_data_path, string_to_find)
 
+print(fictrac_data_path)
+print(string_to_find)
 print(fictrac_h5_path)
 
 #########################
