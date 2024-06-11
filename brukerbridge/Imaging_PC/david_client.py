@@ -44,7 +44,7 @@ print(source_directory)
 
 # Load fictrac_data_path defined in user settings.
 # Todo: either make user setting file dynamic
-json_path = pathlib.Path(pathlib.Path(pathlib.Path(parent_path.parent), 'users\\David.json'))
+json_path = pathlib.Path(pathlib.Path(parent_path).parent, 'users\\David.json')
 user_settings = utils.get_json_data(json_path)
 fictrac_data_path = pathlib.Path(user_settings['fictrac_h5_path'])
 # The standard way of fictrac to create files is 2024-05-11.
