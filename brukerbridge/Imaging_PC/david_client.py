@@ -56,8 +56,10 @@ string_to_find = year + '-' + month + '-' + day
 
 fictrac_h5_path = None
 
-if pathlib.Path(fictrac_data_path, string_to_find).is_dir():
-    fictrac_h5_path = pathlib.Path(fictrac_data_path, string_to_find)
+for folder in fictrac_data_path.iterdir():
+    if string_to_find in folder.name:
+        fictrac_h5_path = folder
+        break
 
 print(fictrac_data_path)
 print(string_to_find)
