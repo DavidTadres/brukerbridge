@@ -107,7 +107,11 @@ if fictrac_data_path is not None:
 
     # Don't delete source data, for now at least - these files are not large anyway!
 
-checksum = None
+sock.sendall("ALL_FILES_TRANSFERED".encode() + b'\n')
+message = sock.recv(1024).decode()
+#num_of_files_recieved = int(message.split('.')[0])
+#all_checksums_true = bool(message.split('.')[1])
+
 ##########################
 ### GET DIRECTORY SIZE ###
 ##########################
