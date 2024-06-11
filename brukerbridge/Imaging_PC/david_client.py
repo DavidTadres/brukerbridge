@@ -61,10 +61,6 @@ for folder in fictrac_data_path.iterdir():
         fictrac_h5_path = folder
         break
 
-print(fictrac_data_path)
-print(string_to_find)
-print(fictrac_h5_path)
-
 #########################
 ### CONNECT TO SERVER ###
 #########################
