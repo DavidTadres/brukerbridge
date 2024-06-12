@@ -68,7 +68,8 @@ while True:
 			size_in_gb = length*10**-9
 			checksum_original = str(clientfile.readline().strip().decode())
 
-			if verbose: print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
+			if verbose:
+				print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
 
 			path = pathlib.Path(target_directory, filename)
 			path.parent.mkdir(parents=True, exist_ok=True)

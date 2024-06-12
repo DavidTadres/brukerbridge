@@ -125,7 +125,7 @@ sock.sendall(str(source_directory_size).encode() + b'\n')
 sock.sendall(str(num_files).encode() + b'\n')
 
 ######################
-### BEGIN TRASNFER ###
+### BEGIN TRANSFER ###
 ######################
 
 num_files_sent = 0
