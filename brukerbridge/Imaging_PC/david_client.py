@@ -85,7 +85,7 @@ if fictrac_data_path is not None:
     sock.sendall(str(h5_directory_size).encode() + b'\n')
     #sock.sendall(str(h5_num_files).encode() + b'\n')
 
-    relpath = str(os.sep).join(str(fictrac_h5_path)[1:])
+    relpath = str(fictrac_h5_path)[1:]
     filesize = os.path.getsize(str(fictrac_h5_path))
     print(f'Sending {relpath}')
 
