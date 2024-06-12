@@ -82,28 +82,29 @@ if fictrac_data_path is not None:
     sock.sendall(str(h5_num_files).encode() + b'\n')
 
     num_files_sent = 0
-    for path, dirs, files in os.walk(fictrac_h5_path):
-        for file in files:
+    for path, dirs, files in os.walk(fictrac_h5_path.parent.iterdir()):
+        if path == fictrac_h5_path:
+            for file in files:
 
-            filename = os.path.join(path, file)
-            relpath = str(os.sep).join(filename.split(os.sep)[1:])
-            filesize = os.path.getsize(filename)
-            print(f'Sending {relpath}')
+                filename = os.path.join(path, file)
+                relpath = str(os.sep).join(filename.split(os.sep)[1:])
+                filesize = os.path.getsize(filename)
+                print(f'Sending {relpath}')
 
-            checksum = utils.get_checksum(filename)
+                checksum = utils.get_checksum(filename)
 
-            with open(filename, 'rb') as f:
-                sock.sendall(relpath.encode() + b'\n')
-                sock.sendall(str(filesize).encode() + b'\n')
-                sock.sendall(str(checksum).encode() + b'\n')
+                with open(filename, 'rb') as f:
+                    sock.sendall(relpath.encode() + b'\n')
+                    sock.sendall(str(filesize).encode() + b'\n')
+                    sock.sendall(str(checksum).encode() + b'\n')
 
-                # Send the file in chunks so large files can be handled.
-                while True:
-                    data = f.read(CHUNKSIZE)
-                    if not data: break
-                    sock.sendall(data)
+                    # Send the file in chunks so large files can be handled.
+                    while True:
+                        data = f.read(CHUNKSIZE)
+                        if not data: break
+                        sock.sendall(data)
 
-            num_files_sent += 1
+                num_files_sent += 1
 
     # Don't delete source data, for now at least - these files are not large anyway!
 
