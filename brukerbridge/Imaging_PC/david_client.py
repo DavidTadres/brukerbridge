@@ -80,7 +80,7 @@ if fictrac_data_path is not None:
     h5_target_folder = date_folder_to_transfer
 
     sock.sendall(str('Fictrac_h5_incoming').encode() + b'\n')
-    sock.sendall(str(h5_target_folder).encode() + b'\n')
+    #sock.sendall(str(h5_target_folder).encode() + b'\n')
 
     sock.sendall(str(h5_directory_size).encode() + b'\n')
     #sock.sendall(str(h5_num_files).encode() + b'\n')

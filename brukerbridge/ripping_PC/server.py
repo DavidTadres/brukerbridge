@@ -66,8 +66,8 @@ while True:
 
 				# if we get h5 fictrac data, save in same folder as the imaging data!
 				h5_save_in_path = clientfile.readline().strip().decode()
-				h5_full_target_path = pathlib.Path(target_directory, h5_save_in_path)
-				h5_full_target_path.mkdir(parents=True, exist_ok=True)
+				#h5_full_target_path = pathlib.Path(target_directory, h5_save_in_path)
+				#h5_full_target_path.mkdir(parents=True, exist_ok=True)
 
 				h5_source_directory_size = int(float(clientfile.readline().strip().decode()))
 				# Read whats coming next from the client
@@ -80,13 +80,15 @@ while True:
 					message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
 					client.sendall(message.encode())
 					break
-				h5_filename = raw.strip().decode()
-				print(h5_filename)
+				h5_relpath = raw.strip().decode()
+				print(h5_relpath)
 				h5_length = int(clientfile.readline()) # don't need to decode because casting as int
 				h5_size_in_gb = h5_length*10**-9
 				h5_checksum_original = str(clientfile.readline().strip().decode())
 
-				h5_target_filepath = pathlib.Path(h5_full_target_path, h5_filename)
+
+				h5_target_filepath = pathlib.Path(target_directory, h5_relpath)
+				h5_target_filepath.mkdir(parents=True, exist_ok=True)
 				# Read the data in chunks so it can handle large files.
 				with open(h5_target_filepath, 'wb') as f:
 					while length:
