@@ -95,7 +95,7 @@ while True:
 				h5_target_filepath = pathlib.Path(h5_target_path, h5_filename)
 				# Read the data in chunks so it can handle large files.
 				with open(h5_target_filepath, 'wb') as f:
-					while length:
+					while h5_length:
 						chunk = min(length, CHUNKSIZE)
 						data = clientfile.read(chunk)
 						if not data:
