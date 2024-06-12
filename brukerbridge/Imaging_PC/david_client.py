@@ -97,6 +97,7 @@ if fictrac_data_path is not None:
 
     with open(str(fictrac_h5_path), 'rb') as f:
         sock.sendall(str(relpath).encode() + b'\n')
+        sock.sendall(str(fictrac_h5_path.name) + b'\n')
         sock.sendall(str(filesize).encode() + b'\n')
         sock.sendall(str(checksum).encode() + b'\n')
 
