@@ -78,6 +78,7 @@ if fictrac_data_path is not None:
     h5_directory_size = utils.get_dir_size(fictrac_h5_path)
     h5_num_files = utils.get_num_files(fictrac_h5_path)
 
+    sock.sendall(str('Fictrac_h5_incoming').encode() + b'\n')
     sock.sendall(str(h5_directory_size).encode() + b'\n')
     sock.sendall(str(h5_num_files).encode() + b'\n')
 
