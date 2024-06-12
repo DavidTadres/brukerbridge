@@ -87,7 +87,8 @@ if fictrac_data_path is not None:
 
     # I want path that indicates user/date, for example David/20240611
     # The easiest way to do that is to use the source directory
-    relpath = pathlib.Path(source_directory.parts[1], source_directory[1])
+    split_source_path = source_directory.parts
+    relpath = pathlib.Path(split_source_path[1], split_source_path[2])
     #relpath = str(fictrac_h5_path)[1:]
     filesize = os.path.getsize(str(fictrac_h5_path))
     print(f'Sending {relpath}')

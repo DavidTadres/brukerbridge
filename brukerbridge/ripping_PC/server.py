@@ -81,6 +81,7 @@ while True:
 					client.sendall(message.encode())
 					break
 				h5_filename = raw.strip().decode()
+				print(h5_filename)
 				h5_length = int(clientfile.readline()) # don't need to decode because casting as int
 				h5_size_in_gb = h5_length*10**-9
 				h5_checksum_original = str(clientfile.readline().strip().decode())
