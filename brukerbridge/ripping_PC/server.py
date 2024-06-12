@@ -62,11 +62,55 @@ while True:
 
 			if initial_message=='Fictrac_h5_incoming':
 				# recieve h5
-				print("success")
 				print(initial_message)
-				pass
+
+				# if we get h5 fictrac data, save in same folder as the imaging data!
+				h5_save_in_path = clientfile.readline().strip().decode()
+				h5_full_target_path = pathlib.Path(target_directory, h5_save_in_path)
+				h5_full_target_path.mkdir(parents=True, exist_ok=True)
+
+				h5_source_directory_size = int(float(clientfile.readline().strip().decode()))
+				# Read whats coming next from the client
+				raw = clientfile.readline()
+				### This is what will finally break the loop when this message is received ###
+				if raw.strip().decode() == "H5_FILE_TRANSFERED":
+
+					print('H5_FILE_TRANSFERED', flush=True)
+					all_checksums_true = False not in do_checksums_match
+					message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
+					client.sendall(message.encode())
+					break
+				h5_filename = raw.strip().decode()
+				h5_length = int(clientfile.readline()) # don't need to decode because casting as int
+				h5_size_in_gb = h5_length*10**-9
+				h5_checksum_original = str(clientfile.readline().strip().decode())
+
+				# Read the data in chunks so it can handle large files.
+				with open(path, 'wb') as f:
+					while length:
+						chunk = min(length, CHUNKSIZE)
+						data = clientfile.read(chunk)
+						if not data:
+							break
+						f.write(data)
+						length -= len(data)
+					else:  # only runs if while doesn't break and length==0
+						if verbose: print('Complete', end='', flush=True)
+
+				# Making sure that file written has same checksum as file on original computer
+				checksum_copy = utils.get_checksum(path)
+
+				if checksum_original == checksum_copy:
+					if verbose: print(' [CHECKSUMS MATCH]', flush=True)
+					do_checksums_match.append(True)
+
+				else:
+					print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!', flush=True)
+					do_checksums_match.append(False)
+					raise SystemExit
+
+			####>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<#####
 			else:
-				print('fail')
 				print(initial_message)
 
 				if num_files_transfered == 0:
