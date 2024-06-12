@@ -82,7 +82,7 @@ while True:
 					break
 				h5_relpath = raw.strip().decode()
 				print(h5_relpath)
-				h5_filename = raw.strip().decode()
+				h5_filename = str(clientfile.readline().strip().decode())
 				print(h5_filename)
 				h5_length = int(clientfile.readline()) # don't need to decode because casting as int
 				h5_size_in_gb = h5_length*10**-9
