@@ -113,6 +113,7 @@ message = sock.recv(1024).decode()
 num_of_files_recieved = int(message.split('.')[0])
 all_checksums_true = bool(message.split('.')[1])
 
+print('H5 all done on client side')
 ##################################################
 ### CONNECT TO SERVER TO TRANSFER IMAGING DATA ###
 ##################################################

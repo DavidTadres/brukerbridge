@@ -64,26 +64,22 @@ while True:
 				# recieve h5
 				print(initial_message)
 
-				# if we get h5 fictrac data, save in same folder as the imaging data!
-				#h5_save_in_path = clientfile.readline().strip().decode()
-				#h5_full_target_path = pathlib.Path(target_directory, h5_save_in_path)
-				#h5_full_target_path.mkdir(parents=True, exist_ok=True)
-
 				h5_source_directory_size = int(float(clientfile.readline().strip().decode()))
-				# Read whats coming next from the client
-				raw = clientfile.readline()
+				# Read whats coming next from the client - need to give it a variable
+				# name as I can't call clientfile.readfile() twice as it will read the
+				# next line next.
+				h5_firstline = clientfile.readline()
 				### This is what will finally break the loop when this message is received ###
-				if raw.strip().decode() == "H5_FILE_TRANSFERED":
-
+				if h5_firstline.strip().decode() == "H5_FILE_TRANSFERED":
 					print('H5_FILE_TRANSFERED', flush=True)
 					all_checksums_true = False not in do_checksums_match
 					message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
 					client.sendall(message.encode())
+					print('message sent to client')
 					break
-				h5_relpath = raw.strip().decode()
-				print(h5_relpath)
+				# Read data line-by-line as it's being sent in the client
+				h5_relpath = h5_firstline.strip().decode()
 				h5_filename = str(clientfile.readline().strip().decode())
-				print(h5_filename)
 				h5_length = int(clientfile.readline()) # don't need to decode because casting as int
 				h5_size_in_gb = h5_length*10**-9
 				h5_checksum_original = str(clientfile.readline().strip().decode())
@@ -96,19 +92,19 @@ while True:
 				# Read the data in chunks so it can handle large files.
 				with open(h5_target_filepath, 'wb') as f:
 					while h5_length:
-						chunk = min(length, CHUNKSIZE)
+						chunk = min(h5_length, CHUNKSIZE)
 						data = clientfile.read(chunk)
 						if not data:
 							break
 						f.write(data)
-						length -= len(data)
+						h5_length -= len(data)
 					else:  # only runs if while doesn't break and length==0
 						if verbose: print('Complete', end='', flush=True)
 
 				# Making sure that file written has same checksum as file on original computer
-				checksum_copy = utils.get_checksum(path)
+				checksum_copy = utils.get_checksum(h5_target_filepath)
 
-				if checksum_original == checksum_copy:
+				if h5_checksum_original == checksum_copy:
 					if verbose: print(' [CHECKSUMS MATCH]', flush=True)
 					do_checksums_match.append(True)
 
