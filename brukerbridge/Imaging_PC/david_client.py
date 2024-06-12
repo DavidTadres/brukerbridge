@@ -85,14 +85,17 @@ if fictrac_data_path is not None:
     sock.sendall(str(h5_directory_size).encode() + b'\n')
     #sock.sendall(str(h5_num_files).encode() + b'\n')
 
-    relpath = str(fictrac_h5_path)[1:]
+    # I want path that indicates user/date, for example David/20240611
+    # The easiest way to do that is to use the source directory
+    relpath = pathlib.Path(source_directory.parts[1], source_directory[1])
+    #relpath = str(fictrac_h5_path)[1:]
     filesize = os.path.getsize(str(fictrac_h5_path))
     print(f'Sending {relpath}')
 
     checksum = utils.get_checksum(fictrac_h5_path)
 
     with open(str(fictrac_h5_path), 'rb') as f:
-        sock.sendall(relpath.encode() + b'\n')
+        sock.sendall(str(relpath).encode() + b'\n')
         sock.sendall(str(filesize).encode() + b'\n')
         sock.sendall(str(checksum).encode() + b'\n')
 
