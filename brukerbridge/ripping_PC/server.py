@@ -86,7 +86,7 @@ while True:
 				h5_checksum_original = str(clientfile.readline().strip().decode())
 
 				# Read the data in chunks so it can handle large files.
-				with open(path, 'wb') as f:
+				with open(h5_full_target_path, 'wb') as f:
 					while length:
 						chunk = min(length, CHUNKSIZE)
 						data = clientfile.read(chunk)
