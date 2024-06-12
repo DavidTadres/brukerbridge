@@ -58,139 +58,75 @@ while True:
 
 		# this while loop handles looping over files
 		while True:
-			initial_message = clientfile.readline().strip().decode()
 
-			if initial_message=='Fictrac_h5_incoming':
-				# recieve h5
-				print(initial_message)
+			if num_files_transfered == 0:
+				source_directory_size = int(float(clientfile.readline().strip().decode()))
+				total_num_files = int(clientfile.readline().strip().decode())
+				start_time = time.time()
+				print(F"FIRST LOOP START TIME: {start_time}",flush=True)
 
-				h5_source_directory_size = int(float(clientfile.readline().strip().decode()))
-				# Read whats coming next from the client - need to give it a variable
-				# name as I can't call clientfile.readfile() twice as it will read the
-				# next line next.
-				h5_firstline = clientfile.readline()
-				### This is what will finally break the loop when this message is received ###
-				#if h5_firstline.strip().decode() == "H5_FILE_TRANSFERED":
-				#	print('H5_FILE_TRANSFERED', flush=True)
-				#	all_checksums_true = False not in do_checksums_match
-				#	message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
-				#	client.sendall(message.encode())
-				#	print('message sent to client')
-				#	break
-				# Read data line-by-line as it's being sent in the client
-				h5_relpath = h5_firstline.strip().decode()
-				h5_filename = str(clientfile.readline().strip().decode())
-				h5_length = int(clientfile.readline()) # don't need to decode because casting as int
-				h5_size_in_gb = h5_length*10**-9
-				h5_checksum_original = str(clientfile.readline().strip().decode())
+			raw = clientfile.readline()
 
-				# Create target path if it doesn't exist
-				h5_target_path = pathlib.Path(target_directory, h5_relpath)
-				h5_target_path.mkdir(parents=True, exist_ok=True)
-				# Full filename to be written
-				h5_target_filepath = pathlib.Path(h5_target_path, h5_filename)
-				# Read the data in chunks so it can handle large files.
-				with open(h5_target_filepath, 'wb') as f:
+			### This is what will finally break the loop when this message is received ###
+			if raw.strip().decode() == "ALL_FILES_TRANSFERED":
 
-					data = clientfile.read()
+				print('ALL_FILES_TRANSFERED', flush=True)
+				all_checksums_true = False not in do_checksums_match
+				message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
+				client.sendall(message.encode())
+				break
+
+			filename = raw.strip().decode()
+			length = int(clientfile.readline()) # don't need to decode because casting as int
+			size_in_gb = length*10**-9
+			checksum_original = str(clientfile.readline().strip().decode())
+
+			if verbose:
+				print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
+
+			path = pathlib.Path(target_directory, filename)
+			path.parent.mkdir(parents=True, exist_ok=True)
+			## Original ##
+			#path = os.path.join(target_directory,filename)
+			#os.makedirs(os.path.dirname(path),exist_ok=True)
+
+			# Read the data in chunks so it can handle large files.
+			with open(path,'wb') as f:
+				while length:
+					chunk = min(length,CHUNKSIZE)
+					data = clientfile.read(chunk)
+					if not data:
+						break
 					f.write(data)
+					length -= len(data)
+				else: # only runs if while doesn't break and length==0
+					if verbose: print('Complete', end='', flush=True)
 
-					#while h5_length:
-					#	chunk = min(h5_length, CHUNKSIZE)
-					#	data = clientfile.read(chunk)
-					#	if not data:
-					#		break
-					#	f.write(data)
-					#	h5_length -= len(data)
-					#else:  # only runs if while doesn't break and length==0
-					#	if verbose: print('Complete', end='', flush=True)
+			checksum_copy = utils.get_checksum(path)
 
-					print('data written')
+			if checksum_original == checksum_copy:
+				if verbose: print(' [CHECKSUMS MATCH]', flush=True)
+				do_checksums_match.append(True)
 
-				# Making sure that file written has same checksum as file on original computer
-				checksum_copy = utils.get_checksum(h5_target_filepath)
-
-				if h5_checksum_original == checksum_copy:
-					if verbose: print(' [CHECKSUMS MATCH]', flush=True)
-					do_checksums_match.append(True)
-
-				else:
-					print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!', flush=True)
-					do_checksums_match.append(False)
-					raise SystemExit
-
-			####>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<#####
 			else:
-				print(initial_message)
+				print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!', flush=True)
+				do_checksums_match.append(False)
+				raise SystemExit
 
-				if num_files_transfered == 0:
-					source_directory_size = int(float(clientfile.readline().strip().decode()))
-					total_num_files = int(clientfile.readline().strip().decode())
-					start_time = time.time()
-					print(F"FIRST LOOP START TIME: {start_time}",flush=True)
+			num_files_transfered += 1
+			total_gb_transfered += size_in_gb
 
-				raw = clientfile.readline()
+			######################
+			### Print Progress ###
+			######################
+			utils.print_progress_table(start_time=start_time,
+										current_iteration=num_files_transfered,
+										total_iterations=total_num_files,
+										current_mem=int(total_gb_transfered),
+										total_mem=source_directory_size,
+										mode='server')
 
-				### This is what will finally break the loop when this message is received ###
-				if raw.strip().decode() == "ALL_FILES_TRANSFERED":
-
-					print('ALL_FILES_TRANSFERED', flush=True)
-					all_checksums_true = False not in do_checksums_match
-					message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
-					client.sendall(message.encode())
-					break
-
-				filename = raw.strip().decode()
-				length = int(clientfile.readline()) # don't need to decode because casting as int
-				size_in_gb = length*10**-9
-				checksum_original = str(clientfile.readline().strip().decode())
-
-				if verbose:
-					print(f'Downloading {filename}...\n  Expecting {length:,} bytes...',end='',flush=True)
-
-				path = pathlib.Path(target_directory, filename)
-				path.parent.mkdir(parents=True, exist_ok=True)
-				## Original ##
-				#path = os.path.join(target_directory,filename)
-				#os.makedirs(os.path.dirname(path),exist_ok=True)
-
-				# Read the data in chunks so it can handle large files.
-				with open(path,'wb') as f:
-					while length:
-						chunk = min(length,CHUNKSIZE)
-						data = clientfile.read(chunk)
-						if not data:
-							break
-						f.write(data)
-						length -= len(data)
-					else: # only runs if while doesn't break and length==0
-						if verbose: print('Complete', end='', flush=True)
-
-				checksum_copy = utils.get_checksum(path)
-
-				if checksum_original == checksum_copy:
-					if verbose: print(' [CHECKSUMS MATCH]', flush=True)
-					do_checksums_match.append(True)
-
-				else:
-					print('!!!!!! WARNING CHECKSUMS DO NOT MATCH - ABORTING !!!!!!', flush=True)
-					do_checksums_match.append(False)
-					raise SystemExit
-
-				num_files_transfered += 1
-				total_gb_transfered += size_in_gb
-
-				######################
-				### Print Progress ###
-				######################
-				utils.print_progress_table(start_time=start_time,
-											current_iteration=num_files_transfered,
-											total_iterations=total_num_files,
-											current_mem=int(total_gb_transfered),
-											total_mem=source_directory_size,
-											mode='server')
-
-				continue
+			continue
 
 	print(F'all_checksums_true is {all_checksums_true}', flush=True)
 
@@ -226,29 +162,3 @@ while True:
 	# close the client socket
 	client.close()
 	# Now the server will return to the beginning of the while loop and is ready for next transfer
-
-
-
-	# # Launch main file processing
-	# filename = os.path.normpath(filename)
-	# user, directory = filename.split(os.sep)[0], filename.split(os.sep)[1]
-
-	# # make sure there is no email file left from aborted or failed processing rounds
-	# try:
-	#     email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
-	#     os.remove(email_file)
-	# except:
-	#     pass
-
-	# print("USER: {}".format(user), flush=True)
-	# print("DIRECTORY: {}".format(directory), flush=True)
-	# #print("LOGFILE: {}".format(full_log_file), flush=True)
-	# sys.stdout.flush()
-	# os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" "{}"'.format(user, directory))
-	# # added double quotes to accomidate spaces in directory name
-
-	# # email user informing of success or failure, and send relevant log file info
-	# os.system("python C:/Users/User/projects/brukerbridge/scripts/final_email.py")
-
-	# close the server socket
-	#sock.close()

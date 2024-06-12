@@ -1,3 +1,6 @@
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+### NOT WORKING BIT MIGHT CONTAIN USEFUL COMMENTS AND IDEAS ###<<<<<<<<<<<<<<<<<<
+
 ### Brukerbridge computer ###
 #host = "171.65.17.84"
 # David PC
@@ -61,19 +64,65 @@ for folder in fictrac_data_path.iterdir():
         fictrac_h5_path = folder
         break
 
-# The easiest way to get this to work is to just copy the h5 file into the imaging folder on the imaging computer!
-# Then I don't have to deal at all with the actual transfer code!
-
-if fictrac_h5_path is not None:
-    h5_dst_imaging_pc = pathlib.Path(source_directory, fictrac_h5_path.name)
-    shutil.copyfile(src=fictrac_h5_path, dst=h5_dst_imaging_pc)
-
-#########################
-### CONNECT TO SERVER ###
-#########################
+##################################################
+### CONNECT TO SERVER TO TRANSFER IMAGING DATA ###
+##################################################
 
 sock = socket.socket()
 sock.connect((host,port))
+
+############################
+### SEND FICTRAC H5 DATA ###
+############################
+
+if fictrac_data_path is not None:
+    print('Sending fictrac data folder ' + str(fictrac_h5_path))
+
+    h5_directory_size = utils.get_dir_size(fictrac_h5_path)
+    #h5_num_files = utils.get_num_files(fictrac_h5_path) # We should always only get a single file!
+    h5_target_folder = date_folder_to_transfer
+
+    sock.sendall(str('Fictrac_h5_incoming').encode() + b'\n')
+    #sock.sendall(str(h5_target_folder).encode() + b'\n')
+
+    sock.sendall(str(h5_directory_size).encode() + b'\n')
+    #sock.sendall(str(h5_num_files).encode() + b'\n')
+
+    # I want path that indicates user/date, for example David/20240611
+    # The easiest way to do that is to use the source directory
+    split_source_path = source_directory.parts
+    relpath = pathlib.Path(split_source_path[1], split_source_path[2])
+    #relpath = str(fictrac_h5_path)[1:]
+    filesize = os.path.getsize(str(fictrac_h5_path))
+    print(f'Sending {relpath}')
+
+    checksum = utils.get_checksum(fictrac_h5_path)
+
+    with open(str(fictrac_h5_path), 'rb') as f:
+        sock.sendall(str(relpath).encode() + b'\n')
+        sock.sendall(str(fictrac_h5_path.name).encode() + b'\n')
+        sock.sendall(str(filesize).encode() + b'\n')
+        sock.sendall(str(checksum).encode() + b'\n')
+
+        sock.sendall(f.read())
+        # Send the file in chunks so large files can be handled.
+        #while True:
+        #    data = f.read(CHUNKSIZE)
+        #    if not data: break
+        #    sock.sendall(data)
+    # Don't delete source data, for now at least - these files are not large anyway!
+
+    print('data sent')
+
+    #sock.sendall("H5_FILE_TRANSFERED".encode() + b'\n')
+    #message = sock.recv(1024).decode()
+    #num_of_files_recieved = int(message.split('.')[0])
+    #all_checksums_true = bool(message.split('.')[1])
+
+    print('H5 all done on client side')
+
+
+
 ##########################
 ### GET DIRECTORY SIZE ###
 ##########################
