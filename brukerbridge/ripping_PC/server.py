@@ -70,13 +70,13 @@ while True:
 				# next line next.
 				h5_firstline = clientfile.readline()
 				### This is what will finally break the loop when this message is received ###
-				if h5_firstline.strip().decode() == "H5_FILE_TRANSFERED":
-					print('H5_FILE_TRANSFERED', flush=True)
-					all_checksums_true = False not in do_checksums_match
-					message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
-					client.sendall(message.encode())
-					print('message sent to client')
-					break
+				#if h5_firstline.strip().decode() == "H5_FILE_TRANSFERED":
+				#	print('H5_FILE_TRANSFERED', flush=True)
+				#	all_checksums_true = False not in do_checksums_match
+				#	message = str(len(do_checksums_match)) + "." + str(all_checksums_true)
+				#	client.sendall(message.encode())
+				#	print('message sent to client')
+				#	break
 				# Read data line-by-line as it's being sent in the client
 				h5_relpath = h5_firstline.strip().decode()
 				h5_filename = str(clientfile.readline().strip().decode())
@@ -104,6 +104,8 @@ while True:
 					#	h5_length -= len(data)
 					#else:  # only runs if while doesn't break and length==0
 					#	if verbose: print('Complete', end='', flush=True)
+
+					print('data written')
 
 				# Making sure that file written has same checksum as file on original computer
 				checksum_copy = utils.get_checksum(h5_target_filepath)
