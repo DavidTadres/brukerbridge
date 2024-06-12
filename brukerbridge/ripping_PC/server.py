@@ -91,15 +91,19 @@ while True:
 				h5_target_filepath = pathlib.Path(h5_target_path, h5_filename)
 				# Read the data in chunks so it can handle large files.
 				with open(h5_target_filepath, 'wb') as f:
-					while h5_length:
-						chunk = min(h5_length, CHUNKSIZE)
-						data = clientfile.read(chunk)
-						if not data:
-							break
-						f.write(data)
-						h5_length -= len(data)
-					else:  # only runs if while doesn't break and length==0
-						if verbose: print('Complete', end='', flush=True)
+
+					data = clientfile.read()
+					f.write(data)
+
+					#while h5_length:
+					#	chunk = min(h5_length, CHUNKSIZE)
+					#	data = clientfile.read(chunk)
+					#	if not data:
+					#		break
+					#	f.write(data)
+					#	h5_length -= len(data)
+					#else:  # only runs if while doesn't break and length==0
+					#	if verbose: print('Complete', end='', flush=True)
 
 				# Making sure that file written has same checksum as file on original computer
 				checksum_copy = utils.get_checksum(h5_target_filepath)

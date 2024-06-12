@@ -101,11 +101,12 @@ if fictrac_data_path is not None:
         sock.sendall(str(filesize).encode() + b'\n')
         sock.sendall(str(checksum).encode() + b'\n')
 
+        sock.sendall(f.read())
         # Send the file in chunks so large files can be handled.
-        while True:
-            data = f.read(CHUNKSIZE)
-            if not data: break
-            sock.sendall(data)
+        #while True:
+        #    data = f.read(CHUNKSIZE)
+        #    if not data: break
+        #    sock.sendall(data)
     # Don't delete source data, for now at least - these files are not large anyway!
 
 sock.sendall("H5_FILE_TRANSFERED".encode() + b'\n')
