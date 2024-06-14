@@ -89,7 +89,7 @@ if fictrac_h5_path is not None:
         utils.DownloadFolderFTP(ip, username, passwd,
                                 remote_root_path=stimpack_data_path,
                                 folder_to_copy=current_stimpack_folder_name,
-                                target_path=h5_dst_imaging_pc
+                                local_target_path=h5_dst_imaging_pc
                                 )
 
 
