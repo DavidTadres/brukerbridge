@@ -84,7 +84,7 @@ if stimpack_h5_path is not None:
         ###################################
         ip = '171.65.17.246'
         username = 'clandinin'
-        passwd = input('Please enter password for ' + ip + ' for username ' + username)
+        passwd = input('Please enter password for ' + ip + ' for username ' + username + ': ')
         # Please do not hardcode the password here as it'll be publicly available.
 
         local_target_path = pathlib.Path(str(h5_dst_imaging_pc).split('.hdf5')[0])
