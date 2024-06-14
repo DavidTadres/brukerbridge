@@ -14,6 +14,7 @@ from tkinter.filedialog import askdirectory
 import pathlib
 import json
 import pathlib
+import ftputil
 
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())
 print(parent_path)
@@ -67,6 +68,30 @@ for folder in fictrac_data_path.iterdir():
 if fictrac_h5_path is not None:
     h5_dst_imaging_pc = pathlib.Path(source_directory, fictrac_h5_path.name)
     shutil.copyfile(src=fictrac_h5_path, dst=h5_dst_imaging_pc)
+
+    # currently the autotransfer of fictrac data only works if the h5 file is used!
+    if user_settings['autotransfer_fictrac']:
+        print('Will attempt to automatically transfer stimpack data')
+        stimpack_data_path = user_settings["stimpack_data_path"]
+
+        # If the stimpack file is i.e. 2024-06-13.hdf5 the folder
+        # we are looking for is 2024-06-13
+        current_stimpack_folder_name = fictrac_h5_path.name.split('.hdf5')[0]
+
+        ###################################
+        ### Bruker Sr. fictrac computer ###
+        ###################################
+        ip = '171.65.17.246'
+        username = 'clandinin'
+        passwd = input('Please enter password for ' + ip + ' for username ' + username)
+        # Please do not hardcode the password here as it'll be publicly available.
+
+        utils.DownloadFolderFTP(ip, username, passwd,
+                                remote_root_path=stimpack_data_path,
+                                folder_to_copy=current_stimpack_folder_name,
+                                target_path=h5_dst_imaging_pc
+                                )
+
 
 #########################
 ### CONNECT TO SERVER ###

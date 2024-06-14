@@ -19,7 +19,7 @@ username='clandinin'
 passwd=input('Please enter password for ' + ip + ' for username ' + username)
 fictrac_source = '../../data/david/stimpack_data/fictrac' # Unix style
 
-source_folder = fictrac_source +'/' + '2024-06-10'
+#source_folder = fictrac_source +'/' + '2024-06-10'
 # Unable to use pathlib because we are accessing a remote that is/can be different than
 # the computer this code is run!
 

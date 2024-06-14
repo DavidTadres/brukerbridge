@@ -17,6 +17,7 @@ import h5py
 import pathlib
 import hashlib
 from datetime import datetime
+import ftputil
 
 # only imports on linux, which is fine since only needed for sherlock
 try:
@@ -286,3 +287,69 @@ def get_fly_json_data_from_h5(directory):
         print('Number of folders in ' + directory.name + ':' + repr(no_of_exp_folders))
         print('Could not create fly.json files from h5 as the number of subjects and folders should match!')
         print('>>>>>>ERROR<<<<<<<')
+
+class DownloadFolderFTP():
+    """
+    TO BE TESTED
+    This class connects to a remote computer using ip, username and password.
+    It then downloads all files in a folder while keeping the folder structure
+    intact.
+    Note that the remote_root_path should be strings with the correct separator for the
+    REMOTE computer!
+    """
+    def __init__(self, ip, username, passwd,
+                 remote_root_path, folder_to_copy,
+                 local_target_path):
+
+        # Define class wide variables:
+        self.folder_to_copy = folder_to_copy
+        self.local_target_path = local_target_path
+        self.remote_root_path = remote_root_path
+
+        ######################################
+        ### Connect to Stimpack/fictrac PC ###
+        ######################################
+        with ftputil.FTPHost(ip, username, passwd) as self.ftp_host:
+            # will iterate through each of the folders, i.e. in 'fictrac source'
+            for current_folder in self.ftp_host.listdir(remote_root_path):
+                if self.folder_to_copy == current_folder:
+                    #print(relevant_folder)
+                    relevant_folder_path = remote_root_path + '/' + self.folder_to_copy
+                    # call function which will iterate through file structure until
+                    # it hits a file
+                    self.iterdir_until_file(relevant_folder_path)
+
+    def iterdir_until_file_ftphost(self, folder):
+        """
+        Since we don't have access to pathlib nor os, I wrote this
+        function to walk through all folders until a file is found. Once
+        a file is found, copy it (with the full path).
+        :param folder:
+        :return:
+        """
+        #print('folder: ' + folder)
+
+        # Check if the current path in 'folder' is a file
+        if self.ftp_host.path.isfile(folder):
+            # If yes, download!
+            # Start by grabbing the relative path, i.e. the part AFTER the
+            # folder name we are copying.
+            # For example, if we want to copy a folder called '20240611' we
+            # might have folder = '/../../David/stimpack/fictrac/20240611/1/loco/data.dat'
+            # the next line will return /1.loc/data.data
+            relative_path = folder.split(self.folder_to_copy)[-1]
+            # Next, combine it with the desired target folder on the local computer
+            current_target_folder = pathlib.Path(self.target_folder, relative_path)
+            #("current_target_folder " + repr(current_target_folder))
+            # Make sure the folder structure (i.e. C:/brukerbridge/David/20240611/1/loco)
+            # exists
+            current_target_folder.parent.mkdir(exist_ok=True, parents=True)
+            # Then download the file into that folder
+            self.ftp_host.download(folder, current_target_folder)  # remote, local
+        else:
+            # Else loop recursively: Call self to go one folder deeper!
+            for current_folder in self.ftp_host.listdir(folder):
+                #print("current_folder: " + current_folder)
+                current_full_folder = folder + '/' + current_folder
+
+                self.iterdir_until_file(current_full_folder)

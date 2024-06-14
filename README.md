@@ -49,7 +49,9 @@ Installation
 
 make environment:
 
-`conda install -n env_brukerbridge`
+`conda create -n env_brukerbridge`
+
+`activate env_brukerbridge`
 
 `conda install python=3.8`
 
