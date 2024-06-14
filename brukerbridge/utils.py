@@ -2,7 +2,6 @@ import sys
 import smtplib
 #import re
 import os
-#import h5py
 #import math
 import json
 from email.mime.text import MIMEText
@@ -14,6 +13,8 @@ import numpy as np
 #import nibabel as nib
 #from xml.etree import ElementTree as ET
 #import subprocess
+import h5py
+import pathlib
 import hashlib
 from datetime import datetime
 
@@ -217,3 +218,71 @@ class Logger_stderr(object):
         #you might want to specify some extra behavior here.
         pass
 
+def get_fly_json_data_from_h5(directory):
+    """
+    Automatically create fly.json required for snake_brainsss from hdf5 from stimpack
+    :param directory:
+    :return:
+    """
+    for current_path in directory.iterdir():
+        if '.hdf5' in current_path.name:
+            print('Found hdf5 file: ' + current_path.name)
+            h5py_file = h5py.File(current_path, 'r')
+            break
+    # After finding the h5 file (there must only be a single h5 file in the parent folder!)
+    # escape the loop and work on each defined subject.
+    subjects = h5py_file['Subjects']
+
+    # Sanity check - do we have the same amount of exp folders as we have subjects defined in the
+    # h5 file?
+    no_of_exp_folders = 0
+    for current_folder in directory.iterdir():
+        if current_folder.is_dir():
+            no_of_exp_folders += 1
+
+    # Only continue if # of subjects matches # of foldres
+    if len(subjects) == no_of_exp_folders:
+        for current_subject in subjects:
+            # Look for a folder that should be the subjects folder!
+            current_target_folder = pathlib.Path(directory, 'fly' + current_subject)
+
+            if current_target_folder.exists():
+                fly_dict = {}
+
+                for current_attrs in subjects[str(current_subject)].attrs:
+                    fly_dict[current_attrs] = subjects[str(current_subject)].attrs[current_attrs]
+
+                # Save the dict, can use it to directly write the fly.json file as well!
+                # save_path = pathlib.Path(target_path, date, 'fly_' + fly_dict["subject_id"], 'fly.json')
+
+                dict_for_json = {}
+                dict_for_json['Genotype'] = fly_dict['genotype_father'] + '_x_' + fly_dict['genotype_mother']
+                #dict_for_json['functional_channel'] = fly_dict['functional_channel']
+                #dict_for_json['structural_channel'] = fly_dict['structural_channel']
+
+                # these are all optional
+                dict_for_json['Sex'] = fly_dict['sex']
+                #dict_for_json['circadian_on'] = str(fly_dict['circadian_on'])
+                #dict_for_json['circadian_off'] = str(fly_dict['circadian_off'])
+                dict_for_json['Age'] = str(fly_dict['age'])
+                #dict_for_json['Temp (inline heater)'] = str(fly_dict['Temp (inline heater)'])
+
+                save_path = pathlib.Path(current_target_folder, 'fly.json')
+                with open(save_path, 'w') as file:
+                    json.dump(dict_for_json, file, sort_keys=True, indent=4)
+
+            else:
+                print('>>>>>>ERROR<<<<<')
+                print(current_path.name + ' indicates experiments were done with a folder called ' +
+                      pathlib.Path(directory, 'fly' + current_subject).name)
+                print('However, that folder does not seem to exist')
+                print('Could therefore not create fly.json files from h5!')
+                print('>>>>>>ERROR<<<<<')
+
+
+    else:
+        print('>>>>>>ERROR<<<<<')
+        print('Number of subjects in h5: ' + repr(len(subjects)))
+        print('Number of folders in ' + directory.name + ':' + repr(no_of_exp_folders))
+        print('Could not create fly.json files from h5 as the number of subjects and folders should match!')
+        print('>>>>>>ERROR<<<<<<<')

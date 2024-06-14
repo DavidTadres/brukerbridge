@@ -9,6 +9,7 @@ from skimage import io
 import time
 import pathlib
 import json
+import h5py
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
 sys.path.insert(0, parent_path)
 
@@ -247,8 +248,20 @@ def get_num_channels(sequence):
 """
 
 
-def convert_tiff_collections_to_nii(directory, brukerbridge_version_info):
+def convert_tiff_collections_to_nii(directory, brukerbridge_version_info,
+                                    fly_json_from_h5,fly_json_already_created):
     #for item in os.listdir(directory):
+    # Here we are in the parent directory. By definition (to be documented) this
+    # must be a folder like 20240613 which contains subfolders such as 'fly_001'
+    # and, optionally, a stimpack produced h5 file!
+
+    if fly_json_from_h5 and not fly_json_already_created:
+        # First, create fly.json file for each folder based on the h5 file
+        # created by stimpack
+        utils.get_fly_json_data_from_h5(directory)
+        # If able to create all fly.json, set this to True
+        fly_json_already_created = True
+
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item
 
@@ -258,7 +271,7 @@ def convert_tiff_collections_to_nii(directory, brukerbridge_version_info):
         #    convert_tiff_collections_to_nii(new_path)
         if current_path.is_dir():
             print(1) # debug
-            convert_tiff_collections_to_nii(current_path, brukerbridge_version_info)
+            convert_tiff_collections_to_nii(current_path, brukerbridge_version_info, fly_json_from_h5, fly_json_already_created)
 
         # If the item is a file
         else:
@@ -285,3 +298,5 @@ def convert_tiff_collections_to_nii(directory, brukerbridge_version_info):
                     else:
                         #tiff_to_nii(new_path)
                         tiff_to_nii(current_path, brukerbridge_version_info)
+
+

@@ -5,5 +5,6 @@
     "add_to_build_que": "False",
     "split": "False",
     "fictrac_h5_path": "E:/David/stimpack_data",
-    "fictrac_data_path": "to be added"
+    "fictrac_data_path": "'../../data/david/stimpack_data/fictrac'",
+    "fly_json_from_h5": "True"
 }

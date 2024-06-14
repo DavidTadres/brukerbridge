@@ -38,7 +38,7 @@ for current_subject in subjects:
         fly_dict[current_attrs] = subjects[str(current_subject)].attrs[current_attrs]
 
     # Save the dict, can use it to directly write the fly.json file as well!
-    save_path = pathlib.Path(target_path, date, 'fly_' + fly_dict["subject_id"], 'fly.json')
+    #save_path = pathlib.Path(target_path, date, 'fly_' + fly_dict["subject_id"], 'fly.json')
 
     dict_for_json = {}
     dict_for_json['Sex'] = fly_dict['sex']
