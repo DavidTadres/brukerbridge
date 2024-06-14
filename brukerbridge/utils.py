@@ -315,7 +315,6 @@ class DownloadFolderFTP():
                 if self.folder_to_copy == current_folder:
                     #print(relevant_folder)
                     relevant_folder_path = remote_root_path + '/' + self.folder_to_copy
-                    print('relevant_folder_path: ' + repr(relevant_folder_path))
                     # call function which will iterate through file structure until
                     # it hits a file
                     self.iterdir_until_file_ftphost(relevant_folder_path)
@@ -343,9 +342,6 @@ class DownloadFolderFTP():
             current_target_folder = pathlib.Path(self.local_target_path,
                                                  #self.folder_to_copy,
                                                  relative_path[1::]) # w/o 1:: there's a leading /!
-            print('local_target_path ' + repr(self.local_target_path))
-            print('relative_path ' + repr(relative_path))
-            print("current_target_folder " + repr(current_target_folder))
             # Make sure the folder structure (i.e. C:/brukerbridge/David/20240611/1/loco)
             # exists
             current_target_folder.parent.mkdir(exist_ok=True, parents=True)
