@@ -70,7 +70,7 @@ if stimpack_h5_path is not None:
     shutil.copyfile(src=stimpack_h5_path, dst=h5_dst_imaging_pc)
 
     # currently the autotransfer of fictrac data only works if the h5 file is used!
-    if user_settings['autotransfer_fictrac']:
+    if user_settings['autotransfer_stimpack']:
         print('Will attempt to automatically transfer stimpack data')
         stimpack_data_path = user_settings["stimpack_data_path"]
 
