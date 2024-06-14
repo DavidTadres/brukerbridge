@@ -47,7 +47,7 @@ print(source_directory)
 # Todo: either make user setting file dynamic
 json_path = pathlib.Path(parent_path, 'users\\David.json')
 user_settings = utils.get_json_data(json_path)
-fictrac_data_path = pathlib.Path(user_settings['fictrac_h5_path'])
+stimpack_data_path = pathlib.Path(user_settings['stimpack_h5_path'])
 # The standard way of fictrac to create files is 2024-05-11.
 date_folder_to_transfer = source_directory.name
 year = date_folder_to_transfer[0:4]
@@ -55,19 +55,19 @@ month = date_folder_to_transfer[4:6]
 day = date_folder_to_transfer[6:8]
 string_to_find = year + '-' + month + '-' + day
 
-fictrac_h5_path = None
+stimpack_h5_path = None
 
-for folder in fictrac_data_path.iterdir():
+for folder in stimpack_data_path.iterdir():
     if string_to_find in folder.name:
-        fictrac_h5_path = folder
+        stimpack_h5_path = folder
         break
 
 # The easiest way to get this to work is to just copy the h5 file into the imaging folder on the imaging computer!
 # Then I don't have to deal at all with the actual transfer code!
 
-if fictrac_h5_path is not None:
-    h5_dst_imaging_pc = pathlib.Path(source_directory, fictrac_h5_path.name)
-    shutil.copyfile(src=fictrac_h5_path, dst=h5_dst_imaging_pc)
+if stimpack_h5_path is not None:
+    h5_dst_imaging_pc = pathlib.Path(source_directory, stimpack_h5_path.name)
+    shutil.copyfile(src=stimpack_h5_path, dst=h5_dst_imaging_pc)
 
     # currently the autotransfer of fictrac data only works if the h5 file is used!
     if user_settings['autotransfer_fictrac']:
@@ -76,7 +76,7 @@ if fictrac_h5_path is not None:
 
         # If the stimpack file is i.e. 2024-06-13.hdf5 the folder
         # we are looking for is 2024-06-13
-        current_stimpack_folder_name = fictrac_h5_path.name.split('.hdf5')[0]
+        current_stimpack_folder_name = stimpack_h5_path.name.split('.hdf5')[0]
 
         ###################################
         ### Bruker Sr. fictrac computer ###
