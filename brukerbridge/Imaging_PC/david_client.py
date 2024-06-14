@@ -87,7 +87,7 @@ if stimpack_h5_path is not None:
         passwd = input('Please enter password for ' + ip + ' for username ' + username)
         # Please do not hardcode the password here as it'll be publicly available.
 
-        local_target_path = h5_dst_imaging_pc.split('.hdf5')[0]
+        local_target_path = pathlib.Path(str(h5_dst_imaging_pc).split('.hdf5')[0])
         utils.DownloadFolderFTP(ip, username, passwd,
                                 remote_root_path=stimpack_data_path,
                                 folder_to_copy=current_stimpack_folder_name,
