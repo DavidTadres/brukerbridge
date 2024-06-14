@@ -77,6 +77,7 @@ if stimpack_h5_path is not None:
         # If the stimpack file is i.e. 2024-06-13.hdf5 the folder
         # we are looking for is 2024-06-13
         current_stimpack_folder_name = stimpack_h5_path.name.split('.hdf5')[0]
+        print("current_stimpack_folder_name: " + repr(current_stimpack_folder_name))
 
         ###################################
         ### Bruker Sr. fictrac computer ###
