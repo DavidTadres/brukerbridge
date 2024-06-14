@@ -340,7 +340,7 @@ class DownloadFolderFTP():
             relative_path = folder.split(self.folder_to_copy)[-1]
             # Next, combine it with the desired target folder on the local computer
             current_target_folder = pathlib.Path(self.local_target_path,
-                                                 self.folder_to_copy,
+                                                 #self.folder_to_copy,
                                                  relative_path[1::]) # w/o 1:: there's a leading /!
             print('local_target_path ' + repr(self.local_target_path))
             print('relative_path ' + repr(relative_path))
