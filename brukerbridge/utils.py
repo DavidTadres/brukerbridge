@@ -315,6 +315,7 @@ class DownloadFolderFTP():
                 if self.folder_to_copy == current_folder:
                     #print(relevant_folder)
                     relevant_folder_path = remote_root_path + '/' + self.folder_to_copy
+                    print('relevant_folder_path: ' + repr(relevant_folder_path))
                     # call function which will iterate through file structure until
                     # it hits a file
                     self.iterdir_until_file_ftphost(relevant_folder_path)
