@@ -249,7 +249,8 @@ def get_num_channels(sequence):
 
 
 def convert_tiff_collections_to_nii(directory, brukerbridge_version_info,
-                                    fly_json_from_h5,fly_json_already_created):
+                                    fly_json_from_h5,fly_json_already_created,
+                                    autotransfer_stimpack):
     #for item in os.listdir(directory):
     # Here we are in the parent directory. By definition (to be documented) this
     # must be a folder like 20240613 which contains subfolders such as 'fly_001'
@@ -261,6 +262,35 @@ def convert_tiff_collections_to_nii(directory, brukerbridge_version_info,
         utils.get_fly_json_data_from_h5(directory)
         # If able to create all fly.json, set this to True
         fly_json_already_created = True
+
+        # Todo: use h5 file to check if series matches subject # else label folder with __warning__ so
+        # that it's clear that user input is needed!
+        if autotransfer_stimpack:
+            # read h5 file
+            for current_path in directory.iterdir():
+                if '.hdf5' in current_path.name:
+                    print('Found hdf5 file: ' + current_path.name)
+                    h5py_file = h5py.File(current_path, 'r')
+                    break
+            # After finding the h5 file (there must only be a single h5 file in the parent folder!)
+            # escape the loop and work on each defined subject.
+            subjects = h5py_file['Subjects']
+            # For each series in the h5 file, write a json file directly in the series
+            # folder of the data from the stimpack/fictrac computer!
+            experiments = {}
+            for current_subject in subjects:
+                series = []
+                for current_series in subjects[current_subject]['epoch_runs']:
+                    series.append(current_series)
+                experiments['fly' + str(current_subject)] = series
+
+            # Now that we have the series ID tied to the fly ID (which is easier to keep track
+            # of on Bruker with the imaging folder) write a json file for each series which
+            # contains the fly ID.
+            # This can easily be checked later on and confirmed to fit the bruker imaging data!
+            stimpack_data_folder = pathlib.Path(current_path.as_posix().split('.hdf5')[0])
+            for current_stimpack_folder in stimpack_data_folder.iterdir():
+                print(current_stimpack_folder)
 
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item

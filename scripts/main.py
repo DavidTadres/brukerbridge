@@ -71,6 +71,9 @@ def main(args):
 	fly_json_from_h5 = settings.get('fly_json_from_h5', False)
 	if fly_json_from_h5:
 		fly_json_already_created = False
+		# If there is an h5 file, it is possible to auto-assign loco data to
+		# each experiment
+		autotransfer_stimpack = settings.get('autotransfer_stimpack', False)
 
 	print(convert_to)
 	print(split)
@@ -97,7 +100,8 @@ def main(args):
 	if convert_to == 'nii':
 		tiff_to_nii.convert_tiff_collections_to_nii(dir_to_process, brukerbridge_version_info=VERSION_INFO,
 													fly_json_from_h5=fly_json_from_h5,
-													fly_json_already_created=fly_json_already_created)
+													fly_json_already_created=fly_json_already_created,
+													autotransfer_stimpack=autotransfer_stimpack)
 	elif convert_to == 'tiff':
 		# NOT TESTED! LIKELY WONT WORK!
 		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)
