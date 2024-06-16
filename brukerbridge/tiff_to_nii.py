@@ -10,6 +10,7 @@ import time
 import pathlib
 import json
 import h5py
+import datetime
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
 sys.path.insert(0, parent_path)
 
@@ -248,49 +249,41 @@ def get_num_channels(sequence):
 """
 
 
-def convert_tiff_collections_to_nii(directory, brukerbridge_version_info,
-                                    fly_json_from_h5,fly_json_already_created,
-                                    autotransfer_stimpack):
+def convert_tiff_collections_to_nii(directory,
+                                    brukerbridge_version_info,
+                                    fly_json_from_h5,
+                                    fly_json_already_created,
+                                    autotransfer_stimpack,
+                                    max_diff_imaging_and_stimpack_start_time_second):
     #for item in os.listdir(directory):
     # Here we are in the parent directory. By definition (to be documented) this
     # must be a folder like 20240613 which contains subfolders such as 'fly_001'
     # and, optionally, a stimpack produced h5 file!
 
     if fly_json_from_h5 and not fly_json_already_created:
+        print('Attempting to create fly.json from stimpack h5 file')
         # First, create fly.json file for each folder based on the h5 file
         # created by stimpack
         utils.get_fly_json_data_from_h5(directory)
         # If able to create all fly.json, set this to True
         fly_json_already_created = True
+        print('Successfully created fly.json files from from stimpack h5 file')
 
-        # Todo: use h5 file to check if series matches subject # else label folder with __warning__ so
-        # that it's clear that user input is needed!
+        # option to autotransfer stimpack data (such as fictrac)
+        # Note - even though this function is called several times, it should only copy
+        # The data once because the variable 'fly_json_already_created' makes sure that
+        # we can only be here the first time the function is called!
         if autotransfer_stimpack:
-            # read h5 file
-            for current_path in directory.iterdir():
-                if '.hdf5' in current_path.name:
-                    print('Found hdf5 file: ' + current_path.name)
-                    h5py_file = h5py.File(current_path, 'r')
-                    break
-            # After finding the h5 file (there must only be a single h5 file in the parent folder!)
-            # escape the loop and work on each defined subject.
-            subjects = h5py_file['Subjects']
-            # For each series in the h5 file, write a json file directly in the series
-            # folder of the data from the stimpack/fictrac computer!
-            experiments = {}
-            for current_subject in subjects:
-                series = []
-                for current_series in subjects[current_subject]['epoch_runs']:
-                    series.append(current_series)
-                experiments['fly' + str(current_subject)] = series
+            print('Attempting to automatically assign stimpack/fictrac data to imaging folder')
 
-            # Now that we have the series ID tied to the fly ID (which is easier to keep track
-            # of on Bruker with the imaging folder) write a json file for each series which
-            # contains the fly ID.
-            # This can easily be checked later on and confirmed to fit the bruker imaging data!
-            stimpack_data_folder = pathlib.Path(current_path.as_posix().split('.hdf5')[0])
-            for current_stimpack_folder in stimpack_data_folder.iterdir():
-                print(current_stimpack_folder)
+            # Write flyID.json based on h5 metadata into stimpack data folders!
+            # This json file is used below to check whether a given stimpack session can be assumed to
+            # belong to a given imaging session
+            utils.write_h5_metadata_in_stimpack_folder(directory)
+            print('Wrote h5 metadata in stimpack folder')
+            # Then copy stimpack data from bespoke folder into corresponding imaging folder
+            utils.add_stimpack_data_to_imaging_folder(directory, max_diff_imaging_and_stimpack_start_time_second)
+            print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
 
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item
@@ -300,14 +293,19 @@ def convert_tiff_collections_to_nii(directory, brukerbridge_version_info,
         #    print(1) #debug
         #    convert_tiff_collections_to_nii(new_path)
         if current_path.is_dir():
-            print(1) # debug
-            convert_tiff_collections_to_nii(current_path, brukerbridge_version_info, fly_json_from_h5, fly_json_already_created)
+            #print(1) # debug
+            convert_tiff_collections_to_nii(directory=current_path,
+                                            brukerbridge_version_info=brukerbridge_version_info,
+                                            fly_json_from_h5=fly_json_from_h5,
+                                            fly_json_already_created=fly_json_already_created,
+                                            autotransfer_stimpack=autotransfer_stimpack,
+                                            max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
 
         # If the item is a file
         else:
             # If the item is an xml file
             if '.xml' in current_path.name:
-                print(3) #debug
+                #print(3) #debug
                 #tree = ET.parse(new_path)
                 tree = ET.parse(current_path)
                 root = tree.getroot()

@@ -6,9 +6,11 @@ import os
 import json
 from email.mime.text import MIMEText
 from time import time
+from xml.etree import ElementTree as ET
 from time import strftime
 from time import sleep
 from functools import wraps
+import shutil
 import numpy as np
 #import nibabel as nib
 #from xml.etree import ElementTree as ET
@@ -238,8 +240,9 @@ def get_fly_json_data_from_h5(directory):
     # h5 file?
     no_of_exp_folders = 0
     for current_folder in directory.iterdir():
-        if current_folder.is_dir():
-            no_of_exp_folders += 1
+        if 'fly' in current_folder.name:
+            if current_folder.is_dir():
+                no_of_exp_folders += 1
 
     # Only continue if # of subjects matches # of foldres
     if len(subjects) == no_of_exp_folders:
@@ -258,15 +261,15 @@ def get_fly_json_data_from_h5(directory):
 
                 dict_for_json = {}
                 dict_for_json['Genotype'] = fly_dict['genotype_father'] + '_x_' + fly_dict['genotype_mother']
-                #dict_for_json['functional_channel'] = fly_dict['functional_channel']
-                #dict_for_json['structural_channel'] = fly_dict['structural_channel']
+                dict_for_json['functional_channel'] = fly_dict['functional_channel']
+                dict_for_json['structural_channel'] = fly_dict['structural_channel']
 
                 # these are all optional
                 dict_for_json['Sex'] = fly_dict['sex']
-                #dict_for_json['circadian_on'] = str(fly_dict['circadian_on'])
-                #dict_for_json['circadian_off'] = str(fly_dict['circadian_off'])
+                dict_for_json['circadian_on'] = str(fly_dict['circadian_on'])
+                dict_for_json['circadian_off'] = str(fly_dict['circadian_off'])
                 dict_for_json['Age'] = str(fly_dict['age'])
-                #dict_for_json['Temp (inline heater)'] = str(fly_dict['Temp (inline heater)'])
+                dict_for_json['Temp (inline heater)'] = str(fly_dict['inline_heater_temp'])
 
                 save_path = pathlib.Path(current_target_folder, 'fly.json')
                 with open(save_path, 'w') as file:
@@ -354,3 +357,190 @@ class DownloadFolderFTP():
                 current_full_folder = folder + '/' + current_folder
 
                 self.iterdir_until_file_ftphost(current_full_folder)
+
+def write_h5_metadata_in_stimpack_folder(directory):
+    """
+    As a preparation to:
+
+        1) checking whether a flyID (such as fly1, fly2 etc.) defined
+        by the user on the Bruker PC while imaging fits the metadata entered by the user
+        into stimpack (as subject 1, 2 etc.) extract the h5 metadata (situated on the imaging
+        computer) and write a json into the the actual stimpack data (such as fictrac/loco data,
+        originally situated on the stimpack/fictrac computer).
+
+        2) to compare timestamps of the imaging session with the supposedly attached stimpack
+        session
+
+    write a small json file name 'flyID.json' into the stimpack folder
+
+    Original:
+    - 2024-06-13.hdf5
+    - 2024-06-13
+        - 1
+            - loco
+                - fictrac data
+    After function call:
+    - 2024-06-13.hdf5
+    - 2024-06-13
+        - 1
+            - flyID.json <<<<<<
+            - loco
+                - fictrac data
+
+    flyID.json is a dict that looks like:
+     {'fly': 'fly1', 'series': '1', 'series_start_time': '1718310030.084193'}
+
+    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :return:
+    """
+    # read h5 file
+    for current_path in directory.iterdir():
+        if '.hdf5' in current_path.name:
+            print('Found hdf5 file: ' + current_path.name)
+            h5py_file = h5py.File(current_path, 'r')
+            break
+    # After finding the h5 file (there must only be a single h5 file in the parent folder!)
+    # escape the loop and work on each defined subject.
+    subjects = h5py_file['Subjects']
+    # For each series in the h5 file, write a json file directly in the series
+    # folder of the data from the stimpack/fictrac computer!
+    experiments = {}
+    for current_subject in subjects:
+        # eries = []
+        # start_times = []
+        data_for_current_fly = []
+        for current_series in subjects[current_subject]['epoch_runs']:
+            unix_time = subjects[current_subject]['epoch_runs'][current_series].attrs['run_start_unix_time']
+            # We'll have a string such as 'series_001-1718310030.084193' with the number after the '-' indicating
+            # unix time when series_001 in our example was started!
+            string_to_save = current_series + '-' + str(unix_time)
+            data_for_current_fly.append(string_to_save)
+            # use unix time as it doesn't depend on timezone!
+            # unix_time.append(subjects[current_subject]['epoch_runs'][current_series].attrs['run_start_unix_time'])
+
+        experiments['fly' + str(current_subject)] = data_for_current_fly
+
+    # Now that we have the series ID tied to the fly ID (which is easier to keep track
+    # of on Bruker with the imaging folder) write a json file for each series which
+    # contains the fly ID.
+    # This can easily be checked later on and confirmed to fit the bruker imaging data!
+    stimpack_data_folder = pathlib.Path(current_path.as_posix().split('.hdf5')[0])
+    # loop through the flies
+    for current_fly in experiments:
+        # Each fly can have more than one series, loop to return each series
+        for current_string in experiments[current_fly]:
+            # the folder name of the series by stimpack is '1', '2' etc.
+            # The name of the corresponding seires in the h5 file is 'series_001', 'series_002' etc.
+            # To shorten from 'series_001' to '1' use: current_series.split('series_')[-1].strip('0')
+            # the strip removes all 0 so this will be correct even for 'series_011' and 'series_'100'
+            current_series = current_string.split('-')[0].split('series_')[-1].strip('0')
+            current_series_start_time = current_string.split('-')[-1]
+            current_series_path = pathlib.Path(stimpack_data_folder, current_series)
+
+            relevant_metadata = {}
+            relevant_metadata['fly'] = current_fly
+            relevant_metadata['series'] = current_series
+            relevant_metadata['series_start_time'] = current_series_start_time
+
+            save_path = pathlib.Path(current_series_path, 'flyID.json')
+            # Save as json
+            with open(save_path, 'w') as file:
+                json.dump(relevant_metadata, file, sort_keys=True, indent=4)
+
+def get_datetime_from_xml(xml_file):
+    """
+    Open imaging xml file and get the date and time of the imaging session!
+    :param xml_file:
+    :return:
+    """
+    ##print('Getting datetime from {}'.format(xml_file))
+    ##sys.stdout.flush()
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    datetime = root.get("date")
+
+    return (datetime)
+
+def add_stimpack_data_to_imaging_folder(directory,
+                                        max_diff_imaging_and_stimpack_start_time_second):
+    """
+    Copy stimpack data from bespoke folder INTO corresponding imaging folder.
+    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :return:
+    """
+
+    # Find pathname of stimpack data: Must be the same as the 'hdf5' file without the 'hdf5'
+    for current_path in directory.iterdir():
+        if '.hdf5' in current_path.name:
+            print('Found hdf5 file: ' + current_path.name)
+            stimpack_data_folder = pathlib.Path(current_path.as_posix().split('.hdf5')[0])
+            print('stimpack_data_folder path is therefore: ' + stimpack_data_folder.as_posix())
+            break
+
+    for current_imaging_folder in sorted(directory.iterdir()):
+        if 'fly' in current_imaging_folder.name:
+            # For each folder with a 'fly' in the folder name
+            for current_imaging_folder_fly in current_imaging_folder.iterdir():
+                if 'func' in current_imaging_folder_fly.name:
+                    # for each folder with a 'func' in the folder name
+                    for current_t_series in current_imaging_folder_fly.iterdir():
+                        #print(current_t_series.name)
+                        if 'TSeries' in current_t_series.name:
+                            # This returns the number of the series without leading zeros
+                            imaging_series = current_t_series.name[-3::].strip('0')
+                            # For a given imaging folder, check if the loco data has the
+                            # correct fly id!
+                            current_stimpack_folder = pathlib.Path(stimpack_data_folder, imaging_series)
+                            flyID = get_json_data(pathlib.Path(current_stimpack_folder, 'flyID.json'))
+                            # Will be checked with the first 'if' below.
+
+                            # Next, want to load the xml file of the imaging data to extract timestamp
+                            imaging_metadata_path = pathlib.Path(current_t_series, current_t_series.name + '.xml')
+
+                            # This will return i.e. '6/13/2024 04:54:23 PM'
+                            imaging_datetime_string = get_datetime_from_xml(imaging_metadata_path)
+                            # Now it's in this format: datetime.datetime(2024, 6, 13, 4, 54, 23)
+                            imaging_datetime_strf = datetime.strptime(imaging_datetime_string,
+                                                                               '%m/%d/%Y %I:%M:%S %p')
+                            # Get timezone of the local computer (assuming this code is running on same computer
+                            # that created the metadata_xml file)
+                            imaging_timestamp_unix_time = imaging_datetime_strf.timestamp()
+                            # Calculate the absolute difference in seconds between the start of imaging and start of
+                            # stimpack series
+                            delta_imaging_stimpack_start_time = abs(imaging_timestamp_unix_time - float(
+                                flyID['series_start_time']))
+                            # Now we have difference in start time in seconds!
+
+                            if not current_imaging_folder.name == flyID['fly']:
+                                # IF we are here imaging folder defining the fly doesn't match the stimpack.h5 file!
+                                # Cancel and put a __warning__ on the folder!
+                                new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
+                                os.rename(directory, new_name)
+                                print('>>>>>>>>>>>>>>>>>>>>>>EXITING QUEUE AND WARNING ADDED<<<<<<<<<<<<<<<<<<<')
+                                print('For stimpack/fictrac autotransfer the series number of the stimpack GUI\n')
+                                print('and the series number of the TSeries must be in the same "fly".')
+                                print(
+                                    'Instead, the current imaging folder is ' + current_imaging_folder.as_posix() + '\n')
+                                print('with the following h5 metadata: ' + repr(flyID))
+                                sys.exit()
+                            elif not delta_imaging_stimpack_start_time < max_diff_imaging_and_stimpack_start_time_second:  # CHECK TIMESTAMPS!
+                                # IF we are here, the time difference between when the imaging session started
+                                # and the stimpack/fictrac session started is larger than allowed by
+                                # stimpack_imaging_max_allowed_delta!
+                                new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
+                                os.rename(directory, new_name)
+                                print('--------------------->EXITING QUEUE AND WARNING ADDED<---------------------')
+                                print('For stimpack/fictrac autotransfer the timestamps of the imaging recording\n')
+                                print('session and the stimpack session start time must be smaller than '
+                                      + repr(stimpack_imaging_max_allowed_delta) + 's\n')
+                                print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
+                                print('for imaging folder ' + current_t_series.as_posix())
+                                print('h5 metadata contains the following information: ' + repr(flyID))
+                                sys.exit()
+
+                            else:
+                                # Copy fictrac data into corresponding 'func' folder so that it can easily
+                                # be picked up by the fly_builder later on!
+                                source_path = current_stimpack_folder
+                                target_path = pathlib.Path(current_imaging_folder_fly, 'stimpack')
+                                shutil.copytree(source_path, target_path)

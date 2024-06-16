@@ -71,9 +71,19 @@ def main(args):
 	fly_json_from_h5 = settings.get('fly_json_from_h5', False)
 	if fly_json_from_h5:
 		fly_json_already_created = False
-		# If there is an h5 file, it is possible to auto-assign loco data to
+		# If there is a h5 file, it is possible to auto-assign loco data to
 		# each experiment
 		autotransfer_stimpack = settings.get('autotransfer_stimpack', False)
+		if autotransfer_stimpack:
+			# User can define the 'slack' they want to have between start of stimpack
+			# series and imaging series.
+			max_diff_imaging_and_stimpack_start_time_second = float(
+				settings.get('max_diff_imaging_and_stimpack_start_time_second', "60"))
+	# If no h5 file, not possible to do autotransfer of stimpack data. Just define
+	# variables as False and None
+	else:
+		autotransfer_stimpack = False
+		max_diff_imaging_and_stimpack_start_time_second = None
 
 	print(convert_to)
 	print(split)
@@ -98,10 +108,12 @@ def main(args):
 	#########################################
 
 	if convert_to == 'nii':
-		tiff_to_nii.convert_tiff_collections_to_nii(dir_to_process, brukerbridge_version_info=VERSION_INFO,
+		tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
+													brukerbridge_version_info=VERSION_INFO,
 													fly_json_from_h5=fly_json_from_h5,
 													fly_json_already_created=fly_json_already_created,
-													autotransfer_stimpack=autotransfer_stimpack)
+													autotransfer_stimpack=autotransfer_stimpack,
+													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
 	elif convert_to == 'tiff':
 		# NOT TESTED! LIKELY WONT WORK!
 		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)
