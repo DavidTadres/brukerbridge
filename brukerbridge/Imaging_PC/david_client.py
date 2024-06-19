@@ -159,9 +159,9 @@ all_checksums_true = bool(message.split('.')[1])
 if num_files_sent == num_of_files_recieved:
     if all_checksums_true:
         print('Confirmed correct number of files recieved and all checksums match.')
-        print('CURRENTLY TESTING SO >>>NOT<<< DELETING DATA')
-        #print('DELETING BRUKER DATA...')
-        #shutil.rmtree(source_directory)
+        #print('CURRENTLY TESTING SO >>>NOT<<< DELETING DATA')
+        print('DELETING BRUKER DATA...')
+        shutil.rmtree(source_directory)
     else:
         print('!!! Correct number of files but at least one checksum does not match !!!')
 else:
