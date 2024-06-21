@@ -275,6 +275,8 @@ def get_fly_json_data_from_h5(directory):
                 with open(save_path, 'w') as file:
                     json.dump(dict_for_json, file, sort_keys=True, indent=4)
 
+                # Also save the notes done during the experiment
+
             else:
                 print('>>>>>>ERROR<<<<<')
                 print(current_path.name + ' indicates experiments were done with a folder called ' +
@@ -404,6 +406,12 @@ def write_h5_metadata_in_stimpack_folder(directory):
     subjects = h5py_file['Subjects']
     # For each series in the h5 file, write a json file directly in the series
     # folder of the data from the stimpack/fictrac computer!
+
+    # Create a dict that combines
+    # 1) fly ID from 'current_subject' of h5 file
+    # 2) the series that belongs to a given fly as defined by the h5 file
+    # 3) the start time of the series
+
     experiments = {}
     for current_subject in subjects:
         # eries = []
@@ -418,7 +426,10 @@ def write_h5_metadata_in_stimpack_folder(directory):
             # use unix time as it doesn't depend on timezone!
             # unix_time.append(subjects[current_subject]['epoch_runs'][current_series].attrs['run_start_unix_time'])
 
+        # In this dict, the key (i.e. fly1) defines the subject which has a list (can be more than 1) of series
+        # including start times.
         experiments['fly' + str(current_subject)] = data_for_current_fly
+
 
     # Now that we have the series ID tied to the fly ID (which is easier to keep track
     # of on Bruker with the imaging folder) write a json file for each series which
@@ -442,6 +453,11 @@ def write_h5_metadata_in_stimpack_folder(directory):
             relevant_metadata['series'] = current_series
             relevant_metadata['series_start_time'] = current_series_start_time
 
+            # When one does only walking and forgets to tick the 'loco' box, no data is
+            # created for that series. This would therefore fail as no folder exists on the
+            # brukerbridge computer that would refer to this series. Hence, create the folder
+            # and populate it with the fly.json file.
+            current_series_path.mkdir(parents=True, exist_ok=True)
             save_path = pathlib.Path(current_series_path, 'flyID.json')
             # Save as json
             with open(save_path, 'w') as file:
@@ -532,7 +548,7 @@ def add_stimpack_data_to_imaging_folder(directory,
                                 print('--------------------->EXITING QUEUE AND WARNING ADDED<---------------------')
                                 print('For stimpack/fictrac autotransfer the timestamps of the imaging recording\n')
                                 print('session and the stimpack session start time must be smaller than '
-                                      + repr(stimpack_imaging_max_allowed_delta) + 's\n')
+                                      + repr(delta_imaging_stimpack_start_time) + 's\n')
                                 print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
                                 print('for imaging folder ' + current_t_series.as_posix())
                                 print('h5 metadata contains the following information: ' + repr(flyID))
@@ -543,4 +559,8 @@ def add_stimpack_data_to_imaging_folder(directory,
                                 # be picked up by the fly_builder later on!
                                 source_path = current_stimpack_folder
                                 target_path = pathlib.Path(current_imaging_folder_fly, 'stimpack')
-                                shutil.copytree(source_path, target_path)
+                                try:
+                                    shutil.copytree(source_path, target_path)
+                                except FileExistsError:
+                                    print('\ntarget path ' + target_path.as_posix() + ' already exists! ')
+                                    print('Nothing copied\n')

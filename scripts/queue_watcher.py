@@ -93,7 +93,7 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 		attempt_rename(dir_to_process, pathlib.Path(str(stripped_folder) + "__error__"))
 		#raise SystemExit
 	else:
-		attempt_rename(dir_to_process, stripped_folder)
+		attempt_rename(dir_to_process, pathlib.Path(str(stripped_folder))) # having trouble with removing queue
 
 	#os.system('python C:/Users/User/projects/brukerbridge/scripts/main.py "{}" >> {} 2>&1'.format(dir_to_process, full_log_file))
 	#time.sleep(5)

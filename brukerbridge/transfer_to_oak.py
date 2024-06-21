@@ -1,92 +1,110 @@
-import os
-import sys
-import time
+import pathlib
 import shutil
-from datetime import datetime
+import os
+import datetime
+import time
 
-def transfer_to_oak(source, target, allowable_extensions, verbose): 
-    print(source)
-    for item in os.listdir(source):
-        # Create full path to item
-        source_path = source + '/' + item
-        target_path = target + '/' + item
+def oak_transfer(root_path_name, # Will be something like
+                 directory_from,
+                 oak_target,
+                 allowable_extensions,
+                 add_to_build_que,
+                 copy_SingleImage):
 
-        # Check if item is a directory
-        if os.path.isdir(source_path):
-            # Create same directory in target
-            try:
-                os.mkdir(target_path)
-                print('Creating directory {}'.format(os.path.split(target_path)[-1]))
-            except FileExistsError:
-                if verbose:
-                    print('WARNING: Directory already exists  {}'.format(target_path))
-                    print('Skipping Directory.')
+    """
+    Rewrote Bella's function which I didn't completely get
+    :param root_path_name: str, will be something like 20240613__queue__ and won't change when called recursively!
+    :param directory_from: pathlib.Path object
+    :param oak_target: pathlib.Path object
+    :param extensions_for_oak_transfer: list of extension we want to transfer
+    :param add_to_build_que:
+    :return:
+    """
 
-            # RECURSE!
-            transfer_to_oak(source_path, target_path, allowable_extensions, verbose, )
-        
-        # If the item is a file
+    for current_file_or_folder in directory_from.iterdir():
+        # if we are in a folder, recursively call transfer function
+        if current_file_or_folder.is_dir():
+            oak_transfer(root_path_name=root_path_name,
+                         directory_from=current_file_or_folder,
+                         oak_target=oak_target,
+                         allowable_extensions=allowable_extensions,
+                         add_to_build_que=add_to_build_que,
+                         copy_SingleImage=copy_SingleImage)
+
         else:
-            if os.path.isfile(target_path):
+            if not copy_SingleImage:
+                # DO NOT copy the 'SingleImage' folders that Bruker collects every time
+                # one clicks on 'live image'.
+                if 'SingleImage' in current_file_or_folder.as_posix():
+                    pass
+            # Check for allowable extensions (hardcoded in 'main.py'!)
+            elif current_file_or_folder.suffix in allowable_extensions:
 
-                if verbose:
-                    print('File already exists. Skipping.  {}'.format(target_path))
-            
-            else:
+                # Get the relative path.
+                # I.e. 'F:\\brukerbridge\\David\\20240613__queue__\\fly1\\func0\\TSeries-12172018-1322-001\\TSeries-12172018-1322-001_channel_2.nii'
+                # becomes '\\fly1\\func0\\TSeries-12172018-1322-001\\TSeries-12172018-1322-001_channel_2.nii'
+                #print('oak_target: ' + repr(oak_target))
+                relative_path = str(current_file_or_folder).split(root_path_name)[-1]
+                # Super strange that the following line doesn't seem to work!
+                #current_oak_target = pathlib.Path(oak_target, root_path_name, relative_path)
+                # like have an extra / or \ somewhere which confused pathlib!
+                str_current_oak_target = oak_target.as_posix() + '/'  +root_path_name + '/' + relative_path
+                #print(str_current_oak_target)
+                current_oak_target = pathlib.Path(str_current_oak_target)
+                #print('current_oak_target.parent ' + repr(current_oak_target.parent))
 
-                if allowable_extensions is not None:
-                    if source_path[-4:] not in allowable_extensions:
-                        continue
-
+                # Create parent folder of the file if it doesn't exist yet
+                current_oak_target.parent.mkdir(parents=True, exist_ok=True)
                 #####################
                 ### TRANSFER FILE ###
                 #####################
 
-                file_size = os.path.getsize(source_path)
-                file_size_MB = file_size*10**-6
-                file_size_GB = file_size*10**-9
-                
-                now = datetime.now()
-                current_time = now.strftime("%H:%M:%S")
+                file_size = os.path.getsize(current_file_or_folder.as_posix())
+                file_size_MB = file_size * 10 ** -6
+                file_size_GB = file_size * 10 ** -9
 
-                print('{} | Transfering file {}; size = {:.2f} GB'.format(current_time, target_path, file_size_GB),end='')
+                if file_size_GB > 1:
+                    now = datetime.datetime.now()
+                    current_time = now.strftime("%H:%M:%S")
 
-                t0 = time.time()
-                shutil.copyfile(source_path, target_path)
-                duration = time.time()-t0
-                duration += 0.1
+                    print('{} | Transfering file {}; size = {:.2f} GB'.format(current_time, current_oak_target, file_size_GB),
+                          end='')
+                    t0 = time.time()
 
-                print(' done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB/duration)))
+                # FINALLY COPY THE FILE!!!
+                shutil.copyfile(current_file_or_folder, current_oak_target)
 
-def start_oak_transfer(directory_from, oak_target, allowable_extensions, add_to_build_que, verbose=True):
-    directory_to = os.path.join(oak_target, os.path.split(directory_from)[-1])
-    try:
-        os.mkdir(directory_to)
-    except FileExistsError:
-        if verbose:
-            print('WARNING: Directory already exists  {}'.format(directory_to))
-        #print('Skipping directory.')
+                if file_size_GB > 1:
+                    duration = time.time() - t0
+                    duration += 0.1
 
-    print('Moving from  {}'.format(directory_from))
-    print('Moving to  {}'.format(directory_to))
-    transfer_to_oak(directory_from, directory_to, allowable_extensions, verbose)
+                    print(' done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB / duration)))
 
-    # if directory_to.endswith('__queue__'):
-    #     os.rename(directory_to, directory_to[:-9])
-    #     print('removed __queue__ flag')
-    # if directory_to.endswith('__lowqueue__'):
-    #     os.rename(directory_to, directory_to[:-12])
-    #     print('removed __lowqueue__ flag')
+                else:
+                    print('Copied file ' + relative_path)
 
+
+def start_oak_transfer(root_path_name, # Will be something like
+                       directory_from,
+                       oak_target,
+                       allowable_extensions,
+                       add_to_build_que,
+                       copy_SingleImage):
+    """
+    Function that just calls the actual transfer function which is called recursively!
+    :param root_path_name:
+    :param directory_from:
+    :param oak_target:
+    :param allowable_extensions:
+    :param add_to_build_que:
+    :param copy_SingleImage:
+    :return:
+    """
+    print('*** Starting Oak Upload ***')
+    oak_transfer(root_path_name,
+                 directory_from,
+                 oak_target,
+                 allowable_extensions,
+                 add_to_build_que,
+                 copy_SingleImage)
     print('*** Oak Upload Complete ***')
-    if add_to_build_que in ['True', 'true']:
-        folder = os.path.split(directory_to)[-1]
-        queue_file = os.path.join(oak_target, 'build_queue', folder)
-        file = open(queue_file,'w+')
-        file.close()
-        print('Added {} to build queue.'.format(folder))
-    else:
-        print('Add to build queue is False.')
-        #os.rename(directory_to, directory_to + '__done__')
-        #print('Added __done__ flag')
-

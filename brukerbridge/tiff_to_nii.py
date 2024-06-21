@@ -264,10 +264,20 @@ def convert_tiff_collections_to_nii(directory,
         print('Attempting to create fly.json from stimpack h5 file')
         # First, create fly.json file for each folder based on the h5 file
         # created by stimpack
-        utils.get_fly_json_data_from_h5(directory)
-        # If able to create all fly.json, set this to True
+        try:
+            utils.get_fly_json_data_from_h5(directory)
+            # If able to create all fly.json, set this to True
+            fly_json_already_created = True
+            print('Successfully created fly.json files from from stimpack h5 file')
+        except Exception as e:
+            print('******* WARNING ******')
+            print('unable to create fly.jsonf iles from h5 because:')
+            print(e)
+
+        # Still set this to True as it'll else try to run this many times while the error could be
+        # just a manually create fly.json file!
         fly_json_already_created = True
-        print('Successfully created fly.json files from from stimpack h5 file')
+
 
         # option to autotransfer stimpack data (such as fictrac)
         # Note - even though this function is called several times, it should only copy
@@ -279,6 +289,7 @@ def convert_tiff_collections_to_nii(directory,
             # Write flyID.json based on h5 metadata into stimpack data folders!
             # This json file is used below to check whether a given stimpack session can be assumed to
             # belong to a given imaging session
+
             utils.write_h5_metadata_in_stimpack_folder(directory)
             print('Wrote h5 metadata in stimpack folder')
             # Then copy stimpack data from bespoke folder into corresponding imaging folder

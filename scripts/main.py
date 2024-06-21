@@ -29,7 +29,9 @@ VERSION_INFO = 'v' + __version__ + \
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'tiff', 'hdf5'] # needs to be 4 char
+extensions_for_oak_transfer = ['.nii', '.csv', '.xml', '.json', '.tiff', '.hdf5',
+							   '.dat', '.log', '.txt',
+							   ]
 users_directory = pathlib.Path(parent_path, 'users')
 
 def main(args):
@@ -62,7 +64,8 @@ def main(args):
 	with open(user_json_path) as file:
 		settings = json.load(file)
 
-	oak_target = settings['oak_target']
+	oak_target = pathlib.Path(settings['oak_target'])
+	print('oak_target ' + repr(oak_target))
 	convert_to = settings['convert_to']
 	#email = settings.get('email', False)
 	add_to_build_que = settings.get('add_to_build_que', False)
@@ -85,8 +88,10 @@ def main(args):
 		autotransfer_stimpack = False
 		max_diff_imaging_and_stimpack_start_time_second = None
 
-	print(convert_to)
-	print(split)
+	copy_SingleImage = settings.get('copy_SingleImage', True)
+
+	#print(convert_to)
+	#print(split)
 	######################################
 	### Save email for error reporting ###
 	######################################
@@ -125,8 +130,17 @@ def main(args):
 	### Transfer to Oak ###
 	#######################
 	start_time = time.time()
-	size_transfered = transfer_to_oak.start_oak_transfer(str(dir_to_process), oak_target,
-														 extensions_for_oak_transfer, add_to_build_que)
+	#size_transfered = transfer_to_oak.start_oak_transfer(directory_from=str(dir_to_process),
+	#													 oak_target=oak_target,
+	#													 allowable_extensions=extensions_for_oak_transfer,
+	#													 add_to_build_que=add_to_build_que)
+
+	transfer_to_oak.start_oak_transfer(root_path_name=dir_to_process.name,
+													directory_from=dir_to_process,
+													oak_target=oak_target,
+													allowable_extensions=extensions_for_oak_transfer,
+													add_to_build_que=add_to_build_que,
+									   				copy_SingleImage=copy_SingleImage)
 	print('OAK TRANSFER DURATION: {} MIN'.format(int((time.time()-start_time) / 60)))
 
 	##############################
