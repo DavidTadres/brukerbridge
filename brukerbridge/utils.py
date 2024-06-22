@@ -484,6 +484,8 @@ def add_stimpack_data_to_imaging_folder(directory,
     :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
     :return:
     """
+    # Dict with error messages
+    error_dict = {}
 
     # Find pathname of stimpack data: Must be the same as the 'hdf5' file without the 'hdf5'
     for current_path in directory.iterdir():
@@ -498,69 +500,88 @@ def add_stimpack_data_to_imaging_folder(directory,
             # For each folder with a 'fly' in the folder name
             for current_imaging_folder_fly in current_imaging_folder.iterdir():
                 if 'func' in current_imaging_folder_fly.name:
-                    # for each folder with a 'func' in the folder name
+                    # Check if there are more than 1 folder with name TSeries!
+                    no_of_TSeries_folders = 0
                     for current_t_series in current_imaging_folder_fly.iterdir():
-                        #print(current_t_series.name)
                         if 'TSeries' in current_t_series.name:
-                            # This returns the number of the series without leading zeros
-                            imaging_series = current_t_series.name[-3::].strip('0')
-                            # For a given imaging folder, check if the loco data has the
-                            # correct fly id!
-                            current_stimpack_folder = pathlib.Path(stimpack_data_folder, imaging_series)
-                            flyID = get_json_data(pathlib.Path(current_stimpack_folder, 'flyID.json'))
-                            # Will be checked with the first 'if' below.
+                            no_of_TSeries_folders +=1
 
-                            # Next, want to load the xml file of the imaging data to extract timestamp
-                            imaging_metadata_path = pathlib.Path(current_t_series, current_t_series.name + '.xml')
+                    if no_of_TSeries_folders>1:
+                        # Yields i.e. func0_TSeries_error_msg
+                        key = current_imaging_folder_fly.name + '_TSeries_error_msg'
+                        error_dict[key] = ('More than 1 folder with "TSeries" in folder ' +
+                                                   current_imaging_folder_fly.name + '.\nYou can only have'
+                                                 'a single folder called TSeries per func folder!')
+                        # If there is more than one TSeries folder it's not possible to continue for
+                        # that experiment: Since the stimpack or fictrac folder is assigned by 'func' folder
+                        # one would need more than one stimpack or fictrac folder per func folder.
+                    # elif other errors!
+                    else:
+                        # for each folder with a 'func' in the folder name
+                        for current_t_series in current_imaging_folder_fly.iterdir():
+                            #print(current_t_series.name)
+                            if 'TSeries' in current_t_series.name:
+                                # This returns the number of the series without leading zeros
+                                imaging_series = current_t_series.name[-3::].strip('0')
+                                # For a given imaging folder, check if the loco data has the
+                                # correct fly id!
+                                current_stimpack_folder = pathlib.Path(stimpack_data_folder, imaging_series)
+                                flyID = get_json_data(pathlib.Path(current_stimpack_folder, 'flyID.json'))
+                                # Will be checked with the first 'if' below.
 
-                            # This will return i.e. '6/13/2024 04:54:23 PM'
-                            imaging_datetime_string = get_datetime_from_xml(imaging_metadata_path)
-                            # Now it's in this format: datetime.datetime(2024, 6, 13, 4, 54, 23)
-                            imaging_datetime_strf = datetime.strptime(imaging_datetime_string,
-                                                                               '%m/%d/%Y %I:%M:%S %p')
-                            # Get timezone of the local computer (assuming this code is running on same computer
-                            # that created the metadata_xml file)
-                            imaging_timestamp_unix_time = imaging_datetime_strf.timestamp()
-                            # Calculate the absolute difference in seconds between the start of imaging and start of
-                            # stimpack series
-                            delta_imaging_stimpack_start_time = abs(imaging_timestamp_unix_time - float(
-                                flyID['series_start_time']))
-                            # Now we have difference in start time in seconds!
+                                # Next, want to load the xml file of the imaging data to extract timestamp
+                                imaging_metadata_path = pathlib.Path(current_t_series, current_t_series.name + '.xml')
 
-                            if not current_imaging_folder.name == flyID['fly']:
-                                # IF we are here imaging folder defining the fly doesn't match the stimpack.h5 file!
-                                # Cancel and put a __warning__ on the folder!
-                                new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
-                                os.rename(directory, new_name)
-                                print('>>>>>>>>>>>>>>>>>>>>>>EXITING QUEUE AND WARNING ADDED<<<<<<<<<<<<<<<<<<<')
-                                print('For stimpack/fictrac autotransfer the series number of the stimpack GUI\n')
-                                print('and the series number of the TSeries must be in the same "fly".')
-                                print(
-                                    'Instead, the current imaging folder is ' + current_imaging_folder.as_posix() + '\n')
-                                print('with the following h5 metadata: ' + repr(flyID))
-                                sys.exit()
-                            elif not delta_imaging_stimpack_start_time < max_diff_imaging_and_stimpack_start_time_second:  # CHECK TIMESTAMPS!
-                                # IF we are here, the time difference between when the imaging session started
-                                # and the stimpack/fictrac session started is larger than allowed by
-                                # stimpack_imaging_max_allowed_delta!
-                                new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
-                                os.rename(directory, new_name)
-                                print('--------------------->EXITING QUEUE AND WARNING ADDED<---------------------')
-                                print('For stimpack/fictrac autotransfer the timestamps of the imaging recording\n')
-                                print('session and the stimpack session start time must be smaller than '
-                                      + repr(delta_imaging_stimpack_start_time) + 's\n')
-                                print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
-                                print('for imaging folder ' + current_t_series.as_posix())
-                                print('h5 metadata contains the following information: ' + repr(flyID))
-                                sys.exit()
+                                # This will return i.e. '6/13/2024 04:54:23 PM'
+                                imaging_datetime_string = get_datetime_from_xml(imaging_metadata_path)
+                                # Now it's in this format: datetime.datetime(2024, 6, 13, 4, 54, 23)
+                                imaging_datetime_strf = datetime.strptime(imaging_datetime_string,
+                                                                                   '%m/%d/%Y %I:%M:%S %p')
+                                # Get timezone of the local computer (assuming this code is running on same computer
+                                # that created the metadata_xml file)
+                                imaging_timestamp_unix_time = imaging_datetime_strf.timestamp()
+                                # Calculate the absolute difference in seconds between the start of imaging and start of
+                                # stimpack series
+                                delta_imaging_stimpack_start_time = abs(imaging_timestamp_unix_time - float(
+                                    flyID['series_start_time']))
+                                # Now we have difference in start time in seconds!
 
-                            else:
-                                # Copy fictrac data into corresponding 'func' folder so that it can easily
-                                # be picked up by the fly_builder later on!
-                                source_path = current_stimpack_folder
-                                target_path = pathlib.Path(current_imaging_folder_fly, 'stimpack')
-                                try:
-                                    shutil.copytree(source_path, target_path)
-                                except FileExistsError:
-                                    print('\ntarget path ' + target_path.as_posix() + ' already exists! ')
-                                    print('Nothing copied\n')
+                                if not current_imaging_folder.name == flyID['fly']:
+                                    # IF we are here imaging folder defining the fly doesn't match the stimpack.h5 file!
+                                    # Cancel and put a __warning__ on the folder!
+                                    new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
+                                    os.rename(directory, new_name)
+                                    print('>>>>>>>>>>>>>>>>>>>>>>EXITING QUEUE AND WARNING ADDED<<<<<<<<<<<<<<<<<<<')
+                                    print('For stimpack/fictrac autotransfer the series number of the stimpack GUI\n')
+                                    print('and the series number of the TSeries must be in the same "fly".')
+                                    print(
+                                        'Instead, the current imaging folder is ' + current_imaging_folder.as_posix() + '\n')
+                                    print('with the following h5 metadata: ' + repr(flyID))
+                                    sys.exit()
+                                elif not delta_imaging_stimpack_start_time < max_diff_imaging_and_stimpack_start_time_second:  # CHECK TIMESTAMPS!
+                                    # IF we are here, the time difference between when the imaging session started
+                                    # and the stimpack/fictrac session started is larger than allowed by
+                                    # stimpack_imaging_max_allowed_delta!
+                                    new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
+                                    os.rename(directory, new_name)
+                                    print('--------------------->EXITING QUEUE AND WARNING ADDED<---------------------')
+                                    print('For stimpack/fictrac autotransfer the timestamps of the imaging recording\n')
+                                    print('session and the stimpack session start time must be smaller than '
+                                          + repr(delta_imaging_stimpack_start_time) + 's\n')
+                                    print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
+                                    print('for imaging folder ' + current_t_series.as_posix())
+                                    print('h5 metadata contains the following information: ' + repr(flyID))
+                                    sys.exit()
+
+                                else:
+                                    # Copy fictrac data into corresponding 'func' folder so that it can easily
+                                    # be picked up by the fly_builder later on!
+                                    source_path = current_stimpack_folder
+                                    target_path = pathlib.Path(current_imaging_folder_fly, 'stimpack')
+                                    try:
+                                        shutil.copytree(source_path, target_path)
+                                    except FileExistsError:
+                                        print('\ntarget path ' + target_path.as_posix() + ' already exists! ')
+                                        print('Nothing copied\n')
+
+    return(error_dict)

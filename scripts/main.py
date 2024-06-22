@@ -68,15 +68,15 @@ def main(args):
 	print('oak_target ' + repr(oak_target))
 	convert_to = settings['convert_to']
 	#email = settings.get('email', False)
-	add_to_build_que = settings.get('add_to_build_que', False)
-	transfer_fictrac_bool = settings.get('transfer_fictrac', False)
-	split = settings.get('split', False)
-	fly_json_from_h5 = settings.get('fly_json_from_h5', False)
+	add_to_build_que = bool(settings.get('add_to_build_que', "False"))
+	transfer_fictrac_bool = bool(settings.get('transfer_fictrac', "False"))
+	#split = settings.get('split', False)
+	fly_json_from_h5 = bool(settings.get('fly_json_from_h5', "False"))
 	if fly_json_from_h5:
 		fly_json_already_created = False
 		# If there is a h5 file, it is possible to auto-assign loco data to
 		# each experiment
-		autotransfer_stimpack = settings.get('autotransfer_stimpack', False)
+		autotransfer_stimpack = bool(settings.get('autotransfer_stimpack', "False"))
 		if autotransfer_stimpack:
 			# User can define the 'slack' they want to have between start of stimpack
 			# series and imaging series.
@@ -88,17 +88,7 @@ def main(args):
 		autotransfer_stimpack = False
 		max_diff_imaging_and_stimpack_start_time_second = None
 
-	copy_SingleImage = settings.get('copy_SingleImage', True)
-
-	#print(convert_to)
-	#print(split)
-	######################################
-	### Save email for error reporting ###
-	######################################
-
-	# email_file = 'C:/Users/User/projects/brukerbridge/scripts/email.txt'
-	# with open(email_file, 'w') as f:
-	# 	f.write(email)
+	copy_SingleImage = bool(settings.get('copy_SingleImage', "True"))
 
 	#################################
 	### Convert from raw to tiffs ###

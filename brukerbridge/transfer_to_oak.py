@@ -35,6 +35,7 @@ def oak_transfer(root_path_name, # Will be something like
             if not copy_SingleImage:
                 # DO NOT copy the 'SingleImage' folders that Bruker collects every time
                 # one clicks on 'live image'.
+                # This is a setting in 'user.json' called "copy_SingleImage"
                 if 'SingleImage' in current_file_or_folder.as_posix():
                     pass
             # Check for allowable extensions (hardcoded in 'main.py'!)
@@ -71,17 +72,39 @@ def oak_transfer(root_path_name, # Will be something like
                           end='')
                     t0 = time.time()
 
-                # FINALLY COPY THE FILE!!!
-                shutil.copyfile(current_file_or_folder, current_oak_target)
+                copy_file = True # Standard behavior is to copy the file
 
-                if file_size_GB > 1:
-                    duration = time.time() - t0
-                    duration += 0.1
-
-                    print(' done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB / duration)))
-
+                # Check if file with identical name already exists!
+                if current_oak_target.is_file():
+                    # If it already exists, check the file size
+                    file_size_target = os.path.getsize(current_oak_target.as_posix())
+                    # If the filesize of the target is identical to the file size of the source do not copy
+                    if file_size_target == file_size:
+                        copy_file = False # Just to be explicit!
+                    # Else copy (after deleting the file in target!)
+                    else:
+                        # Remove target file if exists partially.
+                        current_oak_target.unlink()
+                        copy_file = True
+                # If the file doesn't exist, copy
                 else:
-                    print('Copied file ' + relative_path)
+                    copy_file = True
+
+                if copy_file:
+                    # FINALLY COPY THE FILE!!!
+                    shutil.copyfile(current_file_or_folder, current_oak_target)
+                    if file_size_GB > 1:
+                        duration = time.time() - t0
+                        duration += 0.1
+
+                        print(' done. duration: {} sec; {} MB/SEC'.format(int(duration), int(file_size_MB / duration)))
+                    else:
+                        print('Copied file ' + relative_path)
+                else:
+                    print("****Skipping " + current_oak_target.name + ' with filesize: ' + repr(
+                        file_size_GB) + 'GB already exists!***')
+
+
 
 
 def start_oak_transfer(root_path_name, # Will be something like
@@ -92,6 +115,9 @@ def start_oak_transfer(root_path_name, # Will be something like
                        copy_SingleImage):
     """
     Function that just calls the actual transfer function which is called recursively!
+
+    Having this extra function allows me to have these print statements.
+
     :param root_path_name:
     :param directory_from:
     :param oak_target:

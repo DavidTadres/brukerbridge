@@ -1,7 +1,6 @@
 {
     "oak_target": "//oak-smb-trc.stanford.edu/groups/trc/data/David/Bruker/imports",
     "convert_to": "nii",
-    "email": "dtadres@stanford.edu",
     "add_to_build_que": "False",
     "split": "False",
     "fly_json_from_h5": "True",
