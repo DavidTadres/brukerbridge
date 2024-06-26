@@ -51,10 +51,14 @@ changed windows defender settings on ripping PC: https://stackoverflow.com/quest
 
    a) 'blueprint_brukerbridge.bat' will be used on the Bruker imaging computer. You need to change it such 
       that it points to the client.pyfile you created before. For example for David would say 
-      `%mypath:~0,-1%\brukerbridge\Imaging_PC\david_client.py`.
+      `%mypath:~0,-13%\brukerbridge\Imaging_PC\david_client.py`.
 
       It is strongly adviced to rename the file to something unique so that no-one except you uses this link to send
       data to your computer!
+
+      Note that the number after %mypath:~0 refers to the number of charaters to go 'back up' to the root path.
+      For example, david needs to go from '../brukerbridge/users/David/' to '../brukerbridge' and remove '/users/David/'
+      which is exactly 13 characters.
 
    b) 'launch_queue_watcher.bat', change it such that it will point to your env_brukerbridge/python.exe
 
