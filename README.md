@@ -1,3 +1,64 @@
+# Brukerbridge (David's fork)
+
+clone the repo:
+
+`git clone https://github.com/davidtadres/brukerbridge`
+
+##
+Installation
+##
+
+make environment:
+
+`conda create -n env_brukerbridge`
+
+`activate env_brukerbridge`
+
+`conda install python=3.8`
+
+`conda install numpy`
+
+`conda install nibabel`
+
+`conda install matplotlib`
+
+`conda install conda-forge::tqdm`
+
+`conda install conda-forge::psutil`
+
+`conda install scikit-image`
+
+`conda install conda-forge::ftputil`
+
+`conda install h5py`
+
+Find own ip in cmd using 'ipconfig' and change in 'david_client'
+changed windows defender settings on ripping PC: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
+
+1) Make a copy of file 'blueprint_client.py' in folder 'Imaging PC' and call it YOURNAME_client.py.
+
+   Then change the "host_IP" to the IP of the ripping computer and the 'user_json' variable to the name of your user file
+   in 'users\'.
+
+2) Make copy of file 'blueprint_server.py' and name it YOURNAME_server.py
+
+   In that file, in line 10 change the 'target_directory' variable to where on your ripping PC you want the ripping
+   to take place (Lots of space, ideally an SSD for speed). 
+
+3) Create a folder with your name in folder 'users' and copy the files from folder 'blueprint' into that folder.  
+
+   a) 'blueprint_brukerbridge.bat' will be used on the Bruker imaging computer. You need to change it such 
+      that it points to the client.pyfile you created before. For example for David would say 
+      `%mypath:~0,-1%\brukerbridge\Imaging_PC\david_client.py`.
+
+      It is strongly adviced to rename the file to something unique so that no-one except you uses this link to send
+      data to your computer!
+
+   b) 'launch_queue_watcher.bat', change it such that it will point to your env_brukerbridge/python.exe
+
+   c) 'launch_server.bat', change it such that it points to your env_brukerbridge/python.exe and the place of the logs
+
+# ORIGINAL README BELOW #
 # brukerbridge
 This boutique package is used to make processing Bruker output files more convenient by automating several steps:
 - Transfer of files from Bruker computer to "workhorse" computer in D217
@@ -42,34 +103,3 @@ Troubleshooting:
 - failed connection error when running brukerbridge.bat?
     - There is a python server running on the workhorse computer that waits to recieve info from Bruker computer. This server must be running. A terminal should be open and say "Ready to recieve files from Bruker client." If this is not running, you must start the server by navigating to "C:\Users\User\projects\brukerbridge\brukerbridge" and running python server.py on the command line.
 
-
-##
-Installation
-##
-
-make environment:
-
-`conda create -n env_brukerbridge`
-
-`activate env_brukerbridge`
-
-`conda install python=3.8`
-
-`conda install numpy`
-
-`conda install nibabel`
-
-`conda install matplotlib`
-
-`conda install conda-forge::tqdm`
-
-`conda install conda-forge::psutil`
-
-`conda install scikit-image`
-
-`conda install conda-forge::ftputil`
-
-`conda install h5py`
-
-Find own ip in cmd using 'ipconfig' and change in 'david_client'
-changed windows defender settings on ripping PC: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
