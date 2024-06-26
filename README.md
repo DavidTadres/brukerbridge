@@ -32,20 +32,22 @@ make environment:
 
 `conda install h5py`
 
-Find own ip in cmd using 'ipconfig' and change in 'david_client'
+
 changed windows defender settings on ripping PC: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
 
-1) Make a copy of file 'blueprint_client.py' in folder 'Imaging PC' and call it YOURNAME_client.py.
+1) Make a copy of the file 'blueprint.json' in folder `\users'. Change settings as desired
+
+2) Make a copy of file 'blueprint_client.py' in folder 'Imaging PC' and call it YOURNAME_client.py.
 
    Then change the "host_IP" to the IP of the ripping computer and the 'user_json' variable to the name of your user file
    in 'users\'.
 
-2) Make copy of file 'blueprint_server.py' and name it YOURNAME_server.py
+3) Make copy of file 'blueprint_server.py' and name it YOURNAME_server.py
 
    In that file, in line 10 change the 'target_directory' variable to where on your ripping PC you want the ripping
    to take place (Lots of space, ideally an SSD for speed). 
 
-3) Create a folder with your name in folder 'users' and copy the files from folder 'blueprint' into that folder.  
+4) Create a folder with your name in folder 'users' and copy the files from folder 'blueprint' into that folder.  
 
    a) 'blueprint_brukerbridge.bat' will be used on the Bruker imaging computer. You need to change it such 
       that it points to the client.pyfile you created before. For example for David would say 
