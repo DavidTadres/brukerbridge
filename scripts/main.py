@@ -16,6 +16,7 @@ from brukerbridge import tiff_to_nii
 from brukerbridge.not_used import tiffs_to_tiff_stack
 from brukerbridge import transfer_fictrac
 from brukerbridge import transfer_to_oak
+from brukerbridge import utils
 
 ### Save version of brukerbridge used for running this repo ###
 CURRENT_GIT_BRANCH = subprocess.check_output(["git", "branch", "--show-current"]).strip().decode()
@@ -68,16 +69,17 @@ def main(args):
 	print('oak_target ' + repr(oak_target))
 	convert_to = settings['convert_to']
 	#email = settings.get('email', False)
-	add_to_build_que = bool(settings.get('add_to_build_que', "False"))
-	transfer_fictrac_bool = bool(settings.get('transfer_fictrac', "False"))
+
+
+	add_to_build_que = utils.get_bool_from_json(settings, 'add_to_build_qeue')
+	transfer_fictrac_bool = utils.get_bool_from_json(settings, "transfer_fictrac_bool")
 	#split = settings.get('split', False)
-	fly_json_from_h5 = bool(settings.get('fly_json_from_h5', "False"))
-	print("fly_json_from_h5" + repr(fly_json_from_h5))
+	fly_json_from_h5 = utils.get_bool_from_json(settings, 'fly_json_from_h5')
 	if fly_json_from_h5:
 		fly_json_already_created = False
 		# If there is a h5 file, it is possible to auto-assign loco data to
 		# each experiment
-		autotransfer_stimpack = bool(settings.get('autotransfer_stimpack', "False"))
+		autotransfer_stimpack = utils.get_bool_from_json(settings,'autotransfer_stimpack')
 		if autotransfer_stimpack:
 			# User can define the 'slack' they want to have between start of stimpack
 			# series and imaging series.
@@ -88,8 +90,7 @@ def main(args):
 	else:
 		autotransfer_stimpack = False
 		max_diff_imaging_and_stimpack_start_time_second = None
-
-	copy_SingleImage = bool(settings.get('copy_SingleImage', "True"))
+	copy_SingleImage = utils.get_bool_from_json(settings,'copy_SingleImage')
 
 	#################################
 	### Convert from raw to tiffs ###

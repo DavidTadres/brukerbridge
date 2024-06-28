@@ -592,3 +592,16 @@ def add_stimpack_data_to_imaging_folder(directory,
 
 
     return(error_dict)
+
+
+def get_bool_from_json(settings_json, input_string):
+    try:
+        input_string = settings_json['add_to_build_qeue']
+        if input_string == 'True' or input_string == 'TRUE' or input_string == 'true':
+            output = True
+        else:
+            output = False
+    except KeyError:
+        output = False
+
+    return (output)
