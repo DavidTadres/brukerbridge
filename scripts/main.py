@@ -72,6 +72,7 @@ def main(args):
 	transfer_fictrac_bool = bool(settings.get('transfer_fictrac', "False"))
 	#split = settings.get('split', False)
 	fly_json_from_h5 = bool(settings.get('fly_json_from_h5', "False"))
+	print("fly_json_from_h5" + repr(fly_json_from_h5))
 	if fly_json_from_h5:
 		fly_json_already_created = False
 		# If there is a h5 file, it is possible to auto-assign loco data to
