@@ -32,6 +32,7 @@ make environment:
 
 `conda install h5py`
 
+`conda install ftputil`
 
 changed windows defender settings on ripping PC: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
 
