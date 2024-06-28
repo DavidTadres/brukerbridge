@@ -37,6 +37,7 @@ clone the repo:
 
 `conda install h5py`
 
+`conda install ftputil`
 
 changed windows defender settings on ripping PC: 
 https://stackoverflow.com/questions/53231849/python-socket-windows-10-connection-times-out
@@ -69,6 +70,8 @@ https://stackoverflow.com/questions/53231849/python-socket-windows-10-connection
    b) 'launch_queue_watcher.bat', change it such that it will point to your env_brukerbridge/python.exe
 
    c) 'launch_server.bat', change it such that it points to your env_brukerbridge/python.exe and the place of the logs
+
+   e) 'queue_wacher.py', change 'log_folder' and 'root_directory' (where the ripping on your PC happens) as desired 
 
 # ORIGINAL README BELOW #
 # brukerbridge

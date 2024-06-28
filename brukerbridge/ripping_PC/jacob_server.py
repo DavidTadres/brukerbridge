@@ -7,7 +7,7 @@ from time import strftime
 import pathlib
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-target_directory = pathlib.Path("C:\Users\jcsimon\Documents\Stanford\Data\Bruker\imports") # <<<<<< Change to desired directory on your ripping PC
+target_directory = pathlib.Path("C:/Users/jcsimon/Documents/Stanford/Data/Bruker/imports") # <<<<<< Change to desired directory on your ripping PC
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())

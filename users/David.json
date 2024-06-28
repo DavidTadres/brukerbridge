@@ -8,5 +8,5 @@
     "stimpack_data_path": "../../data/david/stimpack_data/fictrac",
     "autotransfer_stimpack": "True",
     "max_diff_imaging_and_stimpack_start_time_second": "60",
-    "copy_SingleImage": "False"
+    "copy_SingleImage": "False",
 }
