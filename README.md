@@ -1,14 +1,19 @@
 # Brukerbridge (David's fork)
 
-clone the repo:
-
-`git clone https://github.com/davidtadres/brukerbridge`
-
 ##
 Installation
 ##
 
 make environment:
+
+Install Git https://git-scm.com/downloads
+
+Install Miniconda on your PC:
+https://conda.io/miniconda.html.
+
+clone the repo:
+
+`git clone https://github.com/davidtadres/brukerbridge`
 
 `conda create -n env_brukerbridge`
 
@@ -33,7 +38,8 @@ make environment:
 `conda install h5py`
 
 
-changed windows defender settings on ripping PC: https://stackoverflow.com/questions/66831274/python-socket-connection-not-working-over-local-network
+changed windows defender settings on ripping PC: 
+https://stackoverflow.com/questions/53231849/python-socket-windows-10-connection-times-out
 
 1) Make a copy of the file 'blueprint.json' in folder `\users'. Change settings as desired
 
