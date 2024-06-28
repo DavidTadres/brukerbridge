@@ -7,8 +7,8 @@ import pathlib
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-log_folder = pathlib.Path('C:\\Users\\David\\Desktop\\brukerbridge_datalogs')
-root_directory = pathlib.Path("F:\\brukerbridge")
+log_folder = pathlib.Path('C:\\Users\\jcsimon\\Documents\\Stanford\\brukerbridge\\logs')
+root_directory = pathlib.Path("C:\\Users\\jcsimon\\Documents\\Stanford\\Data\\Bruker\\imports")
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 def main():
