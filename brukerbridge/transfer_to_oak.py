@@ -22,6 +22,7 @@ def oak_transfer(root_path_name, # Will be something like
     """
 
     for current_file_or_folder in directory_from.iterdir():
+        print(current_file_or_folder)
         # if we are in a folder, recursively call transfer function
         if current_file_or_folder.is_dir():
             oak_transfer(root_path_name=root_path_name,
