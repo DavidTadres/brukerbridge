@@ -9,5 +9,4 @@
     "autotransfer_stimpack": "True",
     "max_diff_imaging_and_stimpack_start_time_second": "60",
     "copy_SingleImage": "False",
-    "ripping_PC_dir": "F:\\brukerbridge"
 }

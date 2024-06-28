@@ -4,10 +4,12 @@ import subprocess
 from time import strftime
 import pathlib
 
-parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
+parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())
 
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 log_folder = pathlib.Path('C:\\Users\\David\\Desktop\\brukerbridge_datalogs')
 root_directory = pathlib.Path("F:\\brukerbridge")
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 def main():
 

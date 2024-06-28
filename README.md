@@ -65,6 +65,8 @@ changed windows defender settings on ripping PC: https://stackoverflow.com/quest
 
    c) 'launch_server.bat', change it such that it points to your env_brukerbridge/python.exe and the place of the logs
 
+   e) 'queue_wacher.py', change 'log_folder' and 'root_directory' (where the ripping on your PC happens) as desired 
+
 # ORIGINAL README BELOW #
 # brukerbridge
 This boutique package is used to make processing Bruker output files more convenient by automating several steps:
