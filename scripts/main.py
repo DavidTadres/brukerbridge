@@ -75,8 +75,10 @@ def main(args):
 	transfer_fictrac_bool = utils.get_bool_from_json(settings, "transfer_fictrac_bool")
 	#split = settings.get('split', False)
 	fly_json_from_h5 = utils.get_bool_from_json(settings, 'fly_json_from_h5')
+	print("fly_json_from_h5" + repr(fly_json_from_h5))
+	fly_json_already_created = False
 	if fly_json_from_h5:
-		fly_json_already_created = False
+
 		# If there is a h5 file, it is possible to auto-assign loco data to
 		# each experiment
 		autotransfer_stimpack = utils.get_bool_from_json(settings,'autotransfer_stimpack')
