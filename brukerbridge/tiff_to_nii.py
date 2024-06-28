@@ -271,7 +271,7 @@ def convert_tiff_collections_to_nii(directory,
             print('Successfully created fly.json files from from stimpack h5 file')
         except Exception as e:
             print('******* WARNING ******')
-            print('unable to create fly.jsonf iles from h5 because:')
+            print('unable to create fly.json iles from h5 because:')
             print(e)
 
         # Still set this to True as it'll else try to run this many times while the error could be

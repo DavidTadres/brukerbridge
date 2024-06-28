@@ -3,7 +3,6 @@ __version__ = '0.0.1'
 __date__ = '2nd of June, 2024'
 
 import sys
-import os
 import warnings
 import subprocess
 import json
@@ -14,7 +13,7 @@ sys.path.insert(0, parent_path)
 # This just imports '*.py' files from the folder 'brainsss'.
 from brukerbridge import raw_to_tiff
 from brukerbridge import tiff_to_nii
-from brukerbridge import tiffs_to_tiff_stack
+from brukerbridge.not_used import tiffs_to_tiff_stack
 from brukerbridge import transfer_fictrac
 from brukerbridge import transfer_to_oak
 
@@ -61,6 +60,7 @@ def main(args):
 	#	with open(json_file) as file:
 	#		settings = json.load(file)
 	user_json_path = pathlib.Path(users_directory, user + '.json')
+	print("user_json_path" + str(user_json_path))
 	with open(user_json_path) as file:
 		settings = json.load(file)
 
