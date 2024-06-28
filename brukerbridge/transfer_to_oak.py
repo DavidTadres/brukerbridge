@@ -22,7 +22,6 @@ def oak_transfer(root_path_name, # Will be something like
     """
 
     for current_file_or_folder in directory_from.iterdir():
-        print(current_file_or_folder)
         # if we are in a folder, recursively call transfer function
         if current_file_or_folder.is_dir():
             oak_transfer(root_path_name=root_path_name,
@@ -33,14 +32,9 @@ def oak_transfer(root_path_name, # Will be something like
                          copy_SingleImage=copy_SingleImage)
 
         else:
-            if not copy_SingleImage:
-                # DO NOT copy the 'SingleImage' folders that Bruker collects every time
-                # one clicks on 'live image'.
-                # This is a setting in 'user.json' called "copy_SingleImage"
-                if 'SingleImage' in current_file_or_folder.as_posix():
-                    pass
+
             # Check for allowable extensions (hardcoded in 'main.py'!)
-            elif current_file_or_folder.suffix in allowable_extensions:
+            if current_file_or_folder.suffix in allowable_extensions:
 
                 # Get the relative path.
                 # I.e. 'F:\\brukerbridge\\David\\20240613__queue__\\fly1\\func0\\TSeries-12172018-1322-001\\TSeries-12172018-1322-001_channel_2.nii'
@@ -54,6 +48,12 @@ def oak_transfer(root_path_name, # Will be something like
                 #print(str_current_oak_target)
                 current_oak_target = pathlib.Path(str_current_oak_target)
                 #print('current_oak_target.parent ' + repr(current_oak_target.parent))
+
+                if 'SingleImage' in current_file_or_folder.as_posix():
+                    if copy_SingleImage:
+                        pass
+                    else:
+                        continue # mabye add a second break to escape from outer if
 
                 # Create parent folder of the file if it doesn't exist yet
                 current_oak_target.parent.mkdir(parents=True, exist_ok=True)
