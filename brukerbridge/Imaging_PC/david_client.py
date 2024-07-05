@@ -12,9 +12,6 @@ import socket
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askdirectory
 import pathlib
-import json
-import pathlib
-import ftputil
 
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())
 print(parent_path)
