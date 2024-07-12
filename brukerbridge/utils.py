@@ -442,9 +442,9 @@ def write_h5_metadata_in_stimpack_folder(directory):
         for current_string in experiments[current_fly]:
             # the folder name of the series by stimpack is '1', '2' etc.
             # The name of the corresponding seires in the h5 file is 'series_001', 'series_002' etc.
-            # To shorten from 'series_001' to '1' use: current_series.split('series_')[-1].strip('0')
-            # the strip removes all 0 so this will be correct even for 'series_011' and 'series_'100'
-            current_series = current_string.split('-')[0].split('series_')[-1].strip('0')
+            # str(int(current_string.split('-')[0].split('series_')[-1])) converts the string to int
+            # so that '001' becomes '1' and '010' becomes '10'.
+            current_series = str(int(current_string.split('-')[0].split('series_')[-1]))
             current_series_start_time = current_string.split('-')[-1]
             current_series_path = pathlib.Path(stimpack_data_folder, current_series)
 
@@ -596,7 +596,7 @@ def add_stimpack_data_to_imaging_folder(directory,
 
 def get_bool_from_json(settings_json, input_string):
     try:
-        input_string = settings_json['add_to_build_qeue']
+        input_string = settings_json[input_string]
         if input_string == 'True' or input_string == 'TRUE' or input_string == 'true':
             output = True
         else:
