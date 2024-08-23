@@ -80,7 +80,38 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         is_bidirectional_z = True
     else:
         is_bidirectional_z = False
-    print('BidirectionalZ is {}'.format(is_bidirectional_z))
+
+    #print('BidirectionalZ is {}'.format(is_bidirectional_z))
+    if is_bidirectional_z:
+        # comment below stolen from brukerbridge:
+        # NOTE: berger 2024/08/06
+        # Although support for this could be easily cheesed, I have declined to
+        # do so for the moment due to some mysteries in the acquisition xml
+        # that I am not confident enough to guess at right now. Specifically, the
+        # subtrees for the last frame of the downstroke and the first frame of
+        # the upstroke do not record the depth at which those frames were
+        # acquired. All other frames do.
+        #
+        # In the example acquisition I was using to develop this, the user set
+        # the bottom plane as 100.5um, the top as 340.5 and set the volume to
+        # contain 49 planes with 5um increments. Each Sequence subtree indeed
+        # contains 49 frames, but (for the downstroke) the 49th does not record
+        # z pos. The 48th records a z pos of 335.5. It would not be
+        # unreasonable to infer that the 49th plane was at z=340.5um, but that
+        # is, ultimately, cowboy shit.
+        #
+        # In the past, Bella supported bidirectional z scans by simply flipping
+        # the order of the frames every other volume. Definitely cowboy shit,
+        # but this is what you would want to do to naively support
+        # bidirectional scans: take the *sorted* frames and reverse the order
+        # the list is traversed by the generator for Sequences with an even
+        # cycle attribute
+        raise NotImplementedError(
+            (
+                "Support for bidirectional scans not supported due to Bruker sketchiness. "
+                "See the source where this error was thrown for an explanation."
+            )
+        )
 
     # Get axis dims
     if root.find('Sequence').get('type') == 'TSeries Timed Element': # Plane time series
@@ -159,8 +190,8 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                     last_num_z = current_num_z
 
                     # Flip frame order if a bidirectionalZ upstroke (odd i)
-                    if is_bidirectional_z and (i%2 != 0):
-                        frames = frames[::-1]
+                    #if is_bidirectional_z and (i%2 != 0):
+                    #    frames = frames[::-1]
 
                 else: # Plane series: Get frame
                     frames = [sequences[0].findall('Frame')[i]]
@@ -271,7 +302,7 @@ def convert_tiff_collections_to_nii(directory,
             print('Successfully created fly.json files from from stimpack h5 file')
         except Exception as e:
             print('******* WARNING ******')
-            print('unable to create fly.json iles from h5 because:')
+            print('unable to create fly.json files from h5 because:')
             print(e)
 
         # Still set this to True as it'll else try to run this many times while the error could be

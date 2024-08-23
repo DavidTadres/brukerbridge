@@ -270,6 +270,7 @@ def get_fly_json_data_from_h5(directory):
                 dict_for_json['circadian_off'] = str(fly_dict['circadian_off'])
                 dict_for_json['Age'] = str(fly_dict['age'])
                 dict_for_json['Temp (inline heater)'] = str(fly_dict['inline_heater_temp'])
+                dict_for_json['notes'] = str(fly_dict['notes'])
 
                 save_path = pathlib.Path(current_target_folder, 'fly.json')
                 with open(save_path, 'w') as file:
@@ -497,9 +498,11 @@ def add_stimpack_data_to_imaging_folder(directory,
 
     for current_imaging_folder in sorted(directory.iterdir()):
         if 'fly' in current_imaging_folder.name:
+            print("current_path: " + repr(current_path))
             # For each folder with a 'fly' in the folder name
             for current_imaging_folder_fly in current_imaging_folder.iterdir():
                 if 'func' in current_imaging_folder_fly.name:
+                    print("current_imaging_folder_fly: " + repr(current_imaging_folder_fly))
                     # Check if there are more than 1 folder with name TSeries!
                     no_of_TSeries_folders = 0
                     for current_t_series in current_imaging_folder_fly.iterdir():
@@ -521,8 +524,9 @@ def add_stimpack_data_to_imaging_folder(directory,
                         for current_t_series in current_imaging_folder_fly.iterdir():
                             #print(current_t_series.name)
                             if 'TSeries' in current_t_series.name:
+                                print("current_t_series.name: " + repr(current_t_series.name))
                                 # This returns the number of the series without leading zeros
-                                imaging_series = current_t_series.name[-3::].strip('0')
+                                imaging_series = str(int(current_t_series.name[-3::]))
                                 # For a given imaging folder, check if the loco data has the
                                 # correct fly id!
                                 current_stimpack_folder = pathlib.Path(stimpack_data_folder, imaging_series)
@@ -546,6 +550,8 @@ def add_stimpack_data_to_imaging_folder(directory,
                                     delta_imaging_stimpack_start_time = abs(imaging_timestamp_unix_time - float(
                                         flyID['series_start_time']))
                                     # Now we have difference in start time in seconds!
+                                    print("current_imaging_folder.name: " + repr(current_imaging_folder.name))
+                                    print(" flyID['fly']: "+ repr( flyID['fly']))
 
                                     if not current_imaging_folder.name == flyID['fly']:
                                         # IF we are here imaging folder defining the fly doesn't match the stimpack.h5 file!

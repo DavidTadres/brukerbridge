@@ -1,6 +1,6 @@
 import brukerbridge as bridge
 
-extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'hdf5', 'tiff', '.txt'] # last 4 chars
+extensions_for_oak_transfer = ['.nii', '.csv', '.xml', 'json', 'hdf5', 'tiff', '.txt', '.avi', '.png'] # suffix, includes '.'
 
 ### Directory on this computer to process ###
 # full_target = 'H:/Ashley/20230405'

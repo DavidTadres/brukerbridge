@@ -29,8 +29,17 @@ VERSION_INFO = 'v' + __version__ + \
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-extensions_for_oak_transfer = ['.nii', '.csv', '.xml', '.json', '.tiff', '.hdf5',
-							   '.dat', '.log', '.txt',
+extensions_for_oak_transfer = ['.nii', '.csv',
+							   '.xml', # Bruker xml files
+							   '.json', # Snake_brainsss json files
+							   #'.tiff', # Bruker images - seems to be unecessary (small images are .tif)
+							   '.hdf5', # stimpack created h5 file
+							   '.dat', # Fictrac data
+							   '.log', # fictrac log
+							   '.txt', # another fictrac log
+							   '.avi', # fictrac video file
+							   '.png' # fictrac_template.png
+							   # pathlib.Path.suffix, includes '.'
 							   ]
 users_directory = pathlib.Path(parent_path, 'users')
 
