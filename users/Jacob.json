@@ -7,6 +7,6 @@
     "stimpack_h5_path": "F:/Jacob/stimpack_data",
     "stimpack_data_path": "../../data/Jacob/stimpack_data/fictrac",
     "autotransfer_stimpack": "True",
-    "max_diff_imaging_and_stimpack_start_time_second": "60",
+    "max_diff_imaging_and_stimpack_start_time_second": "90",
     "copy_SingleImage": "False"
 }
