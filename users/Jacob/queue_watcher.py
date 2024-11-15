@@ -1,4 +1,4 @@
-import o
+import os
 import time
 import subprocess
 from time import strftime
