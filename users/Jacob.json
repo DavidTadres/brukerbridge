@@ -5,7 +5,7 @@
     "split": "False",
     "fly_json_from_h5": "True",
     "stimpack_h5_path": "F:/Jacob/stimpack_data",
-    "stimpack_data_path": "F:/Jacob/stimpack_data/fictrac",
+    "stimpack_data_path": "../../data/jacob/stimpack_data/fictrac",
     "autotransfer_stimpack": "True",
     "max_diff_imaging_and_stimpack_start_time_second": "90",
     "copy_SingleImage": "False"
