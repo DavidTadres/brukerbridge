@@ -36,10 +36,12 @@ port = 5005
 ##################################
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-source_directory = pathlib.Path(askdirectory(initialdir = "F:/")) # show an "Open" dialog box and return the path to the selected file
+source_directory = pathlib.Path(askdirectory(initialdir = "G:/")) # show an "Open" dialog box and return the path to the selected file
 #source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
 
+#calculate # of flies
+num_fly = len(source_directory.iterdir()) # return number of folders in source_directory (ie fly1, fly2...)
 #################################
 ### LOOK FOR STIMPACK h5 FILE ###
 #################################
@@ -53,28 +55,23 @@ date_folder_to_transfer = source_directory.name
 year = date_folder_to_transfer[0:4]
 month = date_folder_to_transfer[4:6]
 day = date_folder_to_transfer[6:8]
-string_to_find = year + '-' + month + '-' + day
-
-stimpack_h5_path = None
+string_to_find_date = year + '-' + month + '-' + day
 
 # Check if stimpack data folder is defined - it's an optional field!
-stimpack_data_path = str(user_settings.get('stimpack_h5_path', "None"))
-if stimpack_data_path != "None":
-    stimpack_data_path = pathlib.Path(stimpack_data_path)
-else:
-    stimpack_data_path = None
-if stimpack_data_path is not None:
-    for folder in stimpack_data_path.iterdir():
-        if string_to_find in folder.name:
-            stimpack_h5_path = folder
-            break
-
-# The easiest way to get this to work is to just copy the h5 file into the imaging folder on the imaging computer!
-# Then I don't have to deal at all with the actual transfer code!
-
-if stimpack_h5_path is not None:
-    h5_dst_imaging_pc = pathlib.Path(source_directory, stimpack_h5_path.name)
-    shutil.copyfile(src=stimpack_h5_path, dst=h5_dst_imaging_pc)
+stimpack_h5_path = str(user_settings.get('stimpack_h5_path', "None"))
+if stimpack_h5_path != "None":
+    stimpack_h5_path = pathlib.Path(stimpack_h5_path)
+    # loop through h5 files in stimpack_h5_path
+    for fly in num_fly:
+        string_to_find = string_to_find_date + '_' + repr(fly) + '.hdf5'
+        for file in stimpack_h5_path.iterdir(): #file is a file/folder name
+            if string_to_find in file.name:
+                stimpack_h5_path_fly = file.name
+                h5_dst_imaging_pc = pathlib.Path(source_directory, 'fly'+fly, stimpack_h5_path_fly)
+                shutil.copyfile(src=stimpack_h5_path, dst=h5_dst_imaging_pc)
+                print('transferring hdf5 file {} to directory {}'.format(stimpack_h5_path_fly, source_directory + 'fly'+fly))
+    # The easiest way to get this to work is to just copy the h5 file into the imaging folder on the imaging computer!
+    # Then I don't have to deal at all with the actual transfer code!
 
     # currently the autotransfer of fictrac data only works if the h5 file is used!
     if user_settings['autotransfer_stimpack']:
@@ -83,7 +80,7 @@ if stimpack_h5_path is not None:
 
         # If the stimpack file is i.e. 2024-06-13.hdf5 the folder
         # we are looking for is 2024-06-13
-        current_stimpack_folder_name = stimpack_h5_path.name.split('.hdf5')[0]
+        current_stimpack_folder_name = string_to_find_date
         print("current_stimpack_folder_name: " + repr(current_stimpack_folder_name))
 
         ###################################
@@ -94,7 +91,7 @@ if stimpack_h5_path is not None:
         passwd = input('Please enter password for ' + ip + ' for username ' + username + ': ')
         # Please do not hardcode the password here as it'll be publicly available.
 
-        local_target_path = pathlib.Path(str(h5_dst_imaging_pc).split('.hdf5')[0])
+        local_target_path = pathlib.Path(source_directory,string_to_find_date)
         utils.DownloadFolderFTP(ip, username, passwd,
                                 remote_root_path=stimpack_data_path,
                                 folder_to_copy=current_stimpack_folder_name,
