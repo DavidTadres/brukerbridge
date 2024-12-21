@@ -36,12 +36,13 @@ port = 5005
 ##################################
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-source_directory = pathlib.Path(askdirectory(initialdir = "G:/")) # show an "Open" dialog box and return the path to the selected file
+source_directory = pathlib.Path(askdirectory(initialdir = "G:/Jacob/")) # show an "Open" dialog box and return the path to the selected file
 #source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
 
 #calculate # of flies
-num_fly = len(source_directory.iterdir()) # return number of folders in source_directory (ie fly1, fly2...)
+num_fly = len(os.listdir(source_directory)) # return number of folders in source_directory (ie fly1, fly2...)
+print('number of flies: ' + repr(num_fly))
 #################################
 ### LOOK FOR STIMPACK h5 FILE ###
 #################################
@@ -62,14 +63,14 @@ stimpack_h5_path = str(user_settings.get('stimpack_h5_path', "None"))
 if stimpack_h5_path != "None":
     stimpack_h5_path = pathlib.Path(stimpack_h5_path)
     # loop through h5 files in stimpack_h5_path
-    for fly in num_fly:
+    for fly in range(1,num_fly+1):
         string_to_find = string_to_find_date + '_' + repr(fly) + '.hdf5'
-        for file in stimpack_h5_path.iterdir(): #file is a file/folder name
-            if string_to_find in file.name:
-                stimpack_h5_path_fly = file.name
-                h5_dst_imaging_pc = pathlib.Path(source_directory, 'fly'+fly, stimpack_h5_path_fly)
-                shutil.copyfile(src=stimpack_h5_path, dst=h5_dst_imaging_pc)
-                print('transferring hdf5 file {} to directory {}'.format(stimpack_h5_path_fly, source_directory + 'fly'+fly))
+        for folder in stimpack_h5_path.iterdir(): #file is a file/folder name
+            if string_to_find in folder.name:
+                stimpack_h5_path_fly = folder
+                h5_dst_imaging_pc = pathlib.Path(source_directory, 'fly'+repr(fly), stimpack_h5_path_fly.name)
+                print('transferring hdf5 file {} to directory {}'.format(stimpack_h5_path_fly, h5_dst_imaging_pc))
+                shutil.copyfile(src=stimpack_h5_path_fly, dst=h5_dst_imaging_pc)
     # The easiest way to get this to work is to just copy the h5 file into the imaging folder on the imaging computer!
     # Then I don't have to deal at all with the actual transfer code!
 
