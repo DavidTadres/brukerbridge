@@ -294,6 +294,67 @@ def get_fly_json_data_from_h5(directory):
         print('Could not create fly.json files from h5 as the number of subjects and folders should match!')
         print('>>>>>>ERROR<<<<<<<')
 
+def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
+    """
+    Automatically create fly.json required for snake_brainsss from hdf5 from stimpack
+    :param directory:
+    :return:
+    NOTE: Jacob - updated version of get_fly_json_data_from_h5 to work on hdf5 with 
+    single fly placed in each fly folder instead of one hdf5 per day in experiment folder
+    """
+
+    for current_path in directory.iterdir():
+        if 'fly' in current_path.name:
+            print('working on folder: ' + str(current_path.name))
+            current_target_folder = pathlib.Path(directory, current_path)
+
+            # find hdf5 in fly folder
+            for path in current_target_folder.iterdir():
+                if '.hdf5' in path.name:
+                    print('Found hdf5 file: ' + path.name)
+                    h5py_file = h5py.File(path, 'r')
+                    break
+            try:
+                h5py_file
+            except FileNotFoundError:
+                print('h5 file not found in fly folder: ' + str(current_target_folder))
+
+            # After finding the h5 file (there must only be a single h5 file in the parent folder!)
+            # escape the loop and work on the subject
+            subject = h5py_file['Subjects']
+            # Look for a folder that should be the subjects folder!
+
+            fly_dict = {}
+
+            for current_attrs in subject.attrs:
+                fly_dict[current_attrs] = subject.attrs[current_attrs]
+
+            # Save the dict, can use it to directly write the fly.json file as well!
+            # save_path = pathlib.Path(target_path, date, 'fly_' + fly_dict["subject_id"], 'fly.json')
+
+            dict_for_json = {}
+            dict_for_json['Genotype'] = fly_dict['genotype_father'] + '_x_' + fly_dict['genotype_mother']
+            dict_for_json['functional_channel'] = fly_dict['functional_channel']
+            dict_for_json['structural_channel'] = fly_dict['structural_channel']
+
+            # these are all optional
+            dict_for_json['Sex'] = fly_dict['sex']
+            dict_for_json['circadian_on'] = str(fly_dict['circadian_on'])
+            dict_for_json['circadian_off'] = str(fly_dict['circadian_off'])
+            dict_for_json['Age'] = str(fly_dict['age'])
+            dict_for_json['Temp (inline heater)'] = str(fly_dict['inline_heater_temp'])
+            dict_for_json['notes'] = str(fly_dict['notes'])
+
+            save_path = pathlib.Path(current_target_folder, 'fly.json')
+            with open(save_path, 'w') as file:
+                json.dump(dict_for_json, file, sort_keys=True, indent=4)
+            fly_json_made = True
+    try:
+        fly_json_made
+    except FileNotFoundError:
+        print('no fly folders found within selected directory: ' + str(directory))
+
+
 class DownloadFolderFTP():
     """
     TO BE TESTED
