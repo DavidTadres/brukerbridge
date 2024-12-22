@@ -325,10 +325,9 @@ def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
             # Look for a folder that should be the subjects folder!
 
             fly_dict = {}
-
+            print('genotype father: ' + repr(subject['genotype_father']))
             for current_attrs in subject.attrs:
                 fly_dict[current_attrs] = subject.attrs[current_attrs]
-                print('subject current attribute: ' + repr(subject.attrs[current_attrs]))
 
             # Save the dict, can use it to directly write the fly.json file as well!
             # save_path = pathlib.Path(target_path, date, 'fly_' + fly_dict["subject_id"], 'fly.json')
