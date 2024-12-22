@@ -306,16 +306,17 @@ def convert_tiff_collections_to_nii(directory,
             print('unable to create fly.json files from h5 because:')
             print(e)
 
-        try:
-            print('instead trying to look for one hdf5 in each fly folder in : ' + str(directory))
-            utils.get_fly_json_data_from_h5_one_fly_per_hdf5(directory)
-            # If able to create all fly.json, set this to True
-            fly_json_already_created = True
-            print('Successfully created fly.json files from from stimpack h5 file')
-        except Exception as e:
-            print('******* WARNING ******')
-            print('unable to create fly.json files from h5 because:')
-            print(e)
+        if not fly_json_already_created:
+            try:
+                print('instead trying to look for one hdf5 in each fly folder in : ' + str(directory))
+                utils.get_fly_json_data_from_h5_one_fly_per_hdf5(directory)
+                # If able to create all fly.json, set this to True
+                fly_json_already_created = True
+                print('Successfully created fly.json files from from stimpack h5 file')
+            except Exception as e:
+                print('******* WARNING ******')
+                print('unable to create fly.json files from h5 because:')
+                print(e)
 
         # Still set this to True as it'll else try to run this many times while the error could be
         # just a manually create fly.json file!
