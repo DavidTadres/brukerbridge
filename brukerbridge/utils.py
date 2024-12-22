@@ -307,7 +307,9 @@ def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
         if 'fly' in current_path.name:
             print('working on folder: ' + str(current_path.name))
             current_target_folder = pathlib.Path(directory, current_path)
-
+            current_subject = current_target_folder.split('fly')[-1]
+            print('current_subject: ' + str(current_subject))
+            
             # find hdf5 in fly folder
             for path in current_target_folder.iterdir():
                 if '.hdf5' in path.name:
@@ -326,8 +328,8 @@ def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
 
             fly_dict = {}
             print('genotype father: ' + repr(subject['genotype_father']))
-            for current_attrs in subject.attrs:
-                fly_dict[current_attrs] = subject.attrs[current_attrs]
+            for current_attrs in subject[current_subject].attrs:
+                fly_dict[current_attrs] = subject[current_subject].attrs[current_attrs]
 
             # Save the dict, can use it to directly write the fly.json file as well!
             # save_path = pathlib.Path(target_path, date, 'fly_' + fly_dict["subject_id"], 'fly.json')
