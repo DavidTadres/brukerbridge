@@ -327,7 +327,7 @@ def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
             # Look for a folder that should be the subjects folder!
 
             fly_dict = {}
-            print('genotype father: ' + repr(subject['genotype_father']))
+            print('genotype father: ' + repr(subject[str(current_subject)].attrs['genotype_father']))
             for current_attrs in subject[str(current_subject)].attrs:
                 fly_dict[current_attrs] = subject[str(current_subject)].attrs[current_attrs]
 
