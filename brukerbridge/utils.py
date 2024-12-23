@@ -307,8 +307,8 @@ def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
         if 'fly' in current_path.name:
             print('working on folder: ' + str(current_path.name))
             current_target_folder = pathlib.Path(directory, current_path)
-            current_subject = str(current_target_folder).split('fly')[-1]
-            print('current_subject: ' + str(current_subject))
+            #current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
+            current_subject = 1 #assumes subject number reset to 1 for each fly during experiment
             
             # find hdf5 in fly folder
             for path in current_target_folder.iterdir():
@@ -327,7 +327,6 @@ def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
             # Look for a folder that should be the subjects folder!
 
             fly_dict = {}
-            print('genotype father: ' + repr(subject[str(current_subject)].attrs['genotype_father']))
             for current_attrs in subject[str(current_subject)].attrs:
                 fly_dict[current_attrs] = subject[str(current_subject)].attrs[current_attrs]
 
