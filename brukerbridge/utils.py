@@ -625,7 +625,7 @@ def write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory):
             date_string = directory.name[0:4] + '-' +  directory.name[4:6] + '-' +  directory.name[6:8]
             #yyyy-mm-dd for fictrac folder
             stimpack_data_folder = pathlib.Path(directory, date_string)
-            print('stimpack data folder: ' str(stimpack_data_folder))
+            print('stimpack data folder: ' + str(stimpack_data_folder))
 
             # fly can have more than one series, loop to return each series
             for current_string in experiments['fly' + fly]:
