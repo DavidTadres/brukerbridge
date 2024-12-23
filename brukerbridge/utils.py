@@ -622,9 +622,10 @@ def write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory):
             # of on Bruker with the imaging folder) write a json file for each series which
             # contains the fly ID.
             # This can easily be checked later on and confirmed to fit the bruker imaging data!
-            stimpack_data_folder = pathlib.Path(current_path.as_posix().split('.hdf5')[0])
-            date_string = directory.name.split('__')[0]
+            date_string = directory.name[0:4] + '-' +  directory.name[4:6] + '-' +  directory.name[6:8]
+            #yyyy-mm-dd for fictrac folder
             stimpack_data_folder = pathlib.Path(directory, date_string)
+            print('stimpack data folder: ' str(stimpack_data_folder))
 
             # fly can have more than one series, loop to return each series
             for current_string in experiments['fly' + fly]:
