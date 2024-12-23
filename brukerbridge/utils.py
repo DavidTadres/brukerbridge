@@ -234,6 +234,12 @@ def get_fly_json_data_from_h5(directory):
             break
     # After finding the h5 file (there must only be a single h5 file in the parent folder!)
     # escape the loop and work on each defined subject.
+    
+    try:
+                h5py_file
+    except FileNotFoundError:
+                print('h5 file not found in fly folder: ' + str(current_target_folder))
+    
     subjects = h5py_file['Subjects']
 
     # Sanity check - do we have the same amount of exp folders as we have subjects defined in the
@@ -294,7 +300,7 @@ def get_fly_json_data_from_h5(directory):
         print('Could not create fly.json files from h5 as the number of subjects and folders should match!')
         print('>>>>>>ERROR<<<<<<<')
 
-def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
+def get_fly_json_data_from_h5_one_fly_per_h5(directory):
     """
     Automatically create fly.json required for snake_brainsss from hdf5 from stimpack
     :param directory:
@@ -307,7 +313,7 @@ def get_fly_json_data_from_h5_one_fly_per_hdf5(directory):
         if 'fly' in current_path.name:
             print('working on folder: ' + str(current_path.name))
             current_target_folder = pathlib.Path(directory, current_path)
-            #current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
+            #TODO:current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
             current_subject = 1 #assumes subject number reset to 1 for each fly during experiment
             
             # find hdf5 in fly folder
@@ -525,6 +531,125 @@ def write_h5_metadata_in_stimpack_folder(directory):
             # Save as json
             with open(save_path, 'w') as file:
                 json.dump(relevant_metadata, file, sort_keys=True, indent=4)
+
+def write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory):
+    """
+    As a preparation to:
+
+        1) checking whether a flyID (such as fly1, fly2 etc.) defined
+        by the user on the Bruker PC while imaging fits the metadata entered by the user
+        into stimpack (as subject 1, 2 etc.) extract the h5 metadata (situated on the imaging
+        computer) and write a json into the the actual stimpack data (such as fictrac/loco data,
+        originally situated on the stimpack/fictrac computer).
+
+        2) to compare timestamps of the imaging session with the supposedly attached stimpack
+        session
+
+    write a small json file name 'flyID.json' into the stimpack folder
+
+    Original:
+    - 2024-06-13.hdf5
+    - 2024-06-13
+        - 1
+            - loco
+                - fictrac data
+    After function call:
+    - 2024-06-13.hdf5
+    - 2024-06-13
+        - 1
+            - flyID.json <<<<<<
+            - loco
+                - fictrac data
+
+    flyID.json is a dict that looks like:
+     {'fly': 'fly1', 'series': '1', 'series_start_time': '1718310030.084193'}
+
+    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :return:
+    NOTE: Jacob - updated version of get_fly_json_data_from_h5 to work on hdf5 with 
+    single fly placed in each fly folder instead of one hdf5 per day in experiment folder
+    """
+    # read h5 file
+    for current_path in directory.iterdir():
+        if 'fly' in current_path.name:
+            print('working on folder: ' + str(current_path.name))
+            current_target_folder = pathlib.Path(directory, current_path)
+            #TODO:current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
+            current_subject = 1 #assumes subject number reset to 1 for each fly during experiment
+            fly = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
+            #TODO: replace fly with current_subject
+            # find hdf5 in fly folder
+            for path in current_target_folder.iterdir():
+                if '.hdf5' in path.name:
+                    print('Found hdf5 file: ' + path.name)
+                    h5py_file = h5py.File(path, 'r')
+                    break
+            try:
+                h5py_file
+            except FileNotFoundError:
+                print('h5 file not found in fly folder: ' + str(current_target_folder))
+
+
+            subject = h5py_file['Subjects']
+            # For each series in the h5 file, write a json file directly in the series
+            # folder of the data from the stimpack/fictrac computer!
+
+            # Create a dict that combines
+            # 1) fly ID from 'current_subject' of h5 file
+            # 2) the series that belongs to a given fly as defined by the h5 file
+            # 3) the start time of the series
+
+            experiments = {}
+            # eries = []
+            # start_times = []
+            data_for_current_fly = []
+            for current_series in subject[str(current_subject)]['epoch_runs']:
+                unix_time = subject[str(current_subject)]['epoch_runs'][current_series].attrs['run_start_unix_time']
+                # We'll have a string such as 'series_001-1718310030.084193' with the number after the '-' indicating
+                # unix time when series_001 in our example was started!
+                string_to_save = current_series + '-' + str(unix_time)
+                data_for_current_fly.append(string_to_save)
+                # use unix time as it doesn't depend on timezone!
+                # unix_time.append(subjects[current_subject]['epoch_runs'][current_series].attrs['run_start_unix_time'])
+
+            # In this dict, the key (i.e. fly1) defines the subject which has a list (can be more than 1) of series
+            # including start times.
+            #TODO:experiments['fly' + str(current_subject)] = data_for_current_fly
+            experiments['fly' + fly] = data_for_current_fly
+
+
+            # Now that we have the series ID tied to the fly ID (which is easier to keep track
+            # of on Bruker with the imaging folder) write a json file for each series which
+            # contains the fly ID.
+            # This can easily be checked later on and confirmed to fit the bruker imaging data!
+            stimpack_data_folder = pathlib.Path(current_path.as_posix().split('.hdf5')[0])
+            date_string = directory.name.split('__')[0]
+            stimpack_data_folder = pathlib.Path(directory, date_string)
+
+            # fly can have more than one series, loop to return each series
+            for current_string in experiments['fly' + fly]:
+                # the folder name of the series by stimpack is '1', '2' etc.
+                # The name of the corresponding seires in the h5 file is 'series_001', 'series_002' etc.
+                # str(int(current_string.split('-')[0].split('series_')[-1])) converts the string to int
+                # so that '001' becomes '1' and '010' becomes '10'.
+                current_series = str(int(current_string.split('-')[0].split('series_')[-1]))
+                current_series_start_time = current_string.split('-')[-1]
+                current_series_path = pathlib.Path(stimpack_data_folder, current_series)
+
+                relevant_metadata = {}
+                relevant_metadata['fly'] = 'fly' + fly
+                relevant_metadata['series'] = current_series
+                relevant_metadata['series_start_time'] = current_series_start_time
+
+                # When one does only walking and forgets to tick the 'loco' box, no data is
+                # created for that series. This would therefore fail as no folder exists on the
+                # brukerbridge computer that would refer to this series. Hence, create the folder
+                # and populate it with the fly.json file.
+                current_series_path.mkdir(parents=True, exist_ok=True)
+                save_path = pathlib.Path(current_series_path, 'flyID.json')
+                # Save as json
+                with open(save_path, 'w') as file:
+                    json.dump(relevant_metadata, file, sort_keys=True, indent=4)
 
 def get_datetime_from_xml(xml_file):
     """
