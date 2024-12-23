@@ -295,6 +295,7 @@ def convert_tiff_collections_to_nii(directory,
         print('Attempting to create fly.json from stimpack h5 file')
         # First, create fly.json file for each folder based on the h5 file
         # created by stimpack
+        single_h5 = 'None'
         try:
             print('first trying to look for one hdf5 in: ' + str(directory))
             utils.get_fly_json_data_from_h5(directory)
@@ -313,6 +314,7 @@ def convert_tiff_collections_to_nii(directory,
                 utils.get_fly_json_data_from_h5_one_fly_per_h5(directory)
                 # If able to create all fly.json, set this to True
                 fly_json_already_created = True
+                single_h5 = False
                 print('Successfully created fly.json files from from stimpack h5 file')
             except Exception as e:
                 print('******* WARNING ******')
@@ -336,11 +338,15 @@ def convert_tiff_collections_to_nii(directory,
             # belong to a given imaging session
 
             
-            if single_h5:
+            if single_h5 == 'None':
+                print('error, no h5 files found')
+            elif single_h5:
                 utils.write_h5_metadata_in_stimpack_folder(directory)
-            else: 
+                print('Wrote h5 metadata in stimpack folder')
+            elif not single_h5: 
                 utils.write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory)
-            print('Wrote h5 metadata in stimpack folder')
+                print('Wrote h5 metadata in stimpack folder')
+            
             # Then copy stimpack data from bespoke folder into corresponding imaging folder
             stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
                 directory, max_diff_imaging_and_stimpack_start_time_second)
