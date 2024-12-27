@@ -341,24 +341,24 @@ def convert_tiff_collections_to_nii(directory,
             if single_h5 == 'None':
                 print('error, no h5 files found')
             elif single_h5:
-                utils.write_h5_metadata_in_stimpack_folder(directory)
+                #utils.write_h5_metadata_in_stimpack_folder(directory)
                 print('Wrote h5 metadata in stimpack folder')
             elif not single_h5: 
-                utils.write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory)
+                #utils.write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory)
                 print('Wrote h5 metadata in stimpack folder')
             
             # Then copy stimpack data from bespoke folder into corresponding imaging folder
-            stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
-                directory, max_diff_imaging_and_stimpack_start_time_second)
-            if bool(stimpack_errors):
-                print('***** ERROR ENCOUNTERD DURING STIMPACK FOLDER ASSIGNMENT *****')
-                for current_error in stimpack_errors:
-                    print(current_error)
-                    print(':\n')
-                    print(stimpack_errors[current_error])
-                    print('\n\n')
-            else:
-                print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
+            #stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
+             #   directory, max_diff_imaging_and_stimpack_start_time_second)
+            # if bool(stimpack_errors):
+            #     print('***** ERROR ENCOUNTERD DURING STIMPACK FOLDER ASSIGNMENT *****')
+            #     for current_error in stimpack_errors:
+            #         print(current_error)
+            #         print(':\n')
+            #         print(stimpack_errors[current_error])
+            #         print('\n\n')
+            # else:
+            #     print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
 
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item
