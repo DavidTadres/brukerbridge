@@ -304,6 +304,7 @@ def convert_tiff_collections_to_nii(directory,
             print('******* WARNING ******')
             print('unable to create fly.json files from h5 because:')
             print(e)
+            print('\n')
 
         # Still set this to True as it'll else try to run this many times while the error could be
         # just a manually create fly.json file!
@@ -315,26 +316,33 @@ def convert_tiff_collections_to_nii(directory,
         # The data once because the variable 'fly_json_already_created' makes sure that
         # we can only be here the first time the function is called!
         if autotransfer_stimpack:
-            print('Attempting to automatically assign stimpack/fictrac data to imaging folder')
+            try:
+                print('Attempting to automatically assign stimpack/fictrac data to imaging folder')
 
-            # Write flyID.json based on h5 metadata into stimpack data folders!
-            # This json file is used below to check whether a given stimpack session can be assumed to
-            # belong to a given imaging session
+                # Write flyID.json based on h5 metadata into stimpack data folders!
+                # This json file is used below to check whether a given stimpack session can be assumed to
+                # belong to a given imaging session
 
-            utils.write_h5_metadata_in_stimpack_folder(directory)
-            print('Wrote h5 metadata in stimpack folder')
-            # Then copy stimpack data from bespoke folder into corresponding imaging folder
-            stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
-                directory, max_diff_imaging_and_stimpack_start_time_second)
-            if bool(stimpack_errors):
-                print('***** ERROR ENCOUNTERD DURING STIMPACK FOLDER ASSIGNMENT *****')
-                for current_error in stimpack_errors:
-                    print(current_error)
-                    print(':\n')
-                    print(stimpack_errors[current_error])
-                    print('\n\n')
-            else:
-                print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
+                utils.write_h5_metadata_in_stimpack_folder(directory)
+                print('Wrote h5 metadata in stimpack folder')
+                # Then copy stimpack data from bespoke folder into corresponding imaging folder
+                stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
+                    directory, max_diff_imaging_and_stimpack_start_time_second)
+                if bool(stimpack_errors):
+                    print('***** ERROR ENCOUNTERD DURING STIMPACK FOLDER ASSIGNMENT *****')
+                    for current_error in stimpack_errors:
+                        print(current_error)
+                        print(':\n')
+                        print(stimpack_errors[current_error])
+                        print('\n\n')
+                else:
+                    print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
+            except UnboundLocalError as e:
+                print('********** WARNING **********')
+                print('Unable to autotransfer stimpack because:')
+                print(e)
+                print('\n')
+
 
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item
