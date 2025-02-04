@@ -313,8 +313,7 @@ def get_fly_json_data_from_h5_one_fly_per_h5(directory):
         if 'fly' in current_path.name:
             print('working on folder: ' + str(current_path.name))
             current_target_folder = pathlib.Path(directory, current_path)
-            #TODO:current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
-            current_subject = 1 #assumes subject number reset to 1 for each fly during experiment
+            current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
             
             # find hdf5 in fly folder
             for path in current_target_folder.iterdir():
