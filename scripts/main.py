@@ -8,6 +8,8 @@ import subprocess
 import json
 import time
 import pathlib
+from xml.etree import ElementTree as ET
+
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
 sys.path.insert(0, parent_path)
 # This just imports '*.py' files from the folder 'brainsss'.
@@ -106,9 +108,38 @@ def main(args):
 	#################################
 	### Convert from raw to tiffs ###
 	#################################
+	# New 2025/04/29:
+	# Automatically detects what PVScan Version was used for recording
+	# and calls that version
 	
 	t0 = time.time()
-	raw_to_tiff.convert_raw_to_tiff(dir_to_process)
+	# Find out what version of PV was used for the recording
+	xml_paths = []
+	def recursive_search(path):
+		"""
+		Recursive function to find xml file with identical name
+		as the folder defining the large xml file Bruker writes which
+		contains the PVScan version
+		:param path:
+		:return:
+		"""
+		for current_file in path.iterdir():
+			if current_file.is_dir():
+				recursive_search(current_file)
+			else:
+				# Check if the file/folder has xml extension
+				if ('xml' in current_file.suffix and
+						not 'Voltage' in current_file.name): # Might be necessary to add more if in the future
+					# have the xml file, read it
+					xml_paths.append(current_file)
+					return()
+	# Run recursive function, use list to keep track of xml_paths
+	recursive_search(dir_to_process)
+	tree = ET.parse(xml_paths[0])
+	root = tree.getroot()
+	PVScan_version = root.get('version') # i.e. '5.8.64.800'
+
+	raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
 	print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
 
 	#########################################
