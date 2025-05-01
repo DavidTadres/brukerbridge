@@ -145,6 +145,8 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
 
     num_y = np.shape(img)[-2]
     num_x = np.shape(img)[-1]
+    print('name of first tiff: {}'.format(first_tiff))
+    print('shape of first tiff: {}'.format(img.shape))
     print('channels: {}'.format(channels))
     print('num_timepoints: {}'.format(num_timepoints))
     print('num_z: {}'.format(num_z))
