@@ -4,11 +4,11 @@ from time import strftime
 import pathlib
 
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute().parent.absolute())
-print(parent_path)
+#print(parent_path)
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 log_folder = pathlib.Path('C:\\Users\\David\\Desktop\\brukerbridge_datalogs')
-root_directory = pathlib.Path("F:\\brukerbridge")
+root_directory = pathlib.Path("B:\\brukerbridge")
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 def main():

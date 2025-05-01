@@ -15,7 +15,7 @@ verbose = False
 CHUNKSIZE = 1_000_000
 SERVER_HOST = "0.0.0.0"
 SERVER_PORT = 5005
-target_directory = pathlib.Path("F:/brukerbridge")
+target_directory = pathlib.Path("B:/brukerbridge")
 
 ####
 # SERVER_HOST = ""
