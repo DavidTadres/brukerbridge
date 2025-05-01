@@ -165,20 +165,20 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             frames = [sequences[0].findall('Frame')[0]]
             files = frames[0].findall('File')
             filename = files[channel_counter].get('filename')
-            first_tiff_path = os.path.join(data_dir, filename)
+            first_tiff_path = pathlib.Path(data_dir, filename)
             img = io.imread(first_tiff_path, plugin='pil')  # shape = t, y, x
             image_array[:,0,:,:] = img
            
         else:
             # loop over time steps to load one tif at a time
             start_time = time.time()
-            for i in range(num_timepoints):
+            for current_timepoint in range(num_timepoints):
 
                 #if i%10 == 0:
                 #    print('{}/{}'.format(i+1, num_timepoints))
 
                 if is_volume_series: # For a given volume, get all frames
-                    frames = sequences[i].findall('Frame')
+                    frames = sequences[current_timepoint].findall('Frame')
                     current_num_z = len(frames)
                     # Handle aborted scans for volumes
                     if last_num_z is not None:
@@ -194,15 +194,32 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                     #    frames = frames[::-1]
 
                 else: # Plane series: Get frame
-                    frames = [sequences[0].findall('Frame')[i]]
+                    frames = [sequences[0].findall('Frame')[current_timepoint]]
 
                 if is_multi_page_tiff:
+                    # This happens for 1 channel but volumetric in PVScan 5.8 ripped data
                     files = frames[0].findall('File')
-                    filename = files[current_channel].get('filename')
-                    first_tiff_path = os.path.join(data_dir, filename)
+                    # i.e. [<Element 'File' at 0x000001ED05500450>]
+                    filename = files[0].get('filename')
+                    # i.e. 'TSeries-04282025-1045-009_Cycle03001_Ch2_000001.ome.tif'
+                    first_tiff_path = pathlib.Path(data_dir, filename)
                     page = int(files[channel_counter].get('page')) - 1  # page number -> array index
-                    img = io.imread(first_tiff_path, plugin='pil')  # shape = z, y, x
-                    image_array[i,:,:,:] = img
+                    try:
+                        img = io.imread(first_tiff_path, plugin='pil')  # shape = z, y, x
+                    except FileNotFoundError as e:
+                        print(e)
+                        continue
+
+                    try:
+                       image_array[current_timepoint,:,:,:] = img
+                    except ValueError as e:
+                        print(e)
+
+                        # This happened in an anat folder:
+                        # ValueError: could not broadcast input array from shape (723,512,1024) into shape (241,512,1024)
+                        # I noticed that the ripper had trouble before that step as well!
+                        # Here we expect
+
                 else:
                     # loop over depth (z-dim)
                     for j, frame in enumerate(frames):
@@ -214,14 +231,14 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                        
                         # Read in file
                         img = io.imread(first_tiff_path, plugin='pil')
-                        image_array[i,j,:,:] = img
+                        image_array[current_timepoint,j,:,:] = img
                                 
                 ######################
                 ### Print Progress ###
                 ######################
                 memory_usage = int(psutil.Process(os.getpid()).memory_info().rss*10**-9)
                 utils.print_progress_table(start_time=start_time,
-                                            current_iteration=i,
+                                            current_iteration=current_timepoint,
                                             total_iterations=num_timepoints,
                                             current_mem=memory_usage,
                                             total_mem=32,
