@@ -38,7 +38,7 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
         print_iters = [1,2,4,8,16,32,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,500,600,700,800,900,1000,5000,10000,10000]
     if mode == 'tiff_convert':
         print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096]
-    
+
 
     fraction_complete = current_iteration/total_iterations
     elapsed = time()-start_time
@@ -48,14 +48,14 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
     except ZeroDivisionError:
         remaining = 0
     remaining_hms = sec_to_hms(remaining)
-    
+
     ### PRINT TABLE TITLE ###
     if current_iteration == 1:
         title_string = "| Current Time |  Print Frequency  |     Num / Total   |         GB / Total      | Elapsed Time / Remaining   |"
         # if mode == 'server':
         #     title_string += "  MB / SEC  |"
         print(title_string, flush=True)
-    
+
     now = datetime.now()
     current_time_string = "   {}   ".format(now.strftime("%H:%M:%S"))
     print_freq_string = "       {:05d}       ".format(current_iteration)
@@ -64,18 +64,18 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
     time_string = F"     {elapsed_hms} / {remaining_hms}    "
     full_string = '|'.join(['', current_time_string, print_freq_string, iteration_string, memory_string, time_string, ''])
     # if mode == 'server':
-    #     speed = 
+    #     speed =
     #     full_string =+ '{}'.format()
-    
+
     if current_iteration in print_iters:
         print(full_string, flush=True)
-        
+
     if current_iteration == total_iterations:
         print(full_string, flush=True)
 
 def progress_bar(iteration, total, length, fill = '#'):
     if total == 0:
-        total = 1        
+        total = 1
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
     fraction = F"{str(iteration):^4}" + '/' + F"{str(total):^4}"
@@ -105,7 +105,7 @@ def get_checksum(filename):
     return readable_hash
 
 def get_json_data(file_path):
-    with open(file_path) as f:  
+    with open(file_path) as f:
         data = json.load(f)
     return data
 
@@ -175,13 +175,13 @@ class Logger_stdout(object):
         #  self.terminal.write(message)
         #self.terminal.write('boo')
         #self.log.write('boo2')
-        self.log.write(message)  
+        self.log.write(message)
 
     def flush(self):
         #this flush method is needed for python 3 compatibility.
         #this handles the flush command by doing nothing.
         #you might want to specify some extra behavior here.
-        pass 
+        pass
 
 # class Logger_stdout(object):
 #     def __init__(self, full_log_file):
@@ -195,13 +195,13 @@ class Logger_stdout(object):
 #         self.terminal.write(message)
 #         #self.terminal.write('boo')
 #         #self.log.write('boo2')
-#         self.log.write(message)  
+#         self.log.write(message)
 
 #     def flush(self):
 #         #this flush method is needed for python 3 compatibility.
 #         #this handles the flush command by doing nothing.
 #         #you might want to specify some extra behavior here.
-#         pass 
+#         pass
 
 class Logger_stderr(object):
     def __init__(self, full_log_file):
@@ -213,7 +213,7 @@ class Logger_stderr(object):
 
     def write(self, message):
         self.terminal.write(message)
-        self.log.write(message)  
+        self.log.write(message)
 
     def flush(self):
         #this flush method is needed for python 3 compatibility.

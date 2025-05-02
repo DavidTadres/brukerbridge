@@ -101,18 +101,16 @@ if stimpack_h5_path is not None:
             # to ensure we actually find it on the fictrac computer
             current_jackfish_folder_name = stimpack_h5_path.name.split('.hdf5')[0]
             # At this point we have 2024-06-13
-            current_jackfish_folder_name.replace('-', '')
-            # Now we have 20240613
-            print("current jackfish folder name " + repr(current_jackfish_folder_name))
+            current_jackfish_folder_name = current_jackfish_folder_name.replace('-', '')
+            # Now we have 20240613 
 
             local_target_path_jackfish_data = pathlib.Path(source_directory, current_jackfish_folder_name + '_jackfish')
             # This makes sure we have a folder in parallel to the stimpack folder like such 20240613_jackfish
             local_target_path_jackfish_data.mkdir(exist_ok=True, parents=True)
 
-            local_target_path = pathlib.Path(str(h5_dst_imaging_pc).split('.hdf5')[0])
             utils.DownloadFolderFTP(ip, username, passwd,
                                     remote_root_path=jackfish_data_path,
-                                    folder_to_copy=local_target_path_jackfish_data,
+                                    folder_to_copy=current_jackfish_folder_name,
                                     local_target_path=local_target_path_jackfish_data
                                     )
 
