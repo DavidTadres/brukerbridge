@@ -157,7 +157,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         image_array = np.zeros((num_timepoints, num_z, num_y, num_x), dtype=np.uint16)
         print('Created empty array of shape {}'.format(image_array.shape))
 
-        # This might fail as I couldn't test it:
+        # This might fail as I couldn't test it (note from future: it did fail...)
         # originally 'current_channel' was just 0, 1, 2 (int) now it's i.e. only '2' (str)
         if is_multi_page_tiff and (is_volume_series is False):
              # saved as a single big tif for all time steps

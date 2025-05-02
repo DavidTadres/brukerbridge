@@ -6,7 +6,9 @@
     "fly_json_from_h5": "True",
     "stimpack_h5_path": "E:/David/stimpack_data",
     "stimpack_data_path": "../../data/david/stimpack_data/fictrac",
+    "jackfish_data_path": "../../TBD!!!!",
     "autotransfer_stimpack": "True",
+    "autotransfer_jackfish": "True",
     "max_diff_imaging_and_stimpack_start_time_second": "60",
     "copy_SingleImage": "False"
 }
