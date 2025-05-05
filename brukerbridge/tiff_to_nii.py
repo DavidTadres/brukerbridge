@@ -9,6 +9,7 @@ from skimage import io
 import time
 import pathlib
 import json
+import imageio
 import h5py
 import datetime
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
@@ -70,6 +71,12 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                     y_voxel_size = float(index.get("value"))
                 elif axis == "ZAxis":
                     z_voxel_size = float(index.get("value"))
+        # Get y pixel count
+        if key == "linesPerFrame":
+            num_y = int(statevalue.get("value"))
+        # Get x pixel count
+        if key == "pixelsPerLine":
+            num_x = int(statevalue.get("value"))
     ###########
 
     # Get all volumes
@@ -118,6 +125,25 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         num_timepoints = len(sequences[0].findall('Frame'))
         num_z = 1
         is_volume_series = False
+        # Extract all tiff filenames from xml file
+        tiff_filenames = []
+        # Note - this for loop takes forever as we have 100s of 1000s of images...
+        for counter, current_frame in enumerate(sequences[0].findall('Frame')):
+            # It took forever to make the list if >100K. This is much faster!
+            if counter%1000==0:
+                if counter !=0:
+                    tiff_filenames.append(temp_tiff_filenames)
+                temp_tiff_filenames = []
+                #print(counter)
+            current_filename = current_frame.find('File').get('filename')
+            if current_filename in tiff_filenames or current_filename in temp_tiff_filenames:
+                continue
+            else:
+                temp_tiff_filenames.append(current_filename)
+        # After loop, add list bit of temp to tiff_filenames
+        tiff_filenames.append(temp_tiff_filenames)
+        tiff_filenames = utils.flatten_nested_list(tiff_filenames)
+
     elif root.find('Sequence').get('type') == 'TSeries ZSeries Element': # Volume time series
         num_timepoints = len(sequences)
         num_z = len(sequences[0].findall('Frame'))
@@ -132,24 +158,49 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     #num_channels = get_num_channels(sequences[0])
     # Get existing channels as strings
     channels = get_channel_ids(sequences[0])
+
+    # Note: We should define all axis through the xml file, not by reading the image file!
+    # HOWEVER: There's inconsistency in how the ripper provides the data with axes sometimes being swapped...
+    # Hence, read the first frame to see where each axis is
     first_tiff = sequences[0].findall('Frame')[0].findall('File')[0].get('filename')
     #first_tiff_path = os.path.join(data_dir, first_tiff)
     first_tiff_path = pathlib.Path(xml_file.parent, first_tiff)
 
-    ### Luke added try except 20221024 because sometimes but rarely a file doesn't exist
+       ### Luke added try except 20221024 because sometimes but rarely a file doesn't exist
     # somthing to do with bruker xml file
-    try:
-        img = io.imread(first_tiff_path, plugin='pil')
-    except FileNotFoundError as e:
+    if first_tiff_path.is_file():
+        try:
+            img = io.imread(first_tiff_path, plugin='pil')
+        except TypeError:
+            img = imageio.imread(first_tiff_path)
+            '''
+            Got this error when I think the ripper messed up:
+            img = io.imread(first_tiff_path, plugin='pil')
+            ...
+            TypeError: int() argument must be a string, a bytes-like object or a number, not 'NoneType'
+            '''
+
+    else:
         print("!!! FileNotFoundError, passing !!!")
 
-    num_y = np.shape(img)[-2]
-    num_x = np.shape(img)[-1]
+    if (num_x == num_y) or (num_x == num_z) or (num_y == num_z):
+        print('CAN NOT HANDLE IDENTICAL AXIS SIZE AT THE MOMENT')
+        print('IMPLEMENT HANDLING THESE CASES!')
+        import sys
+        sys.exit()
+    # This will fail if we have two axis with the identical
+    x_axis = np.where(np.array(img.shape) == num_x)[0][0]
+    y_axis = np.where(np.array(img.shape) == num_y)[0][0]
+    z_axis = np.where(np.array(img.shape) == num_z)[0][0]
+
+    #num_y = np.shape(img)[-2]
+    #num_x = np.shape(img)[-1]
     print('channels: {}'.format(channels))
     print('num_timepoints: {}'.format(num_timepoints))
     print('num_z: {}'.format(num_z))
     print('num_y: {}'.format(num_y))
     print('num_x: {}'.format(num_x))
+
 
     # loop over channels
     for channel_counter, current_channel in enumerate(channels):
@@ -159,79 +210,112 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
 
         # This might fail as I couldn't test it (note from future: it did fail...)
         # originally 'current_channel' was just 0, 1, 2 (int) now it's i.e. only '2' (str)
-        if is_multi_page_tiff and (is_volume_series is False):
-             # saved as a single big tif for all time steps
+        if is_multi_page_tiff and not is_volume_series:
+            # saved as a single big tif for all time steps
             print('is_multi_page_tiff is {} / is_volume_series is {}'.format(is_multi_page_tiff, is_volume_series))
-            frames = [sequences[0].findall('Frame')[0]]
-            files = frames[0].findall('File')
-            filename = files[channel_counter].get('filename')
-            first_tiff_path = pathlib.Path(data_dir, filename)
-            img = io.imread(first_tiff_path, plugin='pil')  # shape = t, y, x
-            image_array[:,0,:,:] = img
+
+            # We still have to loop if the single plane recording is long enough!
+            current_start_index = 0
+            for current_tiff in tiff_filenames:
+                current_path_to_tiff = pathlib.Path(data_dir, current_tiff)
+                try:
+                    img = io.imread(current_path_to_tiff, plugin='pil')
+                except TypeError:
+                    """
+                    Got this error when I think the ripper messed up:
+                     img = io.imread(first_tiff_path, plugin='pil')
+                     ...
+                     xsize = int(self.tag_v2.get(IMAGEWIDTH))
+                    TypeError: int() argument must be a string, a bytes-like object or a number, not 'NoneType'
+                    """
+                    img = imageio.imread(current_path_to_tiff)
+
+                    image_array[current_start_index:current_start_index+img.shape[0], 0, :, :] = img.transpose(z_axis, y_axis,x_axis)
+
+                    current_start_index+=img.shape[0]
+
+            #frames = [sequences[0].findall('Frame')[0]]
+            #files = frames[0].findall('File')
+            #filename = files[channel_counter].get('filename')
+            # first_tiff_path = pathlib.Path(data_dir, filename)
+            #img = io.imread(first_tiff_path, plugin='pil')  # shape = t, y, x # we already loaded this above
+            #image_array[:,0,:,:] = img
            
         else:
             # loop over time steps to load one tif at a time
             start_time = time.time()
             for current_timepoint in range(num_timepoints):
 
-                #if i%10 == 0:
-                #    print('{}/{}'.format(i+1, num_timepoints))
 
-                if is_volume_series: # For a given volume, get all frames
-                    frames = sequences[current_timepoint].findall('Frame')
-                    current_num_z = len(frames)
-                    # Handle aborted scans for volumes
-                    if last_num_z is not None:
-                        if current_num_z != last_num_z:
-                            print('Inconsistent number of z-slices (scan aborted).')
-                            print('Tossing last volume.')
-                            aborted = True
-                            break
-                    last_num_z = current_num_z
+                # Older PV (5.5) would not create multipage tiff even in single z-axis
+                if num_z == 1:
+                    # It took forever to make this list, so just re-use it
 
-                    # Flip frame order if a bidirectionalZ upstroke (odd i)
-                    #if is_bidirectional_z and (i%2 != 0):
-                    #    frames = frames[::-1]
+                    current_tiff_filename = pathlib.Path(data_dir, tiff_filenames[current_timepoint])
 
-                else: # Plane series: Get frame
-                    frames = [sequences[0].findall('Frame')[current_timepoint]]
-
-                if is_multi_page_tiff:
-                    # This happens for 1 channel but volumetric in PVScan 5.8 ripped data
-                    files = frames[0].findall('File')
-                    # i.e. [<Element 'File' at 0x000001ED05500450>]
-                    filename = files[0].get('filename')
-                    # i.e. 'TSeries-04282025-1045-009_Cycle03001_Ch2_000001.ome.tif'
-                    first_tiff_path = pathlib.Path(data_dir, filename)
-                    page = int(files[channel_counter].get('page')) - 1  # page number -> array index
-                    try:
-                        img = io.imread(first_tiff_path, plugin='pil')  # shape = z, y, x
-                    except FileNotFoundError as e:
-                        print(e)
-                        continue
-
-                    try:
-                       image_array[current_timepoint,:,:,:] = img
-                    except ValueError as e:
-                        print(e)
-
-                        # This happened in an anat folder:
-                        # ValueError: could not broadcast input array from shape (723,512,1024) into shape (241,512,1024)
-                        # I noticed that the ripper had trouble before that step as well!
-                        # Here we expect
-
+                    img = io.imread(current_tiff_filename, plugin='pil')
+                    image_array[current_timepoint,0,:,:] = img.transpose(z_axis, y_axis,x_axis)
                 else:
-                    # loop over depth (z-dim)
-                    for j, frame in enumerate(frames):
-                        # For a given frame, get filename
-                        files = frame.findall('File')
-                        filename = files[channel_counter].get('filename')
-                        #first_tiff_path = os.path.join(data_dir, filename)
+
+                    #if i%10 == 0:
+                    #    print('{}/{}'.format(i+1, num_timepoints))
+
+                    if is_volume_series: # For a given volume, get all frames
+                        frames = sequences[current_timepoint].findall('Frame')
+                        current_num_z = len(frames)
+                        # Handle aborted scans for volumes
+                        if last_num_z is not None:
+                            if current_num_z != last_num_z:
+                                print('Inconsistent number of z-slices (scan aborted).')
+                                print('Tossing last volume.')
+                                aborted = True
+                                break
+                        last_num_z = current_num_z
+
+                        # Flip frame order if a bidirectionalZ upstroke (odd i)
+                        #if is_bidirectional_z and (i%2 != 0):
+                        #    frames = frames[::-1]
+
+                    else: # Plane series: Get frame
+                        frames = [sequences[0].findall('Frame')[current_timepoint]]
+
+                    if is_multi_page_tiff:
+                        # This happens for 1 channel but volumetric in PVScan 5.8 ripped data
+                        files = frames[0].findall('File')
+                        # i.e. [<Element 'File' at 0x000001ED05500450>]
+                        filename = files[0].get('filename')
+                        # i.e. 'TSeries-04282025-1045-009_Cycle03001_Ch2_000001.ome.tif'
                         first_tiff_path = pathlib.Path(data_dir, filename)
-                       
-                        # Read in file
-                        img = io.imread(first_tiff_path, plugin='pil')
-                        image_array[current_timepoint,j,:,:] = img
+                        page = int(files[channel_counter].get('page')) - 1  # page number -> array index
+                        try:
+                            img = io.imread(first_tiff_path, plugin='pil')  # shape = z, y, x
+                        except FileNotFoundError as e:
+                            print(e)
+                            continue
+
+                        try:
+                           image_array[current_timepoint,:,:,:] = img.transpose(z_axis, y_axis,x_axis)
+                        except ValueError as e:
+                            print(e)
+
+                            # This happened in an anat folder:
+                            # ValueError: could not broadcast input array from shape (723,512,1024) into shape (241,512,1024)
+                            # I noticed that the ripper had trouble before that step as well!
+                            # Here we expect
+
+
+                    else:
+                        # loop over depth (z-dim)
+                        for j, frame in enumerate(frames):
+                            # For a given frame, get filename
+                            files = frame.findall('File')
+                            filename = files[channel_counter].get('filename')
+                            #first_tiff_path = os.path.join(data_dir, filename)
+                            first_tiff_path = pathlib.Path(data_dir, filename)
+
+                            # Read in file
+                            img = io.imread(first_tiff_path, plugin='pil')
+                            image_array[current_timepoint,j,:,:] = img.transpose(z_axis, y_axis,x_axis)
                                 
                 ######################
                 ### Print Progress ###
@@ -302,6 +386,7 @@ def convert_tiff_collections_to_nii(directory,
                                     fly_json_from_h5,
                                     fly_json_already_created,
                                     autotransfer_stimpack,
+                                    autotransfer_jackfish,
                                     max_diff_imaging_and_stimpack_start_time_second):
     #for item in os.listdir(directory):
     # Here we are in the parent directory. By definition (to be documented) this
@@ -327,7 +412,6 @@ def convert_tiff_collections_to_nii(directory,
         # just a manually create fly.json file!
         fly_json_already_created = True
 
-
         # option to autotransfer stimpack data (such as fictrac)
         # Note - even though this function is called several times, it should only copy
         # The data once because the variable 'fly_json_already_created' makes sure that
@@ -340,26 +424,57 @@ def convert_tiff_collections_to_nii(directory,
                 # This json file is used below to check whether a given stimpack session can be assumed to
                 # belong to a given imaging session
 
-                utils.write_h5_metadata_in_stimpack_folder(directory)
-                print('Wrote h5 metadata in stimpack folder')
-                # Then copy stimpack data from bespoke folder into corresponding imaging folder
-                stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
-                    directory, max_diff_imaging_and_stimpack_start_time_second)
-                if bool(stimpack_errors):
-                    print('***** ERROR ENCOUNTERD DURING STIMPACK FOLDER ASSIGNMENT *****')
-                    for current_error in stimpack_errors:
-                        print(current_error)
-                        print(':\n')
-                        print(stimpack_errors[current_error])
-                        print('\n\n')
+                success_writing_flyID_json_in_stimpack_loco_folder = (
+                    utils.write_h5_metadata_in_stimpack_folder(directory))
+                if success_writing_flyID_json_in_stimpack_loco_folder:
+                    print('Wrote h5 metadata in stimpack folder')
+                    # Then copy stimpack data from bespoke folder into corresponding imaging folder
+                    stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
+                        directory, max_diff_imaging_and_stimpack_start_time_second)
+                    if bool(stimpack_errors):
+                        print('***** ERROR ENCOUNTERED DURING STIMPACK FOLDER ASSIGNMENT *****')
+                        for current_error in stimpack_errors:
+                            print(current_error)
+                            print(':\n')
+                            print(stimpack_errors[current_error])
+                            print('\n\n')
+                    else:
+                        print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
                 else:
-                    print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
+                    print('>>>>>>>>INFORMATION<<<<<<<<<<')
+                    print('Unable to transfer any stimpack/loco files (real-time fictrac recordings).')
+                    print('This is normal behavior if you have recorded videos with jackfish instead.')
             except UnboundLocalError as e:
                 print('********** WARNING **********')
                 print('Unable to autotransfer stimpack because:')
                 print(e)
                 print('\n')
 
+        if autotransfer_jackfish:
+            #try:
+            print('Attempting to automatically assign jackfish data to imaging folder')
+            success_writing_flyID_json_in_jackfish_folder = (
+                utils.write_h5_metadata_in_jackfish_folder(directory))
+            if success_writing_flyID_json_in_jackfish_folder:
+                print('Wrote h5 metadata in jackfish folder'
+                      )
+                jackfish_erros = utils.add_jackfish_data_to_imaging_folder(
+                    directory, max_diff_imaging_and_stimpack_start_time_second
+                )
+                if bool(jackfish_erros):
+                    print('***** ERROR ENCOUNTERED DURING JACKFISH FOLDER ASSIGNMENT *****')
+                    for current_error in stimpack_errors:
+                        print(current_error)
+                        print(':\n')
+                        print(jackfish_erros[current_error])
+                        print('\n\n')
+                else:
+                    print('Successfully copied all jackfish data into corresponding imaging folder!')
+
+            else:
+                print('>>>>>>>>INFORMATION<<<<<<<<<<')
+                print('Unable to transfer any stimpack/jackfish files (post-hoc fictrac recordings).')
+                print('This is normal behavior if you have done real-time fictrac recordings instead.')
 
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item
@@ -375,6 +490,7 @@ def convert_tiff_collections_to_nii(directory,
                                             fly_json_from_h5=fly_json_from_h5,
                                             fly_json_already_created=fly_json_already_created,
                                             autotransfer_stimpack=autotransfer_stimpack,
+                                            autotransfer_jackfish=autotransfer_jackfish,
                                             max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
 
         # If the item is a file

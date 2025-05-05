@@ -105,9 +105,6 @@ def oak_transfer(root_path_name, # Will be something like
                     print("****Skipping " + current_oak_target.name + ' with filesize: ' + repr(
                         file_size_GB) + 'GB already exists!***')
 
-
-
-
 def start_oak_transfer(root_path_name, # Will be something like
                        directory_from,
                        oak_target,
