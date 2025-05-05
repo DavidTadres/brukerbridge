@@ -158,7 +158,8 @@ def main(args):
 													fly_json_already_created=fly_json_already_created,
 													autotransfer_stimpack=autotransfer_stimpack,
 													autotransfer_jackfish=autotransfer_jackfish,
-													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
+													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+													copy_SingleImage=copy_SingleImage)
 	elif convert_to == 'tiff':
 		# NOT TESTED! LIKELY WONT WORK!
 		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)

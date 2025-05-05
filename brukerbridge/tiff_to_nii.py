@@ -159,6 +159,14 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     # Get existing channels as strings
     channels = get_channel_ids(sequences[0])
 
+    #num_y = np.shape(img)[-2]
+    #num_x = np.shape(img)[-1]
+    print('channels: {}'.format(channels))
+    print('num_timepoints: {}'.format(num_timepoints))
+    print('num_z: {}'.format(num_z))
+    print('num_y: {}'.format(num_y))
+    print('num_x: {}'.format(num_x))
+
     # Note: We should define all axis through the xml file, not by reading the image file!
     # HOWEVER: There's inconsistency in how the ripper provides the data with axes sometimes being swapped...
     # Hence, read the first frame to see where each axis is
@@ -191,16 +199,8 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     # This will fail if we have two axis with the identical
     x_axis = np.where(np.array(img.shape) == num_x)[0][0]
     y_axis = np.where(np.array(img.shape) == num_y)[0][0]
-    z_axis = np.where(np.array(img.shape) == num_z)[0][0]
-
-    #num_y = np.shape(img)[-2]
-    #num_x = np.shape(img)[-1]
-    print('channels: {}'.format(channels))
-    print('num_timepoints: {}'.format(num_timepoints))
-    print('num_z: {}'.format(num_z))
-    print('num_y: {}'.format(num_y))
-    print('num_x: {}'.format(num_x))
-
+    if num_z != 1:
+        z_axis = np.where(np.array(img.shape) == num_z)[0][0]
 
     # loop over channels
     for channel_counter, current_channel in enumerate(channels):
@@ -387,7 +387,8 @@ def convert_tiff_collections_to_nii(directory,
                                     fly_json_already_created,
                                     autotransfer_stimpack,
                                     autotransfer_jackfish,
-                                    max_diff_imaging_and_stimpack_start_time_second):
+                                    max_diff_imaging_and_stimpack_start_time_second,
+                                    copy_SingleImage):
     #for item in os.listdir(directory):
     # Here we are in the parent directory. By definition (to be documented) this
     # must be a folder like 20240613 which contains subfolders such as 'fly_001'
@@ -491,11 +492,12 @@ def convert_tiff_collections_to_nii(directory,
                                             fly_json_already_created=fly_json_already_created,
                                             autotransfer_stimpack=autotransfer_stimpack,
                                             autotransfer_jackfish=autotransfer_jackfish,
-                                            max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
+                                            max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+                                            copy_SingleImage=copy_SingleImage)
 
         # If the item is a file
         else:
-            # If the item is an xml file
+            # If the item is a xml file
             if '.xml' in current_path.name:
                 #print(3) #debug
                 #tree = ET.parse(new_path)
@@ -515,6 +517,14 @@ def convert_tiff_collections_to_nii(directory,
                         if '.nii' in item.name:
                             print('skipping nii containing folder: {}'.format(directory))
                             break
+                    # Finally, check if it's a singleImage folder
+                    if not copy_SingleImage:
+                        if 'SingleImage' in directory.name:
+                            print('Single Image folder. Skipping nii creation')
+                            break
+                        else:
+                            # tiff_to_nii(new_path)
+                            tiff_to_nii(current_path, brukerbridge_version_info)
                     else:
                         #tiff_to_nii(new_path)
                         tiff_to_nii(current_path, brukerbridge_version_info)
