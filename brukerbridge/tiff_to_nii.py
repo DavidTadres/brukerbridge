@@ -70,6 +70,12 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                     y_voxel_size = float(index.get("value"))
                 elif axis == "ZAxis":
                     z_voxel_size = float(index.get("value"))
+                # Get y pixel count
+        if key == "linesPerFrame":
+            num_y = int(statevalue.get("value"))
+        # Get x pixel count
+        if key == "pixelsPerLine":
+            num_x = int(statevalue.get("value"))
     ###########
 
     # Get all volumes
