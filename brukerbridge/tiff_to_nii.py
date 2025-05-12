@@ -149,6 +149,15 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     except FileNotFoundError as e:
         print("!!! FileNotFoundError, passing !!!")
 
+    if (num_x == num_y) or (num_x == num_z) or (num_y == num_z):
+        print('CAN NOT HANDLE IDENTICAL AXIS SIZE AT THE MOMENT')
+        print('IMPLEMENT HANDLING THESE CASES!')
+        import sys
+        sys.exit()
+    # This will fail if we have two axis with the identical
+    x_axis = np.where(np.array(img.shape) == num_x)[0][0]
+    y_axis = np.where(np.array(img.shape) == num_y)[0][0]
+    z_axis = np.where(np.array(img.shape) == num_z)[0][0]
 
     print('name of first tiff: {}'.format(first_tiff))
     print('shape of first tiff: {}'.format(img.shape))
@@ -157,6 +166,8 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     print('num_z: {}'.format(num_z))
     print('num_y: {}'.format(num_y))
     print('num_x: {}'.format(num_x))
+
+
 
     # loop over channels
     for channel_counter, current_channel in enumerate(channels):
@@ -174,7 +185,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             filename = files[channel_counter].get('filename')
             first_tiff_path = pathlib.Path(data_dir, filename)
             img = io.imread(first_tiff_path, plugin='pil')  # shape = t, y, x
-            image_array[:,0,:,:] = img
+            image_array[:,0,:,:] = img.transpose(z_axis, y_axis, x_axis) # shape = t, z, y, x
            
         else:
             # loop over time steps to load one tif at a time
@@ -218,7 +229,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                         continue
 
                     try:
-                       image_array[current_timepoint,:,:,:] = img
+                       image_array[current_timepoint,:,:,:] = img.transpose(z_axis, y_axis, x_axis) # shape = t, z, y, x
                     except ValueError as e:
                         print(e)
 
@@ -238,7 +249,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                        
                         # Read in file
                         img = io.imread(first_tiff_path, plugin='pil')
-                        image_array[current_timepoint,j,:,:] = img
+                        image_array[current_timepoint,j,:,:] = img.transpose(z_axis, y_axis, x_axis) # shape = t, z, y, x
                                 
                 ######################
                 ### Print Progress ###
