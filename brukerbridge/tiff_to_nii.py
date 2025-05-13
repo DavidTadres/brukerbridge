@@ -127,14 +127,14 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         is_volume_series = False
         # Extract all tiff filenames from xml file
         tiff_filenames = []
+        temp_tiff_filenames = []
         # Note - this for loop takes forever as we have 100s of 1000s of images...
-        for counter, current_frame in enumerate(sequences[0].findall('Frame')):
+        for current_frame in sequences[0].findall('Frame'):
             # It took forever to make the list if >100K. This is much faster!
-            if counter%1000==0:
-                if counter !=0:
-                    tiff_filenames.append(temp_tiff_filenames)
+            if len(tiff_filenames) > 1000:
+                tiff_filenames.append(temp_tiff_filenames)
                 temp_tiff_filenames = []
-                #print(counter)
+
             current_filename = current_frame.find('File').get('filename')
             if current_filename in tiff_filenames or current_filename in temp_tiff_filenames:
                 continue
@@ -143,6 +143,8 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         # After loop, add list bit of temp to tiff_filenames
         tiff_filenames.append(temp_tiff_filenames)
         tiff_filenames = utils.flatten_nested_list(tiff_filenames)
+
+        print(tiff_filenames)
 
     elif root.find('Sequence').get('type') == 'TSeries ZSeries Element': # Volume time series
         num_timepoints = len(sequences)
@@ -215,8 +217,10 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             print('is_multi_page_tiff is {} / is_volume_series is {}'.format(is_multi_page_tiff, is_volume_series))
 
             # We still have to loop if the single plane recording is long enough!
+            # loop over time steps to load one tif at a time
+            start_time = time.time()
             current_start_index = 0
-            for current_tiff in tiff_filenames:
+            for current_iteration, current_tiff in enumerate(tiff_filenames):
                 current_path_to_tiff = pathlib.Path(data_dir, current_tiff)
                 try:
                     img = io.imread(current_path_to_tiff, plugin='pil')
@@ -229,10 +233,24 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                     TypeError: int() argument must be a string, a bytes-like object or a number, not 'NoneType'
                     """
                     img = imageio.imread(current_path_to_tiff)
+                #print(current_path_to_tiff)
+                #print(img.shape)
+                # Here we get and undefined t, y and then x
+                # (at least in the example I'm looking at)
+                image_array[current_start_index:current_start_index+img.shape[0], 0, :, :] = img
+                #print(time.time() - start_time)
+                current_start_index+=img.shape[0]
 
-                    image_array[current_start_index:current_start_index+img.shape[0], 0, :, :] = img.transpose(z_axis, y_axis,x_axis)
-
-                    current_start_index+=img.shape[0]
+                ######################
+                ### Print Progress ###
+                ######################
+                memory_usage = int(psutil.Process(os.getpid()).memory_info().rss*10**-9)
+                utils.print_progress_table(start_time=start_time,
+                                            current_iteration=current_iteration,
+                                            total_iterations=len(tiff_filenames),
+                                            current_mem=memory_usage,
+                                            total_mem=32,
+                                            mode='tiff_convert')
 
             #frames = [sequences[0].findall('Frame')[0]]
             #files = frames[0].findall('File')
@@ -242,7 +260,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             #image_array[:,0,:,:] = img
            
         else:
-            # loop over time steps to load one tif at a time
+
             start_time = time.time()
             for current_timepoint in range(num_timepoints):
 
@@ -338,6 +356,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             if aborted:
                 image_array = image_array[:,:,:,:-1]
         else:
+            # Comes as t,z,x,y
             image_array = np.squeeze(image_array) # t, x, y
             image_array = np.moveaxis(image_array, 0, -1) # x, y, t
             image_array = np.swapaxes(image_array, 0, 1) # y, x, t
@@ -347,15 +366,18 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         aff = np.eye(4)
         #save_name = xml_file[:-4] + '_channel_{}'.format(current_channel+1) + '.nii'
         save_name = pathlib.Path(xml_file.parent, xml_file.name[:-4] + '_channel_{}'.format(current_channel) + '.nii')
-        if is_volume_series:
+        try:
             img = nib.Nifti1Image(image_array, aff) # 32 bit: maxes out at 32767 in any one dimension
-        else:
+        except nib.spatialimages.HeaderDataError:
             img = nib.Nifti2Image(image_array, aff) # 64 bit
 
         ##### NEW
         header_info = img.header # pointer to new header
         # change the voxel dimensions to [2,2,2]
-        header_info['pixdim'][1:4] = [x_voxel_size, y_voxel_size, z_voxel_size]  # x,y,z
+        if is_volume_series:
+            header_info['pixdim'][1:4] = [x_voxel_size, y_voxel_size, z_voxel_size]  # x,y,z
+        else:
+            header_info['pixdim'][1:3] = [x_voxel_size, y_voxel_size] # x,y
         ##### NEW END
 
         image_array = None # for memory
@@ -387,12 +409,12 @@ def convert_tiff_collections_to_nii(directory,
                                     fly_json_already_created,
                                     autotransfer_stimpack,
                                     autotransfer_jackfish,
-                                    max_diff_imaging_and_stimpack_start_time_second,
-                                    copy_SingleImage):
+                                    max_diff_imaging_and_stimpack_start_time_second):
     #for item in os.listdir(directory):
     # Here we are in the parent directory. By definition (to be documented) this
     # must be a folder like 20240613 which contains subfolders such as 'fly_001'
     # and, optionally, a stimpack produced h5 file!
+    #print('called convert_tiff_collections_to_nii with directory ' + repr(directory))
 
     if fly_json_from_h5 and not fly_json_already_created:
         print('Attempting to create fly.json from stimpack h5 file')
@@ -492,13 +514,13 @@ def convert_tiff_collections_to_nii(directory,
                                             fly_json_already_created=fly_json_already_created,
                                             autotransfer_stimpack=autotransfer_stimpack,
                                             autotransfer_jackfish=autotransfer_jackfish,
-                                            max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
-                                            copy_SingleImage=copy_SingleImage)
+                                            max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
 
         # If the item is a file
         else:
             # If the item is a xml file
             if '.xml' in current_path.name:
+                create_nii = True
                 #print(3) #debug
                 #tree = ET.parse(new_path)
                 tree = ET.parse(current_path)
@@ -516,16 +538,16 @@ def convert_tiff_collections_to_nii(directory,
                     for item in directory.iterdir():
                         if '.nii' in item.name:
                             print('skipping nii containing folder: {}'.format(directory))
-                            break
+                            create_nii = False
+                            break # breaks the for loop as we have 100s of thousands of items..
+
                     # Finally, check if it's a singleImage folder
-                    if not copy_SingleImage:
-                        if 'SingleImage' in directory.name:
-                            print('Single Image folder. Skipping nii creation')
-                            break
-                        else:
-                            # tiff_to_nii(new_path)
-                            tiff_to_nii(current_path, brukerbridge_version_info)
-                    else:
+                    if 'SingleImage' in directory.name:
+                        print('Single Image folder. Skipping nii creation')
+                        create_nii =False
+                    # This breaks everything somehow?
+
+                    if create_nii:
                         #tiff_to_nii(new_path)
                         tiff_to_nii(current_path, brukerbridge_version_info)
 

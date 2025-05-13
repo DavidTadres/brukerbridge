@@ -48,6 +48,8 @@ users_directory = pathlib.Path(parent_path, 'users')
 
 def main(args):
 
+
+
 	############################
 	### Get target directory ###
 	############################
@@ -142,15 +144,16 @@ def main(args):
 	root = tree.getroot()
 	PVScan_version = root.get('version') # i.e. '5.8.64.800'
 
-	raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
-	print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
-	#print('skipping ripping')
-
+	if PVScan_version == '5.8.64.800':
+		print('DANGER WITH PV5.8!!!!')
+		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+		print('skipping ripping')
+	else:
+		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
+		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
 	#########################################
 	### Convert tiff to nii or tiff stack ###
 	#########################################
-
-
 	if convert_to == 'nii':
 		tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
 													brukerbridge_version_info=VERSION_INFO,
@@ -158,8 +161,7 @@ def main(args):
 													fly_json_already_created=fly_json_already_created,
 													autotransfer_stimpack=autotransfer_stimpack,
 													autotransfer_jackfish=autotransfer_jackfish,
-													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
-													copy_SingleImage=copy_SingleImage)
+													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
 	elif convert_to == 'tiff':
 		# NOT TESTED! LIKELY WONT WORK!
 		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)
