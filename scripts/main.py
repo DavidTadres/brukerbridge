@@ -144,13 +144,17 @@ def main(args):
 	root = tree.getroot()
 	PVScan_version = root.get('version') # i.e. '5.8.64.800'
 
-	if PVScan_version == '5.8.64.800':
-		print('DANGER WITH PV5.8!!!!')
-		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
-		print('skipping ripping')
-	else:
-		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
-		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
+	# if PVScan_version == '5.8.64.800':
+	# 	print('DANGER WITH PV5.8!!!!')
+	# 	print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+	# 	print('skipping ripping')
+	# else:
+	# 	raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
+	# 	print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
+
+	raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
+	print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
+
 	#########################################
 	### Convert tiff to nii or tiff stack ###
 	#########################################
