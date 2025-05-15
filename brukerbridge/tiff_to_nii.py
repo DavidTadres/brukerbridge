@@ -80,7 +80,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
 
     tree = ET.parse(xml_file)
     root = tree.getroot()
-
+    sequences = root.findall('Sequence')
     # get x/y dimensions and x/y/z voxel size
     statevalues = root.findall("PVStateShard")[0].findall("PVStateValue")
     for statevalue in statevalues:
@@ -114,8 +114,6 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         is_volume_series = True
     else:
          TypeError('Could not determine type of sequence, not recognized as "TSeries Timed Element" or a "TSeries ZSeries Element".')
-
-    sequences = root.findall('Sequence')
 
     # Check if bidirectional - will affect loading order
     is_bidirectional_z = sequences[0].get('bidirectionalZ')
