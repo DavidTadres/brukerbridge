@@ -569,8 +569,8 @@ def convert_tiff_collections_to_nii(directory,
                         print('Successfully copied all stimpack/fictrac data into corresponding imaging folder!')
 
                 elif not single_h5: 
-                    utils.write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory)
-                    print('Wrote h5 metadata in stimpack folder')
+                    #utils.write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory)
+                    #print('Wrote h5 metadata in stimpack folder')
                 
                     # Then copy stimpack data from bespoke folder into corresponding imaging folder
                     #stimpack_errors = utils.add_stimpack_data_to_imaging_folder(
