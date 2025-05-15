@@ -13,13 +13,13 @@ from glob import glob
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
 
 def main(directory):
-    raws_exist = True
+    ripping_incomplete = True
     print('RIPPER KILLER IS WATCHING')
-    while raws_exist:
-        raws_exist = False
-        raws_exist = check_for_raw_files(directory, raws_exist)
-        print('1 min updates... raws_exist is {}'.format(raws_exist), flush=True)
-        if raws_exist:
+    while ripping_incomplete:
+        ripping_incomplete = False
+        ripping_incomplete = ripping_incomplete_func(directory, ripping_incomplete)
+        print('1 min updates... raws_exist is {}'.format(ripping_incomplete), flush=True)
+        if ripping_incomplete:
             sleep(60)
     # Kill bruker converter now that no more raws exist
     #os.system("C:/Users/User/projects/brukerbridge/scripts/ripper_killer.bat")
@@ -93,22 +93,32 @@ def ripping_incomplete_func(directory):
         return(False)'''
 
 
-def check_for_raw_files(directory, raws_exist):
+def ripping_incomplete_func(directory, ripping_incomplete):
     #for item in os.listdir(directory):
     for item in pathlib.Path(directory).iterdir():
         #new_path = directory + '/' + item
 
         # Check if item is a directory
         #if os.path.isdir(new_path):
-        #    raws_exist = check_for_raw_files(new_path, raws_exist)
+        #    raws_exist = ripping_incomplete_func(new_path, raws_exist)
         if item.is_dir():
-            raws_exist = check_for_raw_files(item, raws_exist)
+            ripping_incomplete = ripping_incomplete_func(item, ripping_incomplete)
             
         # If the item is a file
         else:
-            if '_RAWDATA_' in item.name:
-                raws_exist = True
-    return raws_exist
+            # This check whether we have any image files that are not yet ripped
+            #if '_RAWDATA_' in item.name:
+            # WE want to keep the raw files now as there are errors with the ripper...
+            if 'Filelist.txt' in item.name:
+                ripping_incomplete = True
+            # This should address the bug Minseung discovered:
+            # Ripping of the voltage trace also happens here and if we only check
+            # for raw files to be gone, we might kill the ripper before voltage
+            # traces are ripped!
+            elif '_VoltageRecording_' in item.name and '_VRFilelist.txt' in item.name:
+                ripping_incomplete
+
+    return ripping_incomplete
 
 
 if __name__ == "__main__":

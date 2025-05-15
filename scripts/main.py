@@ -40,12 +40,15 @@ extensions_for_oak_transfer = ['.nii', '.csv',
 							   '.log', # fictrac log
 							   '.txt', # another fictrac log
 							   '.avi', # fictrac video file
-							   '.png' # fictrac_template.png
+							   '.png', # fictrac_template.png
+							   '.mp4' # fictrac video (if it exists)
 							   # pathlib.Path.suffix, includes '.'
 							   ]
 users_directory = pathlib.Path(parent_path, 'users')
 
 def main(args):
+
+
 
 	############################
 	### Get target directory ###
@@ -67,10 +70,6 @@ def main(args):
 	### Get user settings ###
 	#########################
 
-	#if user + '.json' in [x.lower() for x in os.listdir(users_directory)]:
-	#	json_file = os.path.join(users_directory, user + '.json')
-	#	with open(json_file) as file:
-	#		settings = json.load(file)
 	user_json_path = pathlib.Path(users_directory, user + '.json')
 	print("user_json_path" + str(user_json_path))
 	with open(user_json_path) as file:
@@ -83,7 +82,7 @@ def main(args):
 
 
 	add_to_build_que = utils.get_bool_from_json(settings, 'add_to_build_qeue')
-	transfer_fictrac_bool = utils.get_bool_from_json(settings, "transfer_fictrac_bool")
+	transfer_fictrac_bool = utils.get_bool_from_json(settings, "transfer_fictrac_bool") # Currently not used by David & Jacob, from Bella
 	#split = settings.get('split', False)
 	fly_json_from_h5 = utils.get_bool_from_json(settings, 'fly_json_from_h5')
 	print("fly_json_from_h5" + repr(fly_json_from_h5))
@@ -93,15 +92,21 @@ def main(args):
 		# If there is a h5 file, it is possible to auto-assign loco data to
 		# each experiment
 		autotransfer_stimpack = utils.get_bool_from_json(settings,'autotransfer_stimpack')
-		if autotransfer_stimpack:
+		autotransfer_jackfish = utils.get_bool_from_json(settings, 'autotransfer_jackfish')
+		if autotransfer_stimpack or autotransfer_jackfish:
 			# User can define the 'slack' they want to have between start of stimpack
 			# series and imaging series.
 			max_diff_imaging_and_stimpack_start_time_second = float(
 				settings.get('max_diff_imaging_and_stimpack_start_time_second', "60"))
+		else:
+			print('autotransfer_stimpack: ' + repr(autotransfer_stimpack))
+			print('autotransfer_jackfish ' + repr(autotransfer_jackfish))
+			max_diff_imaging_and_stimpack_start_time_second = None
 	# If no h5 file, not possible to do autotransfer of stimpack data. Just define
 	# variables as False and None
 	else:
 		autotransfer_stimpack = False
+		autotransfer_jackfish = False
 		max_diff_imaging_and_stimpack_start_time_second = None
 	copy_SingleImage = utils.get_bool_from_json(settings,'copy_SingleImage')
 
@@ -139,19 +144,23 @@ def main(args):
 	root = tree.getroot()
 	PVScan_version = root.get('version') # i.e. '5.8.64.800'
 
-	raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
-	print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
-
+	if PVScan_version == '5.8.64.800':
+		print('DANGER WITH PV5.8!!!!')
+		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+		print('skipping ripping')
+	else:
+		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
+		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
 	#########################################
 	### Convert tiff to nii or tiff stack ###
 	#########################################
-
 	if convert_to == 'nii':
 		tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
 													brukerbridge_version_info=VERSION_INFO,
 													fly_json_from_h5=fly_json_from_h5,
 													fly_json_already_created=fly_json_already_created,
 													autotransfer_stimpack=autotransfer_stimpack,
+													autotransfer_jackfish=autotransfer_jackfish,
 													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
 	elif convert_to == 'tiff':
 		# NOT TESTED! LIKELY WONT WORK!
@@ -159,7 +168,6 @@ def main(args):
 	else:
 		print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
 		print("Must be nii or tiff, with no period")
-
 	#######################
 	### Transfer to Oak ###
 	#######################
