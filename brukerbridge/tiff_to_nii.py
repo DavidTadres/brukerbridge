@@ -69,7 +69,15 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     print("\n\n")
     print('Converting tiffs to nii in directory: {}'.format(data_dir))
 
-    ### Get general info from xml file about scan (voxel size, multi or singlepage tiff, volume or single plane, )
+    ##########################################################################################################
+    #### Get info from xml file about scan (voxel size, multi or singlepage tiff, volume or single plane) ####
+    ##########################################################################################################
+
+
+    # Parse xml file
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    sequences = root.findall('Sequence')
 
     # Check if multipage tiff
     companion_filepath = pathlib.Path(str(xml_file).split('.')[0] + '.companion.ome')
@@ -78,9 +86,6 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     else:
         is_multi_page_tiff = False
 
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-    sequences = root.findall('Sequence')
     # get x/y dimensions and x/y/z voxel size
     statevalues = root.findall("PVStateShard")[0].findall("PVStateValue")
     for statevalue in statevalues:
@@ -95,10 +100,10 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                     y_voxel_size = float(index.get("value"))
                 elif axis == "ZAxis":
                     z_voxel_size = float(index.get("value"))
-        # Get y pixel count
+        # Get y dimension (pixel count)
         if key == "linesPerFrame":
             num_y = int(statevalue.get("value"))
-        # Get x pixel count
+        # Get x dimension (pixel count)
         if key == "pixelsPerLine":
             num_x = int(statevalue.get("value"))
 
@@ -166,14 +171,13 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     print('num_y: {}'.format(num_y))
     print('num_x: {}'.format(num_x))
     
+    ###############################################################
+    #### load first tiff and double check axes order/dimension ####
+    ###############################################################
 
-    # Note: There's inconsistency in how the ripper provides the data with axes sometimes being swapped...
-    # read the first frame to see where each axis is
     first_tiff_filename = sequences[0].findall('Frame')[0].findall('File')[0].get('filename')
     first_tiff_path = pathlib.Path(data_dir, first_tiff_filename)
 
-    ### Luke added try except 20221024 because sometimes but rarely a file doesn't exist
-    # somthing to do with bruker xml file
     if first_tiff_path.is_file():
         try:
             img = io.imread(first_tiff_path, plugin='pil')
@@ -188,23 +192,46 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     else:
         print("!!! FileNotFoundError, passing !!!")
 
-    if (num_x == num_y) or (num_x == num_z) or (num_y == num_z):
-        raise NotImplementedError(
-            (
-                "Cannot handle identical axis size at the moment because we "
-                "don't know what order axes are saved into tiffs by the ripper."
-            )
-        )
+    print('first tiff shape = {}'.format(img.shape))
 
-    # Note: this will fail if we have two axis with the identical
-    x_axis = np.where(np.array(img.shape) == num_x)[0][0]
-    y_axis = np.where(np.array(img.shape) == num_y)[0][0]
-    if is_multi_page_tiff:
-        if is_volume_series:
-            z_axis = np.where(np.array(img.shape) == num_z)[0][0] # only needed for multipage tiff volumetric data where multiple z-planes are in one file
-        else:
-            t_axis = np.where(np.array(img.shape) != num_x and np.array(img.shape) != num_y) # only needed for multipage tiff single plane data where multiple timepoints are in one file
-    ### loop over channels
+    ### check axes order/dimension ###
+    # based on previous testing (JCS, 5/19/2025) we expect the tiff to be in the order of:
+        #multipage tiff, single plane: t, y, x - confirmed
+        #multipage tiff, volumetric: z, y, x -confirmed
+        #singlepage tiff, single plane: y, x - confirmed
+        #singlepage tiff, volumetric: y, x -confirmed
+
+    ### Case1: multipage tiff, single plane ###
+    if is_multi_page_tiff and not is_volume_series:
+        assert(img.shape[0] == num_timepoints, 'tiff image shape does not match expected shape for time axis')
+        t_axis = 0
+        assert(img.shape[1] == num_y, 'tiff image shape does not match expected shape for y axis')
+        y_axis = 1
+        assert(img.shape[2] == num_x, 'tiff image shape does not match expected shape for x axis')
+        x_axis = 2
+        print('dimensions match, reading tiffs as: t,y,x')
+    ### Case3: multipage tiff, volumetric ###
+    elif is_multi_page_tiff and is_volume_series:
+        assert(img.shape[0] == num_z, 'tiff image shape does not match expected shape for z axis')
+        z_axis = 0
+        assert(img.shape[1] == num_y, 'tiff image shape does not match expected shape for y axis')
+        y_axis = 1
+        assert(img.shape[2] == num_x, 'tiff image shape does not match expected shape for x axis')
+        x_axis = 2
+        print('dimensions match, reading tiffs as: z,y,x')
+    ### Case2/4: singlepage tiff, single plane/volumetric ###
+    elif not is_multi_page_tiff:
+        assert(img.shape[0] == num_y, 'tiff image shape does not match expected shape for y axis')
+        y_axis = 0
+        assert(img.shape[1] == num_x, 'tiff image shape does not match expected shape for x axis')
+        x_axis = 1
+        print('dimensions match, reading tiffs as: y,x')
+
+    #################################################
+    #### extract data from tiffs and save to nii ####
+    #################################################
+
+    # loop over channels
     for channel_counter, current_channel in enumerate(channels):
         last_num_z = None
         image_array = np.zeros((num_timepoints, num_z, num_y, num_x), dtype=np.uint16)
@@ -434,6 +461,9 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
                                             current_mem=memory_usage,
                                             total_mem=32,
                                             mode='tiff_convert')
+        ##########################
+        #### Save nii to file ####
+        ##########################
 
         # restructure data for saving
         if is_volume_series:
@@ -480,9 +510,11 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
         time.sleep(2)
         print('Sleep over')
         print('\n\n')
+    
+    #####################################################
+    #### save brukerbridge version info to json file ####
+    #####################################################
 
-    # Save version info after writing the channel info to understand how exactly
-    # data was analyzed
     brukerbridge_json = {'brukerbridge version used': brukerbridge_version_info
                          }
     with open(pathlib.Path(xml_file.parent, 'brukerbridge_version.json'), 'w') as file:
