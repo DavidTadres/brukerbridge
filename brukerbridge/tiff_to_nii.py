@@ -195,37 +195,31 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
     print('first tiff shape = {}'.format(img.shape))
 
     ### check axes order/dimension ###
-    # based on previous testing (JCS, 5/19/2025) we expect the tiff to be in the order of:
-        #multipage tiff, single plane: t, y, x - confirmed
-        #multipage tiff, volumetric: z, y, x -confirmed
-        #singlepage tiff, single plane: y, x - confirmed
-        #singlepage tiff, volumetric: y, x -confirmed
+    # based on previous testing (JCS, 5/16/2025) we expect the tiff to be in the order of:
+        #multipage tiff, single plane: t, y, x 
+        #multipage tiff, volumetric: z, y, x
+        #singlepage tiff, single plane: y, x
+        #singlepage tiff, volumetric: y, x
 
-    ### Case1: multipage tiff, single plane ###
-    if is_multi_page_tiff and not is_volume_series:
-        assert(img.shape[0] == num_timepoints, 'tiff image shape does not match expected shape for time axis')
-        t_axis = 0
-        assert(img.shape[1] == num_y, 'tiff image shape does not match expected shape for y axis')
-        y_axis = 1
-        assert(img.shape[2] == num_x, 'tiff image shape does not match expected shape for x axis')
-        x_axis = 2
-        print('dimensions match, reading tiffs as: t,y,x')
-    ### Case3: multipage tiff, volumetric ###
-    elif is_multi_page_tiff and is_volume_series:
-        assert(img.shape[0] == num_z, 'tiff image shape does not match expected shape for z axis')
-        z_axis = 0
-        assert(img.shape[1] == num_y, 'tiff image shape does not match expected shape for y axis')
-        y_axis = 1
-        assert(img.shape[2] == num_x, 'tiff image shape does not match expected shape for x axis')
-        x_axis = 2
-        print('dimensions match, reading tiffs as: z,y,x')
-    ### Case2/4: singlepage tiff, single plane/volumetric ###
-    elif not is_multi_page_tiff:
-        assert(img.shape[0] == num_y, 'tiff image shape does not match expected shape for y axis')
-        y_axis = 0
-        assert(img.shape[1] == num_x, 'tiff image shape does not match expected shape for x axis')
-        x_axis = 1
-        print('dimensions match, reading tiffs as: y,x')
+    if (num_x == num_y) or (num_x == num_z) or (num_y == num_z):
+        raise NotImplementedError(
+            (
+                "Cannot handle identical axis size at the moment because we "
+                "don't know what order axes are saved into tiffs by the ripper."
+            )
+        )
+
+    # Note: this will fail if we have two axis with the identical
+    x_axis = np.where(np.array(img.shape) == num_x)[0][0]
+    y_axis = np.where(np.array(img.shape) == num_y)[0][0]
+    if is_multi_page_tiff:
+        if is_volume_series:
+            z_axis = np.where(np.array(img.shape) == num_z)[0][0] # only needed for multipage tiff volumetric data where multiple z-planes are in one file
+        else:
+            for dim in range(len(img.shape)):
+                if dim not in [x_axis, y_axis]:
+                    t_axis = dim # only needed for multipage tiff single plane data where multiple timepoints are in one file
+                    break
 
     #################################################
     #### extract data from tiffs and save to nii ####
@@ -472,8 +466,6 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             image_array = np.moveaxis(image_array,0,-1) #yxzt
             image_array = np.swapaxes(image_array,0,1) #xyzt
 
-            aff = np.eye(4)
-
             # Toss last volume if aborted
             if aborted:
                 image_array = image_array[:,:,:,:-1]
@@ -483,12 +475,11 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
             image_array = np.moveaxis(image_array, 0, -1) #yxt
             image_array = np.swapaxes(image_array, 0, 1) #xyt
 
-            aff = np.eye(3)
-
         print('Final array shape = {}'.format(image_array.shape))
 
         save_name = pathlib.Path(xml_file.parent, xml_file.name[:-4] + '_channel_{}'.format(current_channel) + '.nii')
-
+        aff = np.eye(4)
+        
         try:
             img = nib.Nifti1Image(image_array, aff) # 32 bit: maxes out at 32767 in any one dimension
 
