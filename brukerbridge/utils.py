@@ -38,7 +38,7 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
         print_iters = [1,2,4,8,16,32,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,500,600,700,800,900,1000,5000,10000,10000]
     if mode == 'tiff_convert':
         print_iters = [1,2,4,8,16,32,64,128,256,512,1064,2128,4256,8512,17024,34048,68096]
-    
+
 
     fraction_complete = current_iteration/total_iterations
     elapsed = time()-start_time
@@ -48,14 +48,14 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
     except ZeroDivisionError:
         remaining = 0
     remaining_hms = sec_to_hms(remaining)
-    
+
     ### PRINT TABLE TITLE ###
     if current_iteration == 1:
         title_string = "| Current Time |  Print Frequency  |     Num / Total   |         GB / Total      | Elapsed Time / Remaining   |"
         # if mode == 'server':
         #     title_string += "  MB / SEC  |"
         print(title_string, flush=True)
-    
+
     now = datetime.now()
     current_time_string = "   {}   ".format(now.strftime("%H:%M:%S"))
     print_freq_string = "       {:05d}       ".format(current_iteration)
@@ -64,18 +64,18 @@ def print_progress_table(start_time, current_iteration, total_iterations, curren
     time_string = F"     {elapsed_hms} / {remaining_hms}    "
     full_string = '|'.join(['', current_time_string, print_freq_string, iteration_string, memory_string, time_string, ''])
     # if mode == 'server':
-    #     speed = 
+    #     speed =
     #     full_string =+ '{}'.format()
-    
+
     if current_iteration in print_iters:
         print(full_string, flush=True)
-        
+
     if current_iteration == total_iterations:
         print(full_string, flush=True)
 
 def progress_bar(iteration, total, length, fill = '#'):
     if total == 0:
-        total = 1        
+        total = 1
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
     fraction = F"{str(iteration):^4}" + '/' + F"{str(total):^4}"
@@ -105,7 +105,7 @@ def get_checksum(filename):
     return readable_hash
 
 def get_json_data(file_path):
-    with open(file_path) as f:  
+    with open(file_path) as f:
         data = json.load(f)
     return data
 
@@ -175,13 +175,13 @@ class Logger_stdout(object):
         #  self.terminal.write(message)
         #self.terminal.write('boo')
         #self.log.write('boo2')
-        self.log.write(message)  
+        self.log.write(message)
 
     def flush(self):
         #this flush method is needed for python 3 compatibility.
         #this handles the flush command by doing nothing.
         #you might want to specify some extra behavior here.
-        pass 
+        pass
 
 # class Logger_stdout(object):
 #     def __init__(self, full_log_file):
@@ -195,13 +195,13 @@ class Logger_stdout(object):
 #         self.terminal.write(message)
 #         #self.terminal.write('boo')
 #         #self.log.write('boo2')
-#         self.log.write(message)  
+#         self.log.write(message)
 
 #     def flush(self):
 #         #this flush method is needed for python 3 compatibility.
 #         #this handles the flush command by doing nothing.
 #         #you might want to specify some extra behavior here.
-#         pass 
+#         pass
 
 class Logger_stderr(object):
     def __init__(self, full_log_file):
@@ -213,7 +213,7 @@ class Logger_stderr(object):
 
     def write(self, message):
         self.terminal.write(message)
-        self.log.write(message)  
+        self.log.write(message)
 
     def flush(self):
         #this flush method is needed for python 3 compatibility.
@@ -234,6 +234,12 @@ def get_fly_json_data_from_h5(directory):
             break
     # After finding the h5 file (there must only be a single h5 file in the parent folder!)
     # escape the loop and work on each defined subject.
+    
+    try:
+                h5py_file
+    except FileNotFoundError:
+                print('h5 file not found in fly folder: ' + str(current_target_folder))
+    
     subjects = h5py_file['Subjects']
 
     # Sanity check - do we have the same amount of exp folders as we have subjects defined in the
@@ -293,6 +299,67 @@ def get_fly_json_data_from_h5(directory):
         print('Number of folders in ' + directory.name + ':' + repr(no_of_exp_folders))
         print('Could not create fly.json files from h5 as the number of subjects and folders should match!')
         print('>>>>>>ERROR<<<<<<<')
+
+def get_fly_json_data_from_h5_one_fly_per_h5(directory):
+    """
+    Automatically create fly.json required for snake_brainsss from hdf5 from stimpack
+    :param directory:
+    :return:
+    NOTE: Jacob - updated version of get_fly_json_data_from_h5 to work on hdf5 with 
+    single fly placed in each fly folder instead of one hdf5 per day in experiment folder
+    """
+
+    for current_path in directory.iterdir():
+        if 'fly' in current_path.name:
+            print('working on folder: ' + str(current_path.name))
+            current_target_folder = pathlib.Path(directory, current_path)
+            current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
+            
+            # find hdf5 in fly folder
+            for path in current_target_folder.iterdir():
+                if '.hdf5' in path.name:
+                    print('Found hdf5 file: ' + path.name)
+                    h5py_file = h5py.File(path, 'r')
+                    break
+            try:
+                h5py_file
+            except FileNotFoundError:
+                print('h5 file not found in fly folder: ' + str(current_target_folder))
+
+            # After finding the h5 file (there must only be a single h5 file in the parent folder!)
+            # escape the loop and work on the subject
+            subject = h5py_file['Subjects']
+            # Look for a folder that should be the subjects folder!
+
+            fly_dict = {}
+            for current_attrs in subject[str(current_subject)].attrs:
+                fly_dict[current_attrs] = subject[str(current_subject)].attrs[current_attrs]
+
+            # Save the dict, can use it to directly write the fly.json file as well!
+            # save_path = pathlib.Path(target_path, date, 'fly_' + fly_dict["subject_id"], 'fly.json')
+
+            dict_for_json = {}
+            dict_for_json['Genotype'] = fly_dict['genotype_father'] + '_x_' + fly_dict['genotype_mother']
+            dict_for_json['functional_channel'] = fly_dict['functional_channel']
+            dict_for_json['structural_channel'] = fly_dict['structural_channel']
+
+            # these are all optional
+            dict_for_json['Sex'] = fly_dict['sex']
+            dict_for_json['circadian_on'] = str(fly_dict['circadian_on'])
+            dict_for_json['circadian_off'] = str(fly_dict['circadian_off'])
+            dict_for_json['Age'] = str(fly_dict['age'])
+            dict_for_json['Temp (inline heater)'] = str(fly_dict['inline_heater_temp'])
+            dict_for_json['notes'] = str(fly_dict['notes'])
+
+            save_path = pathlib.Path(current_target_folder, 'fly.json')
+            with open(save_path, 'w') as file:
+                json.dump(dict_for_json, file, sort_keys=True, indent=4)
+            fly_json_made = True
+    try:
+        fly_json_made
+    except FileNotFoundError:
+        print('no fly folders found within selected directory: ' + str(directory))
+
 
 class DownloadFolderFTP():
     """
@@ -368,7 +435,7 @@ def write_h5_metadata_in_stimpack_folder(directory):
         1) checking whether a flyID (such as fly1, fly2 etc.) defined
         by the user on the Bruker PC while imaging fits the metadata entered by the user
         into stimpack (as subject 1, 2 etc.) extract the h5 metadata (situated on the imaging
-        computer) and write a json into the the actual stimpack data (such as fictrac/loco data,
+        computer) and write a json into the actual stimpack data (such as fictrac/loco data,
         originally situated on the stimpack/fictrac computer).
 
         2) to compare timestamps of the imaging session with the supposedly attached stimpack
@@ -396,6 +463,7 @@ def write_h5_metadata_in_stimpack_folder(directory):
     :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
     :return:
     """
+    success_writing_to_stimpack_loco_folder = False
     # read h5 file
     for current_path in directory.iterdir():
         if '.hdf5' in current_path.name:
@@ -458,11 +526,147 @@ def write_h5_metadata_in_stimpack_folder(directory):
             # created for that series. This would therefore fail as no folder exists on the
             # brukerbridge computer that would refer to this series. Hence, create the folder
             # and populate it with the fly.json file.
-            current_series_path.mkdir(parents=True, exist_ok=True)
-            save_path = pathlib.Path(current_series_path, 'flyID.json')
-            # Save as json
-            with open(save_path, 'w') as file:
-                json.dump(relevant_metadata, file, sort_keys=True, indent=4)
+            # current_series_path.mkdir(parents=True, exist_ok=True)
+
+            # Actually better to NOT write flyID.json in that case!
+            # Reason is that when recording videos instead of doing fictrac we still
+            # need to have the stimpack_autotransfer ON (to transfer the stimpack h5 file)
+            # but we definitely don't want to populate the folder with more folders
+            if current_series_path.is_dir():
+                save_path = pathlib.Path(current_series_path, 'flyID.json')
+                # Save as json
+                with open(save_path, 'w') as file:
+                    json.dump(relevant_metadata, file, sort_keys=True, indent=4)
+                # If we have a single case where we were successfull in writing
+                # the file, assume that at least some experiments where done with
+                # online fictrac tracking.
+                success_writing_to_stimpack_loco_folder = True
+            else:
+                print('>>>>>>>>INFORMATION<<<<<<<<<<')
+                print('Tried writing flyID.json to stimpack/loco folder but relevant series does not exists:')
+                print(current_series_path.as_posix())
+
+    return(success_writing_to_stimpack_loco_folder)
+
+def write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory):
+    """
+    As a preparation to:
+
+        1) checking whether a flyID (such as fly1, fly2 etc.) defined
+        by the user on the Bruker PC while imaging fits the metadata entered by the user
+        into stimpack (as subject 1, 2 etc.) extract the h5 metadata (situated on the imaging
+        computer) and write a json into the the actual stimpack data (such as fictrac/loco data,
+        originally situated on the stimpack/fictrac computer).
+
+        2) to compare timestamps of the imaging session with the supposedly attached stimpack
+        session
+
+    write a small json file name 'flyID.json' into the stimpack folder
+
+    Original:
+    - 2024-06-13.hdf5
+    - 2024-06-13
+        - 1
+            - loco
+                - fictrac data
+    After function call:
+    - 2024-06-13.hdf5
+    - 2024-06-13
+        - 1
+            - flyID.json <<<<<<
+            - loco
+                - fictrac data
+
+    flyID.json is a dict that looks like:
+     {'fly': 'fly1', 'series': '1', 'series_start_time': '1718310030.084193'}
+
+    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :return:
+    NOTE: Jacob - updated version of get_fly_json_data_from_h5 to work on hdf5 with 
+    single fly placed in each fly folder instead of one hdf5 per day in experiment folder
+    """
+    # read h5 file
+    for current_path in directory.iterdir():
+        if 'fly' in current_path.name:
+            print('working on folder: ' + str(current_path.name))
+            current_target_folder = pathlib.Path(directory, current_path)
+            #TODO:current_subject = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
+            current_subject = 1 #assumes subject number reset to 1 for each fly during experiment
+            fly = str(current_target_folder).split('fly')[-1] #extract subject # from fly folder number
+            #TODO: replace fly with current_subject
+            # find hdf5 in fly folder
+            for path in current_target_folder.iterdir():
+                if '.hdf5' in path.name:
+                    print('Found hdf5 file: ' + path.name)
+                    h5py_file = h5py.File(path, 'r')
+                    break
+            try:
+                h5py_file
+            except FileNotFoundError:
+                print('h5 file not found in fly folder: ' + str(current_target_folder))
+
+
+            subject = h5py_file['Subjects']
+            # For each series in the h5 file, write a json file directly in the series
+            # folder of the data from the stimpack/fictrac computer!
+
+            # Create a dict that combines
+            # 1) fly ID from 'current_subject' of h5 file
+            # 2) the series that belongs to a given fly as defined by the h5 file
+            # 3) the start time of the series
+
+            experiments = {}
+            # eries = []
+            # start_times = []
+            data_for_current_fly = []
+            for current_series in subject[str(current_subject)]['epoch_runs']:
+                unix_time = subject[str(current_subject)]['epoch_runs'][current_series].attrs['run_start_unix_time']
+                # We'll have a string such as 'series_001-1718310030.084193' with the number after the '-' indicating
+                # unix time when series_001 in our example was started!
+                string_to_save = current_series + '-' + str(unix_time)
+                data_for_current_fly.append(string_to_save)
+                # use unix time as it doesn't depend on timezone!
+                # unix_time.append(subjects[current_subject]['epoch_runs'][current_series].attrs['run_start_unix_time'])
+
+            # In this dict, the key (i.e. fly1) defines the subject which has a list (can be more than 1) of series
+            # including start times.
+            #TODO:experiments['fly' + str(current_subject)] = data_for_current_fly
+            experiments['fly' + fly] = data_for_current_fly
+
+
+            # Now that we have the series ID tied to the fly ID (which is easier to keep track
+            # of on Bruker with the imaging folder) write a json file for each series which
+            # contains the fly ID.
+            # This can easily be checked later on and confirmed to fit the bruker imaging data!
+            date_string = directory.name[0:4] + '-' +  directory.name[4:6] + '-' +  directory.name[6:8]
+            #yyyy-mm-dd for fictrac folder
+            stimpack_data_folder = pathlib.Path(directory, date_string)
+            print('stimpack data folder: ' + str(stimpack_data_folder))
+
+            # fly can have more than one series, loop to return each series
+            for current_string in experiments['fly' + fly]:
+                # the folder name of the series by stimpack is '1', '2' etc.
+                # The name of the corresponding seires in the h5 file is 'series_001', 'series_002' etc.
+                # str(int(current_string.split('-')[0].split('series_')[-1])) converts the string to int
+                # so that '001' becomes '1' and '010' becomes '10'.
+                current_series = str(int(current_string.split('-')[0].split('series_')[-1]))
+                current_series_start_time = current_string.split('-')[-1]
+                current_series_path = pathlib.Path(stimpack_data_folder, current_series)
+
+                relevant_metadata = {}
+                relevant_metadata['fly'] = 'fly' + fly
+                relevant_metadata['series'] = current_series
+                relevant_metadata['series_start_time'] = current_series_start_time
+
+                # When one does only walking and forgets to tick the 'loco' box, no data is
+                # created for that series. This would therefore fail as no folder exists on the
+                # brukerbridge computer that would refer to this series. Hence, create the folder
+                # and populate it with the fly.json file.
+                current_series_path.mkdir(parents=True, exist_ok=True)
+                save_path = pathlib.Path(current_series_path, 'flyID.json')
+                # Save as json
+                with open(save_path, 'w') as file:
+                    json.dump(relevant_metadata, file, sort_keys=True, indent=4)
 
 def get_datetime_from_xml(xml_file):
     """
@@ -498,7 +702,7 @@ def add_stimpack_data_to_imaging_folder(directory,
 
     for current_imaging_folder in sorted(directory.iterdir()):
         if 'fly' in current_imaging_folder.name:
-            print("current_path: " + repr(current_path))
+            print("current_path: " + repr(current_imaging_folder))
             # For each folder with a 'fly' in the folder name
             for current_imaging_folder_fly in current_imaging_folder.iterdir():
                 if 'func' in current_imaging_folder_fly.name:
@@ -574,7 +778,7 @@ def add_stimpack_data_to_imaging_folder(directory,
                                         print('--------------------->EXITING QUEUE AND WARNING ADDED<---------------------')
                                         print('For stimpack/fictrac autotransfer the timestamps of the imaging recording\n')
                                         print('session and the stimpack session start time must be smaller than '
-                                              + repr(delta_imaging_stimpack_start_time) + 's\n')
+                                              + repr(max_diff_imaging_and_stimpack_start_time_second) + 's\n')
                                         print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
                                         print('for imaging folder ' + current_t_series.as_posix())
                                         print('h5 metadata contains the following information: ' + repr(flyID))
@@ -599,6 +803,275 @@ def add_stimpack_data_to_imaging_folder(directory,
 
     return(error_dict)
 
+def write_h5_metadata_in_jackfish_folder(directory):
+    """
+    Similar to :func: `write_h5_metadata_in_stimpack_folder`.
+
+    As a prepareation to:
+
+        1) checking whether a flyID (such as fly1, fly2 etc.) defined
+        by the user on the Bruker PC while imaging fits the metadata entered by the user
+        into stimpack (as subject 1, 2 etc.) extract the h5 metadata (situated on the imaging
+        computer) and write a json into the actual stimpack data (such as 20250501_jackfish/fly1,
+        originally situated on the stimpack/jackfish computer).
+
+        2) to compare timestamps of the imaging session with the supposedly attached stimpack
+        session.
+
+        Write a json file named 'flyID.json' into each 'fly' folder in i.e. '20250501_jackfish' folder.
+
+        Original:
+        - 2025-05-01.hdf5
+        - 20250501_jackfish
+            - fly1
+                - 3
+                    - jackfish data
+            - fly2
+                - 4
+                    - jackfish data
+
+        After function call:
+        - 2025-05-01.hdf5
+        - 20250501_jackfish
+            - fly1
+                - flyID.json <<<<<<<<<<<<
+                - 3
+                    - jackfish data
+            - fly2
+                - flyID.json <<<<<<<<<<<<
+                - 4
+                    - jackfish data
+
+        flyID.json is a dict that looks like:
+        {'fly': 'fly1', 'series': '1', 'series_start_time': '1718310030.084193'}
+
+    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :return:
+    """
+
+    success_writing_to_jackfish_folder = False
+
+    # read h5 file
+    for current_path in directory.iterdir():
+        if '.hdf5' in current_path.name:
+            print('Found hdf5 file: ' + current_path.name)
+            h5py_file = h5py.File(current_path, 'r')
+            break
+    # After finding the h5 file (there must only be a single h5 file in the parent folder!)
+    # escape the loop and work on each defined subject.
+    subjects = h5py_file['Subjects']
+    # For each series in the h5 file, write a json file directly in the series
+    # folder of the data from the stimpack/fictrac computer!
+
+    # Create a dict that combines
+    # 1) fly ID from 'current_subject' of h5 file
+    # 2) the series that belongs to a given fly as defined by the h5 file
+    # 3) the start time of the series
+
+    experiments = {}
+    for current_subject in subjects:
+        # eries = []
+        # start_times = []
+        data_for_current_fly = []
+        for current_series in subjects[current_subject]['epoch_runs']:
+            unix_time = subjects[current_subject]['epoch_runs'][current_series].attrs['run_start_unix_time']
+            # We'll have a string such as 'series_001-1718310030.084193' with the number after the '-' indicating
+            # unix time when series_001 in our example was started!
+            string_to_save = current_series + '-' + str(unix_time)
+            data_for_current_fly.append(string_to_save)
+            # use unix time as it doesn't depend on timezone!
+            # unix_time.append(subjects[current_subject]['epoch_runs'][current_series].attrs['run_start_unix_time'])
+
+        # In this dict, the key (i.e. fly1) defines the subject which has a list (can be more than 1) of series
+        # including start times.
+        experiments['fly' + str(current_subject)] = data_for_current_fly
+
+    # Now that we have the series ID tied to the fly ID (which is easier to keep track
+    # of on Bruker with the imaging folder) write a json file for each series which
+    # contains the fly ID.
+    # This can easily be checked later on and confirmed to fit the bruker imaging data!
+    jackfish_data_folder = jackfish_folder_name(directory)
+
+    #########
+    # loop through the flies
+    for current_fly in experiments:
+        # Each fly can have more than one series, loop to return each series
+        for current_string in experiments[current_fly]:
+            # the folder name of the series by stimpack is '1', '2' etc.
+            # The name of the corresponding seires in the h5 file is 'series_001', 'series_002' etc.
+            # str(int(current_string.split('-')[0].split('series_')[-1])) converts the string to int
+            # so that '001' becomes '1' and '010' becomes '10'.
+            current_series = str(int(current_string.split('-')[0].split('series_')[-1]))
+            current_series_start_time = current_string.split('-')[-1]
+            current_series_path = pathlib.Path(jackfish_data_folder, current_fly, current_series)
+
+            relevant_metadata = {}
+            relevant_metadata['fly'] = current_fly
+            relevant_metadata['series'] = current_series
+            relevant_metadata['series_start_time'] = current_series_start_time
+
+            if current_series_path.is_dir():
+                save_path = pathlib.Path(current_series_path, 'flyID.json')
+                # Save as json
+                with open(save_path, 'w') as file:
+                    json.dump(relevant_metadata, file, sort_keys=True, indent=4)
+                # If we have a single case where we were successfull in writing
+                # the file, assume that at least some experiments where done with
+                # online fictrac tracking.
+                success_writing_to_jackfish_folder = True
+            else:
+                print('>>>>>>>>INFORMATION<<<<<<<<<<')
+                print('Tried writing flyID.json to sjackfish folder but relevant series does not exists:')
+                print(current_series_path.as_posix())
+
+    return (success_writing_to_jackfish_folder)
+
+def add_jackfish_data_to_imaging_folder(directory,
+                                        max_diff_imaging_and_stimpack_start_time_second):
+    """
+    Copy stimpack data from bespoke folder INTO corresponding imaging folder
+
+    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :param max_diff_imaging_and_stimpack_start_time_second: int
+    :return:
+    """
+
+    # Dict with error messages
+    error_dict = {}
+
+    # Find pathname of jackfish data:
+    jackfish_data_folder = jackfish_folder_name(directory)
+
+    for current_imaging_folder in sorted(directory.iterdir()):
+        if 'fly' in current_imaging_folder.name:
+            print("current_path: " + repr(current_imaging_folder))
+            # For each folder with a 'fly' in the folder name
+            for current_imaging_folder_fly in current_imaging_folder.iterdir():
+                if 'func' in current_imaging_folder_fly.name:
+                    print("current_imaging_folder_fly: " + repr(current_imaging_folder_fly))
+                    # Check if there are more than 1 folder with name TSeries!
+                    no_of_TSeries_folders = 0
+                    for current_t_series in current_imaging_folder_fly.iterdir():
+                        if 'TSeries' in current_t_series.name:
+                            no_of_TSeries_folders +=1
+                    # Keeping track of ERRORS
+                    if no_of_TSeries_folders > 1:
+                        # Yields i.e. func0_TSeries_error_msg
+                        key = current_imaging_folder_fly.name + '_TSeries_error_msg'
+                        error_dict[key] = ('More than 1 folder with "TSeries" in folder ' +
+                                           current_imaging_folder_fly.name + '.\nYou can only have'
+                                                                             'a single folder called TSeries per func folder!')
+                        # If there is more than one TSeries folder it's not possible to continue for
+                        # that experiment: Since the stimpack or fictrac folder is assigned by 'func' folder
+                        # one would need more than one stimpack or fictrac folder per func folder.
+                        # elif other errors!
+                    # This should be normal behavior
+                    else:
+                        # for each folder with a 'func' in the folder name
+                        for current_t_series in current_imaging_folder_fly.iterdir():
+                            if 'TSeries' in current_t_series.name:
+                                print("current_t_series.name: " + repr(current_t_series.name))
+                                # This returns the number of the series without leading zeros
+                                imaging_series = str(int(current_t_series.name[-3::]))
+                                # For a given imaging folder, check if the user entered the correct
+                                # folder ID on the stim computer!
+                                current_jackfish_folder = pathlib.Path(jackfish_data_folder, # i.e. B:\brukerbridge\David\20250501__queue__\20250501_jackfish
+                                                                       current_imaging_folder.name, # i.e. 'fly1'
+                                                                       imaging_series               # i.e. '3'
+                                                                       )
+                                if pathlib.Path(current_jackfish_folder, 'flyID.json').exists():
+                                    flyID = get_json_data(pathlib.Path(current_jackfish_folder, 'flyID.json'))
+
+                                    # Next, want to load the xml file of the imaging data to extract timestamp
+                                    imaging_metadata_path = pathlib.Path(current_t_series, current_t_series.name + '.xml')
+
+                                    # This will return i.e. '6/13/2024 04:54:23 PM'
+                                    imaging_datetime_string = get_datetime_from_xml(imaging_metadata_path)
+                                    # Now it's in this format: datetime.datetime(2024, 6, 13, 4, 54, 23)
+                                    imaging_datetime_strf = datetime.strptime(imaging_datetime_string,
+                                                                                       '%m/%d/%Y %I:%M:%S %p')
+                                    # Get timezone of the local computer (assuming this code is running on same computer
+                                    # that created the metadata_xml file)
+                                    imaging_timestamp_unix_time = imaging_datetime_strf.timestamp()
+                                    # Calculate the absolute difference in seconds between the start of imaging and start of
+                                    # stimpack series
+                                    delta_imaging_stimpack_start_time = abs(imaging_timestamp_unix_time - float(
+                                        flyID['series_start_time']))
+                                    # Now we have difference in start time in seconds!
+                                    print("current_imaging_folder.name: " + repr(current_imaging_folder.name))
+                                    print(" flyID['fly']: "+ repr( flyID['fly']))
+
+                                    if not current_imaging_folder.name == flyID['fly']:
+                                        # IF we are here imaging folder defining the fly doesn't match the stimpack.h5 file!
+                                        # Cancel and put a __warning__ on the folder!
+                                        new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
+                                        os.rename(directory, new_name)
+                                        print(
+                                            '>>>>>>>>>>>>>>>>>>>>>>EXITING QUEUE AND WARNING ADDED<<<<<<<<<<<<<<<<<<<')
+                                        print(
+                                            'For jackfish autotransfer the series number of the stimpack GUI\n')
+                                        print('and the series number of the TSeries must be in the same "fly".')
+                                        print(
+                                            'Instead, the current imaging folder is ' + current_imaging_folder.as_posix() + '\n')
+                                        print('with the following h5 metadata: ' + repr(flyID))
+                                        sys.exit()
+                                    elif not delta_imaging_stimpack_start_time < max_diff_imaging_and_stimpack_start_time_second:  # CHECK TIMESTAMPS!
+                                        # IF we are here, the time difference between when the imaging session started
+                                        # and the stimpack/fictrac session started is larger than allowed by
+                                        # stimpack_imaging_max_allowed_delta!
+                                        new_name = pathlib.Path(str(directory).split('__queue__')[0] + '__WARNING__')
+                                        os.rename(directory, new_name)
+                                        print(
+                                            '--------------------->EXITING QUEUE AND WARNING ADDED<---------------------')
+                                        print(
+                                            'For jackfish autotransfer the timestamps of the imaging recording\n')
+                                        print('session and the stimpack session start time must be smaller than '
+                                              + repr(max_diff_imaging_and_stimpack_start_time_second) + 's\n')
+                                        print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
+                                        print('for imaging folder ' + current_t_series.as_posix())
+                                        print('h5 metadata contains the following information: ' + repr(flyID))
+                                        sys.exit()
+
+                                    else:
+                                        # Copy fictrac data into corresponding 'func' folder so that it can easily
+                                        # be picked up by the fly_builder later on!
+                                        source_path = current_jackfish_folder
+                                        target_path = pathlib.Path(current_imaging_folder_fly, 'stimpack/jackfish')
+                                        target_path.mkdir(parents=True, exist_ok=True)
+                                        try:
+                                            shutil.copytree(source_path, target_path,
+                                                            dirs_exist_ok=True) # This might already exist? then add 'dirs_exist_ok=True' I guess
+                                        except FileExistsError:
+                                            print('\ntarget path ' + target_path.as_posix() + ' already exists! ')
+                                            print('Nothing copied\n')
+                                else:
+                                    print(
+                                        '------------------------>WARNING<-------------------------------------------')
+                                    print(pathlib.Path(current_jackfish_folder,
+                                                       'flyID.json').as_posix() + 'does not exist.\n')
+                                    print(
+                                        'It seems that ' + current_t_series.name + 'does not have corresponding fictrac data.')
+                                    print(
+                                        '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+
+
+
+
+
+def jackfish_folder_name(directory):
+    for current_path in directory.iterdir():
+        if '.hdf5' in current_path.name:
+            h5_filepath = current_path
+            break
+    jackfish_data_folder = h5_filepath.name.split('.hdf5')[0]
+    # 2025-05-01
+    jackfish_data_folder = jackfish_data_folder.replace('-', '')
+    # 20250501
+    jackfish_data_folder = jackfish_data_folder + '_jackfish'
+    # 20250501_jackfish
+    jackfish_data_folder = pathlib.Path(directory, jackfish_data_folder)
+    # WindowsPath('B:/brukerbridge/David/20250501__queue__/20250501_jackfish')
+    return(jackfish_data_folder)
 
 def get_bool_from_json(settings_json, input_string):
     try:
@@ -611,3 +1084,6 @@ def get_bool_from_json(settings_json, input_string):
         output = False
 
     return (output)
+
+def flatten_nested_list(list_of_lists):
+    return([x for xs in list_of_lists for x in xs])

@@ -1,7 +1,9 @@
 @echo off
 echo Started ripper: %date% %time%
 set FOLDER_NAME=%1
+set PVSCAN_VERSION=%2
 echo Ripping from folder %FOLDER_NAME%.
-SET mypath=%~dp0
-%mypath:~0,-1%"\Prairie 5.5.64.600\Utilities\Image-Block Ripping Utility.exe" -isf -arfwsf %FOLDER_NAME% -cnv
+echo Using PVScan version %PVSCAN_VERSION%.
+::"C:\Program Files\Prairie %PVSCAN_VERSION%\Prairie View\Utilities\Image-Block Ripping Utility.exe"  "-IncludeSubFolders" "-AddRawFileWithSubFolders" %FOLDER_NAME% "-Convert"
+"C:\Program Files\Prairie %PVSCAN_VERSION%\Prairie View\Utilities\Image-Block Ripping Utility.exe"  "-IncludeSubFolders" "-AddRawFileWithSubFolders" %FOLDER_NAME% "-Convert"
 echo Finished ripping: %date% %time%
