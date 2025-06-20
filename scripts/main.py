@@ -31,7 +31,8 @@ VERSION_INFO = 'v' + __version__ + \
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-extensions_for_oak_transfer = ['.nii', '.csv',
+extensions_for_oak_transfer = ['.nii',
+							   '.csv',
 							   '.xml', # Bruker xml files
 							   '.json', # Snake_brainsss json files
 							   #'.tiff', # Bruker images - seems to be unecessary (small images are .tif)
@@ -41,9 +42,11 @@ extensions_for_oak_transfer = ['.nii', '.csv',
 							   '.txt', # another fictrac log
 							   '.avi', # fictrac video file
 							   '.png', # fictrac_template.png
-							   '.mp4' # fictrac video (if it exists)
+							   '.mp4', # fictrac video (if it exists)
+							   #'.gz', # compressed files, for now (2025/05/25) that's nii.gz
 							   # pathlib.Path.suffix, includes '.'
 							   ]
+print('Uploading files with these extensions to oak: ' + repr(extensions_for_oak_transfer))
 users_directory = pathlib.Path(parent_path, 'users')
 
 def main(args):
@@ -79,7 +82,6 @@ def main(args):
 	print('oak_target ' + repr(oak_target))
 	convert_to = settings['convert_to']
 	#email = settings.get('email', False)
-
 
 	add_to_build_que = utils.get_bool_from_json(settings, 'add_to_build_qeue')
 	transfer_fictrac_bool = utils.get_bool_from_json(settings, "transfer_fictrac_bool") # Currently not used by David & Jacob, from Bella
@@ -148,6 +150,10 @@ def main(args):
 		print('DANGER WITH PV5.8!!!!')
 		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
 		print('skipping ripping')
+	elif PVScan_version == "5.8.64.814":
+		print('DANGER WITH PV5.8!!!!')
+		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+		print('skipping ripping')
 	else:
 		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
 		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
@@ -161,7 +167,17 @@ def main(args):
 													fly_json_already_created=fly_json_already_created,
 													autotransfer_stimpack=autotransfer_stimpack,
 													autotransfer_jackfish=autotransfer_jackfish,
-													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
+													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+													save_suffix='.nii')
+	elif convert_to == 'nii.gz':
+		tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
+													brukerbridge_version_info=VERSION_INFO,
+													fly_json_from_h5=fly_json_from_h5,
+													fly_json_already_created=fly_json_already_created,
+													autotransfer_stimpack=autotransfer_stimpack,
+													autotransfer_jackfish=autotransfer_jackfish,
+													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+													save_suffix='.nii.gz')
 	elif convert_to == 'tiff':
 		# NOT TESTED! LIKELY WONT WORK!
 		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)

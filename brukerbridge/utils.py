@@ -591,7 +591,7 @@ def add_stimpack_data_to_imaging_folder(directory,
                                         print('--------------------->EXITING QUEUE AND WARNING ADDED<---------------------')
                                         print('For stimpack/fictrac autotransfer the timestamps of the imaging recording\n')
                                         print('session and the stimpack session start time must be smaller than '
-                                              + repr(delta_imaging_stimpack_start_time) + 's\n')
+                                              + repr(max_diff_imaging_and_stimpack_start_time_second) + 's\n')
                                         print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
                                         print('for imaging folder ' + current_t_series.as_posix())
                                         print('h5 metadata contains the following information: ' + repr(flyID))
@@ -839,7 +839,7 @@ def add_jackfish_data_to_imaging_folder(directory,
                                         print(
                                             'For jackfish autotransfer the timestamps of the imaging recording\n')
                                         print('session and the stimpack session start time must be smaller than '
-                                              + repr(delta_imaging_stimpack_start_time) + 's\n')
+                                              + repr(max_diff_imaging_and_stimpack_start_time_second) + 's\n')
                                         print('Calculated delta of: ' + repr(delta_imaging_stimpack_start_time) + '\n')
                                         print('for imaging folder ' + current_t_series.as_posix())
                                         print('h5 metadata contains the following information: ' + repr(flyID))
@@ -852,7 +852,8 @@ def add_jackfish_data_to_imaging_folder(directory,
                                         target_path = pathlib.Path(current_imaging_folder_fly, 'stimpack/jackfish')
                                         target_path.mkdir(parents=True, exist_ok=True)
                                         try:
-                                            shutil.copytree(source_path, target_path) # This might already exist? then add 'dirs_exist_ok=True' I guess
+                                            shutil.copytree(source_path, target_path,
+                                                            dirs_exist_ok=True) # This might already exist? then add 'dirs_exist_ok=True' I guess
                                         except FileExistsError:
                                             print('\ntarget path ' + target_path.as_posix() + ' already exists! ')
                                             print('Nothing copied\n')

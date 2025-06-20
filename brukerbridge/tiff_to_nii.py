@@ -36,7 +36,8 @@ def get_channel_ids(sequence):
 
     return(channels)
 
-def tiff_to_nii(xml_file, brukerbridge_version_info):
+def tiff_to_nii(xml_file, brukerbridge_version_info,
+                save_suffix = 'nii'):
     aborted = False
     #data_dir, _ = os.path.split(xml_file)
     data_dir = xml_file.parent
@@ -365,7 +366,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info):
 
         aff = np.eye(4)
         #save_name = xml_file[:-4] + '_channel_{}'.format(current_channel+1) + '.nii'
-        save_name = pathlib.Path(xml_file.parent, xml_file.name[:-4] + '_channel_{}'.format(current_channel) + '.nii')
+        save_name = pathlib.Path(xml_file.parent, xml_file.name[:-4] + '_channel_{}'.format(current_channel) + save_suffix)
         try:
             img = nib.Nifti1Image(image_array, aff) # 32 bit: maxes out at 32767 in any one dimension
         except nib.spatialimages.HeaderDataError:
@@ -409,7 +410,8 @@ def convert_tiff_collections_to_nii(directory,
                                     fly_json_already_created,
                                     autotransfer_stimpack,
                                     autotransfer_jackfish,
-                                    max_diff_imaging_and_stimpack_start_time_second):
+                                    max_diff_imaging_and_stimpack_start_time_second,
+                                    save_suffix):
     #for item in os.listdir(directory):
     # Here we are in the parent directory. By definition (to be documented) this
     # must be a folder like 20240613 which contains subfolders such as 'fly_001'
@@ -514,7 +516,8 @@ def convert_tiff_collections_to_nii(directory,
                                             fly_json_already_created=fly_json_already_created,
                                             autotransfer_stimpack=autotransfer_stimpack,
                                             autotransfer_jackfish=autotransfer_jackfish,
-                                            max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second)
+                                            max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+                                            save_suffix=save_suffix)
 
         # If the item is a file
         else:
@@ -549,6 +552,6 @@ def convert_tiff_collections_to_nii(directory,
 
                     if create_nii:
                         #tiff_to_nii(new_path)
-                        tiff_to_nii(current_path, brukerbridge_version_info)
+                        tiff_to_nii(current_path, brukerbridge_version_info, save_suffix)
 
 
