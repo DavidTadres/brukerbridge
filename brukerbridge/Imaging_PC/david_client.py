@@ -50,9 +50,9 @@ else:
 
     # Load fictrac_data_path defined in user settings.
     # Todo: either make user setting file dynamic
-    if 'David' in source_directory.as_posix:
+    if 'David' in source_directory.as_posix():
         json_path = pathlib.Path(parent_path, 'users\\David.json')
-    elif 'Yandan' in source_directory.as_posix:
+    elif 'Yandan' in source_directory.as_posix():
         json_path = pathlib.Path(parent_path, 'users\\Yandan.json')
     user_settings = utils.get_json_data(json_path)
     stimpack_data_path = pathlib.Path(user_settings['stimpack_h5_path'])
