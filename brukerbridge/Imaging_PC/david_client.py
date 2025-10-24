@@ -39,7 +39,7 @@ print(source_directory)
 # I had now several times the problem that the script was run but appearently closed again.
 # We then somehow get the folder where the script itself is located transfered (and deleted).
 # Avoid this by checking if the source directory is anywhere in this repository!
-if source_directory.name in pathlib.Path(__file__):
+if source_directory.name in pathlib.Path(__file__).as_posix():
     print('You seem to have selected a folder inside this repository instead of an experimental folder.')
     print('Please try again.')
 
