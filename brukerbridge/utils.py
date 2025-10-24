@@ -236,13 +236,13 @@ def get_fly_json_data_from_h5(directory):
     # escape the loop and work on each defined subject.
     
     try:
-                h5py_file
+        h5py_file
     except FileNotFoundError:
-                print('h5 file not found in fly folder: ' + str(current_target_folder))
+        print('h5 file not found in fly folder: ' + str(current_path))
     
     subjects = h5py_file['Subjects']
 
-    # Sanity check - do we have the same amount of exp folders as we have subjects defined in the
+    # Sanity check - do we have the same number of exp folders as we have subjects defined in the
     # h5 file?
     no_of_exp_folders = 0
     for current_folder in directory.iterdir():
@@ -277,6 +277,7 @@ def get_fly_json_data_from_h5(directory):
                 dict_for_json['Age'] = str(fly_dict['age'])
                 dict_for_json['Temp (inline heater)'] = str(fly_dict['inline_heater_temp'])
                 dict_for_json['notes'] = str(fly_dict['notes'])
+                dict_for_json['prep'] = str(fly_dict['prep'])
 
                 save_path = pathlib.Path(current_target_folder, 'fly.json')
                 with open(save_path, 'w') as file:
