@@ -1,0 +1,24 @@
+TimeStamp: 11/8/2024 10:55:10 AM
+  Exception: External component has thrown an exception.
+  BaseException:  System.Runtime.InteropServices.SEHException (0x80004005): External component has thrown an exception.
+   at Image_Block_Ripping_Utility.frmMain.RipRawImages(IntPtr ptrInputDirectoryPath, IntPtr ptrOutputDirectoryPath, Int32 intCycleNumber, Int32 intSaveRaw, Int32 intDeleteOriginal, Int32 collectDeinterlacingInfo, Int32 performDeinterlacing, Int32 performMIP)
+   at Image_Block_Ripping_Utility.frmMain.StartConversion() in C:\Users\Michael J. Fox\Desktop\Software Projects\Prairie View 5.8\Image-Block Ripping Utility\frmMain.vb:line 880
+  StackTrace: at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+  TargetSite: Int32 RipRawImages(IntPtr, IntPtr, Int32, Int32, Int32, Int32, Int32, Int32)
+
+TimeStamp: 11/8/2024 10:55:22 AM
+  Exception: External component has thrown an exception.
+  BaseException:  System.Runtime.InteropServices.SEHException (0x80004005): External component has thrown an exception.
+   at Image_Block_Ripping_Utility.frmMain.RipRawImages(IntPtr ptrInputDirectoryPath, IntPtr ptrOutputDirectoryPath, Int32 intCycleNumber, Int32 intSaveRaw, Int32 intDeleteOriginal, Int32 collectDeinterlacingInfo, Int32 performDeinterlacing, Int32 performMIP)
+   at Image_Block_Ripping_Utility.frmMain.StartConversion() in C:\Users\Michael J. Fox\Desktop\Software Projects\Prairie View 5.8\Image-Block Ripping Utility\frmMain.vb:line 880
+  StackTrace: at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+  TargetSite: Int32 RipRawImages(IntPtr, IntPtr, Int32, Int32, Int32, Int32, Int32, Int32)
+
+TimeStamp: 11/8/2024 11:14:33 AM
+  Exception: External component has thrown an exception.
+  BaseException:  System.Runtime.InteropServices.SEHException (0x80004005): External component has thrown an exception.
+   at Image_Block_Ripping_Utility.frmMain.RipRawImages(IntPtr ptrInputDirectoryPath, IntPtr ptrOutputDirectoryPath, Int32 intCycleNumber, Int32 intSaveRaw, Int32 intDeleteOriginal, Int32 collectDeinterlacingInfo, Int32 performDeinterlacing, Int32 performMIP)
+   at Image_Block_Ripping_Utility.frmMain.StartConversion() in C:\Users\Michael J. Fox\Desktop\Software Projects\Prairie View 5.8\Image-Block Ripping Utility\frmMain.vb:line 880
+  StackTrace: at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state, Boolean preserveSyncCtx)
+  TargetSite: Int32 RipRawImages(IntPtr, IntPtr, Int32, Int32, Int32, Int32, Int32, Int32)
+

@@ -43,7 +43,9 @@ extensions_for_oak_transfer = ['.nii',
 							   '.avi', # fictrac video file
 							   '.png', # fictrac_template.png
 							   '.mp4', # fictrac video (if it exists)
-							   #'.gz', # compressed files, for now (2025/05/25) that's nii.gz
+							   '.env', # contains data relevant for to find ROI in physical space
+							   '.ome', # future proofing -> Want to use only this
+							   '.gz', # compressed files, for now (2025/05/25) that's nii.gz
 							   # pathlib.Path.suffix, includes '.'
 							   ]
 print('Uploading files with these extensions to oak: ' + repr(extensions_for_oak_transfer))
@@ -146,12 +148,21 @@ def main(args):
 	tree = ET.parse(xml_paths[0])
 	root = tree.getroot()
 	PVScan_version = root.get('version') # i.e. '5.8.64.800'
+	print('PVScan version: ' + repr(PVScan_version))
 
 	if PVScan_version == '5.8.64.800':
 		print('DANGER WITH PV5.8!!!!')
 		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
 		print('skipping ripping')
 	elif PVScan_version == "5.8.64.814":
+		print('DANGER WITH PV5.8!!!!')
+		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+		print('skipping ripping')
+	elif PVScan_version == "5.8.64.818":
+		print('DANGER WITH PV5.8!!!!')
+		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+		print('skipping ripping')
+	elif PVScan_version == "5.8.64.900":
 		print('DANGER WITH PV5.8!!!!')
 		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
 		print('skipping ripping')

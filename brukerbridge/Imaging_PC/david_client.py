@@ -32,7 +32,7 @@ port = 5005
 ##################################
 
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-source_directory = pathlib.Path(askdirectory(initialdir = "F:/")) # show an "Open" dialog box and return the path to the selected file
+source_directory = pathlib.Path(askdirectory(initialdir = "E:/")) # show an "Open" dialog box and return the path to the selected file
 #source_directory = str(os.sep).join(source_directory.split('/')) # replace slashes with backslashes for windows
 print(source_directory)
 
@@ -50,7 +50,10 @@ else:
 
     # Load fictrac_data_path defined in user settings.
     # Todo: either make user setting file dynamic
-    json_path = pathlib.Path(parent_path, 'users\\David.json')
+    if 'David' in source_directory.as_posix:
+        json_path = pathlib.Path(parent_path, 'users\\David.json')
+    elif 'Yandan' in source_directory.as_posix:
+        json_path = pathlib.Path(parent_path, 'users\\Yandan.json')
     user_settings = utils.get_json_data(json_path)
     stimpack_data_path = pathlib.Path(user_settings['stimpack_h5_path'])
     # The standard way of fictrac to create files is 2024-05-11.
@@ -75,7 +78,7 @@ else:
         shutil.copyfile(src=stimpack_h5_path, dst=h5_dst_imaging_pc)
 
         # currently the autotransfer of fictrac data only works if the h5 file is used!
-        if user_settings['autotransfer_stimpack']:
+        if utils.get_bool_from_json(settings_json=user_settings, input_string='autotransfer_stimpack'):
             print('Will attempt to automatically transfer stimpack data')
             stimpack_data_path = user_settings["stimpack_data_path"]
 
@@ -101,7 +104,7 @@ else:
 
             # this currently ONLY works if everything is triggered with stimpack, i.e.
             # we have an h5 file with metadata
-            if user_settings['autotransfer_jackfish']:
+            if utils.get_bool_from_json(settings_json=user_settings, input_string='autotransfer_jackfish'):            # if user_settings['']:
                 print('Will attempt to automaticall transfer videos created by Jackfish')
                 jackfish_data_path = user_settings["jackfish_data_path"]
 
