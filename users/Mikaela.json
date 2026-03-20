@@ -1,0 +1,13 @@
+{
+    "oak_target": "PLACEHOLDER_OAK_PATH",
+    "convert_to": "nii.gz",
+    "add_to_build_que": "False",
+    "fly_json_from_h5": "True",
+    "stimpack_h5_path": "PLACEHOLDER_STIMPACK_H5_PATH",
+    "stimpack_data_path": "PLACEHOLDER_STIMPACK_DATA_PATH",
+    "jackfish_data_path": "PLACEHOLDER_JACKFISH_DATA_PATH",
+    "autotransfer_stimpack": "True",
+    "autotransfer_jackfish": "True",
+    "max_diff_imaging_and_stimpack_start_time_second": "120",
+    "copy_SingleImage": "False"
+}

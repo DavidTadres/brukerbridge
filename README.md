@@ -1,5 +1,44 @@
 # Brukerbridge (David's fork)
 
+## Overview
+
+**Brukerbridge** is an automated pipeline for processing **Bruker two-photon microscopy** imaging data in a distributed, multi-computer lab environment (Stanford TRC lab). It handles the full lifecycle from raw acquisition to processed neuroimaging files on network storage.
+
+### Core Workflow
+
+1. **Transfer** — User on the Bruker imaging PC selects a scan folder via GUI. A socket-based client sends all files (with MD5 checksums) to a processing/ripping PC.
+2. **Raw → TIFF** — Calls Bruker's "Image-Block Ripping Utility" to convert proprietary raw files to TIFFs.
+3. **TIFF → NIfTI** — Converts TIFF stacks into `.nii.gz` neuroimaging format, handling volumetric scans, multiple channels, bidirectional Z-scanning, and voxel metadata from XML.
+4. **Upload to Oak** — Copies processed files to Stanford's Oak network storage (`//oak-smb-trc.stanford.edu/...`).
+5. **Optional: FicTrac/Stimpack** — Downloads behavioral tracking data (FicTrac `.dat`/`.log` files) and experimental metadata (stimpack HDF5) from separate computers, and auto-generates `fly.json` metadata.
+
+### Architecture
+
+- **Client** (`Imaging_PC/*_client.py`) — Runs on the Bruker PC, sends files over TCP (port 5005).
+- **Server** (`ripping_PC/*_server.py`) — Receives files, appends `__queue__` flag to directories.
+- **Queue Watcher** (`users/*/queue_watcher.py`) — Continuously polls for queued directories, launches `scripts/main.py` for each.
+- **Ripper Killer** (`scripts/ripper_killer.py`) — Monitors the Bruker ripper process and kills it once done (it doesn't exit on its own).
+
+### Key Design Features
+
+- **Multi-user** — Per-user JSON configs in `users/` (oak paths, output format, stimpack settings).
+- **Multi-version** — Detects Prairie View version (5.5, 5.8.x, 5.8.9) from XML and adjusts ripper paths accordingly.
+- **Data integrity** — MD5 checksums on transfer, file-size deduplication on upload.
+- **Memory-efficient** — Chunked processing for large image stacks.
+- **Error handling** — Detects aborted scans, logs failures, email notifications, `__error__` flags on failed directories.
+
+### Key Files
+
+| File | Purpose |
+|---|---|
+| `scripts/main.py` | Main orchestrator |
+| `brukerbridge/utils.py` | Utilities (~1200 lines): checksums, email, FTP, metadata |
+| `brukerbridge/tiff_to_nii.py` | TIFF→NIfTI conversion engine (~730 lines) |
+| `brukerbridge/raw_to_tiff.py` | Wrapper around Bruker's ripper CLI |
+| `brukerbridge/transfer_to_oak.py` | Network storage upload |
+| `brukerbridge/transfer_fictrac.py` | FicTrac behavioral data FTP transfer |
+| `users/David/David.json` | User config (oak path, output format, etc.) |
+
 ##
 Installation
 ##
