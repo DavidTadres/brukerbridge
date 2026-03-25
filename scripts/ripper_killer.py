@@ -92,7 +92,6 @@ def ripping_incomplete_func(directory):
     else:
         return(False)'''
 
-
 def ripping_incomplete_func(directory, ripping_incomplete):
     #for item in os.listdir(directory):
     for item in pathlib.Path(directory).iterdir():
