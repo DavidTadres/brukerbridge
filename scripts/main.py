@@ -163,9 +163,11 @@ def main(args):
 		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
 		print('skipping ripping')
 	elif PVScan_version == "5.8.64.900":
-		print('DANGER WITH PV5.8!!!!')
-		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
-		print('skipping ripping')
+		# print('DANGER WITH PV5.8!!!!')
+		# print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+		# print('skipping ripping')
+		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
+		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
 	else:
 		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
 		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
