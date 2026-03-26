@@ -80,33 +80,33 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
     root = tree.getroot()
     sequences = root.findall('Sequence')
 
-    # Check if multipage tiff
-    companion_filepath = pathlib.Path(str(xml_file).split('.')[0] + '.companion.ome')
-    if companion_filepath.exists():
-        is_multi_page_tiff = True
-    else:
-        is_multi_page_tiff = False
 
-    # get x/y dimensions and x/y/z voxel size
+    # get x/y dimensions from the top-level PVStateShard
     statevalues = root.findall("PVStateShard")[0].findall("PVStateValue")
     for statevalue in statevalues:
         key = statevalue.get("key")
-        if key == "micronsPerPixel":
-            indices = statevalue.findall("IndexedValue")
-            for index in indices:
-                axis = index.get("index")
-                if axis == "XAxis":
-                    x_voxel_size = float(index.get("value"))
-                elif axis == "YAxis":
-                    y_voxel_size = float(index.get("value"))
-                elif axis == "ZAxis":
-                    z_voxel_size = float(index.get("value"))
         # Get y dimension (pixel count)
         if key == "linesPerFrame":
             num_y = int(statevalue.get("value"))
         # Get x dimension (pixel count)
         if key == "pixelsPerLine":
             num_x = int(statevalue.get("value"))
+
+    # get x/y/z voxel size from the first Sequence's PVStateShard
+    # NOTE: The top-level PVStateShard can have a WRONG ZAxis value (e.g. 5
+    # instead of 1). The Sequence-level shard has the correct acquisition values.
+    first_seq = root.find("Sequence")
+    seq_shard = first_seq.find("PVStateShard")
+    for sv in seq_shard.findall("PVStateValue"):
+        if sv.get("key") == "micronsPerPixel":
+            for idx in sv.findall("IndexedValue"):
+                axis = idx.get("index")
+                if axis == "XAxis":
+                    x_voxel_size = float(idx.get("value"))
+                elif axis == "YAxis":
+                    y_voxel_size = float(idx.get("value"))
+                elif axis == "ZAxis":
+                    z_voxel_size = float(idx.get("value"))
 
     # Identify scan type, get t/z axis dims
     if root.find('Sequence').get('type') == 'TSeries Timed Element': # Plane time series
