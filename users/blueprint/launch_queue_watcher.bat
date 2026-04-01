@@ -2,5 +2,7 @@
 @echo HELLO I AM THE QUEUE WATCHER.
 @echo IF I FIND A QUEUED DIRECTORY I WILL LAUNCH MAIN PROCESSING.
 SET mypath=%~dp0
-C:\Users\David\.conda\envs\env_brukerbridge\python.exe %mypath:~0,-1%\scripts\queue_watcher.py
+SET reporoot=%mypath:~0,-17%
+call "%reporoot%\env_brukerbridge\Scripts\activate.bat"
+python "%mypath%queue_watcher.py"
 cmd /k

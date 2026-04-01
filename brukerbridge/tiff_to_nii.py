@@ -11,6 +11,7 @@ import pathlib
 import json
 import imageio
 import h5py
+from anatomical_orientation import make_direction_2d, make_direction_3d, make_direction_4d
 import datetime
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
 sys.path.insert(0, parent_path)
@@ -38,7 +39,9 @@ def get_channel_ids(sequence):
 
     return(channels)
 
-def tiff_to_nii(xml_file, brukerbridge_version_info,
+def tiff_to_nii(xml_file,
+                brukerbridge_version_info,
+                imaging_orientation,
                 save_suffix = 'nii'):
 
     """
@@ -148,38 +151,6 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
     else:
         is_bidirectional_z = False
 
-    # #print('BidirectionalZ is {}'.format(is_bidirectional_z))
-    # if is_bidirectional_z:
-    #     # comment below stolen from brukerbridge:
-    #     # NOTE: berger 2024/08/06
-    #     # Although support for this could be easily cheesed, I have declined to
-    #     # do so for the moment due to some mysteries in the acquisition xml
-    #     # that I am not confident enough to guess at right now. Specifically, the
-    #     # subtrees for the last frame of the downstroke and the first frame of
-    #     # the upstroke do not record the depth at which those frames were
-    #     # acquired. All other frames do.
-    #     #
-    #     # In the example acquisition I was using to develop this, the user set
-    #     # the bottom plane as 100.5um, the top as 340.5 and set the volume to
-    #     # contain 49 planes with 5um increments. Each Sequence subtree indeed
-    #     # contains 49 frames, but (for the downstroke) the 49th does not record
-    #     # z pos. The 48th records a z pos of 335.5. It would not be
-    #     # unreasonable to infer that the 49th plane was at z=340.5um, but that
-    #     # is, ultimately, cowboy shit.
-    #     #
-    #     # In the past, Bella supported bidirectional z scans by simply flipping
-    #     # the order of the frames every other volume. Definitely cowboy shit,
-    #     # but this is what you would want to do to naively support
-    #     # bidirectional scans: take the *sorted* frames and reverse the order
-    #     # the list is traversed by the generator for Sequences with an even
-    #     # cycle attribute
-    #     raise NotImplementedError(
-    #         (
-    #             "Support for bidirectional scans not supported due to Bruker sketchiness. "
-    #             "See the source where this error was thrown for an explanation."
-    #         )
-    #     )
-
     # Get existing channels as strings
     channels = get_channel_ids(sequences)
 
@@ -204,7 +175,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
 
     if first_tiff_path.is_file():
         try:
-            img = io.imread(first_tiff_path, plugin='pil')
+            img = io.imread(first_tiff_path)
         except TypeError:
             img = imageio.imread(first_tiff_path)
             '''
@@ -289,7 +260,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
             for current_iteration, current_tiff_filename in enumerate(tiff_filenames):
                 current_path_to_tiff = pathlib.Path(data_dir, current_tiff_filename)
                 try:
-                    img = io.imread(current_path_to_tiff, plugin='pil')
+                    img = io.imread(current_path_to_tiff)
                 except TypeError:
                     """
                     Got this error when I think the ripper messed up:
@@ -337,7 +308,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
                 current_path_to_tiff = pathlib.Path(data_dir, current_tiff_filename)
 
                 try:
-                    img = io.imread(current_path_to_tiff, plugin='pil')
+                    img = io.imread(current_path_to_tiff)
                 except TypeError:
                     """
                     Got this error when I think the ripper messed up:
@@ -392,7 +363,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
                 current_tiff_filename = files[channel_counter].get('filename') # this is where the correct channel is selected based on channel_counter
                 current_tiff_path = pathlib.Path(data_dir, current_tiff_filename)
                 try:
-                    img = io.imread(current_tiff_path, plugin='pil')  # shape = z, y, x
+                    img = io.imread(current_tiff_path)  # shape = z, y, x
                 except TypeError:
                     """
                     Got this error when I think the ripper messed up:
@@ -461,7 +432,7 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
 
                     # Read in file
                     try:
-                        img = io.imread(current_tiff_path, plugin='pil')  # shape = z, y, x
+                        img = io.imread(current_tiff_path)  # shape = z, y, x
                     except TypeError:
                         """
                         Got this error when I think the ripper messed up:
@@ -511,20 +482,33 @@ def tiff_to_nii(xml_file, brukerbridge_version_info,
 
         print('Final array shape = {}'.format(image_array.shape))
 
-        aff = np.eye(4)
+        # This is mostly a copy of snakebrainsss/workflow/modules_io_utils.save_nifty!
+        # Keep track of how this is done to make sure the logic stays the same
+        if is_volume_series:
+            # 3D volume
+            dir_3x3 = make_direction_3d(imaging_orientation)
+            affine = np.eye(4)
+            affine[:3, :3] = dir_3x3.T @ np.diag((x_voxel_size, y_voxel_size, z_voxel_size))
+        else:
+            # 2D image: derive out-of-plane axis automatically from cross product
+            dir_3x3 = make_direction_2d(imaging_orientation)
+            affine = np.eye(4)
+            affine[:3, :3] = dir_3x3.T @ np.diag((x_voxel_size, y_voxel_size, 1))
+
+        # aff = np.eye(4)
         #save_name = xml_file[:-4] + '_channel_{}'.format(current_channel+1) + '.nii'
         save_name = pathlib.Path(xml_file.parent, xml_file.name[:-4] + '_channel_{}'.format(current_channel) + save_suffix)
         try:
-            img = nib.Nifti1Image(image_array, aff) # 32 bit: maxes out at 32767 in any one dimension
+            img = nib.Nifti1Image(image_array, affine) #aff) # 32 bit: maxes out at 32767 in any one dimension
         except nib.spatialimages.HeaderDataError:
-            img = nib.Nifti2Image(image_array, aff) # 64 bit
+            img = nib.Nifti2Image(image_array, affine) #aff) # 64 bit
 
-        header_info = img.header # pointer to new header
+        # header_info = img.header # pointer to new header
 
-        if is_volume_series:
-            header_info['pixdim'][1:4] = [x_voxel_size, y_voxel_size, z_voxel_size]  # x,y,z
-        else:
-            header_info['pixdim'][1:3] = [x_voxel_size, y_voxel_size] # x,y
+        # if is_volume_series:
+        #     header_info['pixdim'][1:4] = [x_voxel_size, y_voxel_size, z_voxel_size]  # x,y,z
+        # else:
+        #     header_info['pixdim'][1:3] = [x_voxel_size, y_voxel_size] # x,y
 
         image_array = None # for memory
         print('Saving nii as {}'.format(save_name))
@@ -552,6 +536,7 @@ def convert_tiff_collections_to_nii(directory,
                                     autotransfer_stimpack,
                                     autotransfer_jackfish,
                                     max_diff_imaging_and_stimpack_start_time_second,
+                                    imaging_orientation,
                                     save_suffix):
     #for item in os.listdir(directory):
     # Here we are in the parent directory. By definition (to be documented) this
@@ -709,6 +694,7 @@ def convert_tiff_collections_to_nii(directory,
                                             autotransfer_stimpack=autotransfer_stimpack,
                                             autotransfer_jackfish=autotransfer_jackfish,
                                             max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+                                            imaging_orientation=imaging_orientation,
                                             save_suffix=save_suffix)
 
         # If the item is a file
@@ -744,6 +730,9 @@ def convert_tiff_collections_to_nii(directory,
 
                     if create_nii:
                         #tiff_to_nii(new_path)
-                        tiff_to_nii(current_path, brukerbridge_version_info, save_suffix)
+                        tiff_to_nii(current_path,
+                                    brukerbridge_version_info,
+                                    imaging_orientation,
+                                    save_suffix)
 
 

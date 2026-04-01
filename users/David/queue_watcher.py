@@ -1,3 +1,4 @@
+import sys
 import time
 import subprocess
 from time import strftime
@@ -86,7 +87,7 @@ def launch_main_processing(dir_to_process, stripped_folder, log_folder):
 	f = open(full_log_file, 'w')
 	# path to scripts/main.py
 	main_py_path = pathlib.Path(parent_path, 'scripts/main.py')
-	exit_status = subprocess.call(['python', str(main_py_path), dir_to_process],stdout=f,stderr=f)
+	exit_status = subprocess.call([sys.executable, str(main_py_path), dir_to_process],stdout=f,stderr=f)
 
 	#stderr=subprocess.STDOUT
 	if exit_status != 0:

@@ -114,6 +114,16 @@ def main(args):
 		max_diff_imaging_and_stimpack_start_time_second = None
 	copy_SingleImage = utils.get_bool_from_json(settings,'copy_SingleImage')
 
+	try:
+		imaging_orientation = settings.get('imaging_orientation')
+	except Exception as e:
+		print(e)
+		print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+		print('Unable to find imaging_orienation in user setting.json')
+		print('imaging orientation set to "LSP"')
+		print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+		imaging_orientation = 'LSP'
+
 	#################################
 	### Convert from raw to tiffs ###
 	#################################
@@ -182,6 +192,7 @@ def main(args):
 													autotransfer_stimpack=autotransfer_stimpack,
 													autotransfer_jackfish=autotransfer_jackfish,
 													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+													imaging_orientation=imaging_orientation,
 													save_suffix='.nii')
 	elif convert_to == 'nii.gz':
 		tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
@@ -191,6 +202,7 @@ def main(args):
 													autotransfer_stimpack=autotransfer_stimpack,
 													autotransfer_jackfish=autotransfer_jackfish,
 													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+													imaging_orientation=imaging_orientation,
 													save_suffix='.nii.gz')
 	elif convert_to == 'tiff':
 		# NOT TESTED! LIKELY WONT WORK!
