@@ -14,8 +14,8 @@
 
 ### Architecture
 
-- **Client** (`Imaging_PC/*_client.py`) — Runs on the Bruker PC, sends files over TCP (port 5005).
-- **Server** (`ripping_PC/*_server.py`) — Receives files, appends `__queue__` flag to directories.
+- **Client** (`Imaging_PC/client.py`) — Runs on the Bruker PC, sends files over TCP (port 5005). Takes user name as argument.
+- **Server** (`ripping_PC/server.py`) — Receives files, appends `__queue__` flag to directories. Takes user name as argument.
 - **Queue Watcher** (`users/*/queue_watcher.py`) — Continuously polls for queued directories, launches `scripts/main.py` for each.
 - **Ripper Killer** (`scripts/ripper_killer.py`) — Monitors the Bruker ripper process and kills it once done (it doesn't exit on its own).
 
@@ -70,34 +70,46 @@ install dependencies:
 changed windows defender settings on ripping PC: 
 https://stackoverflow.com/questions/53231849/python-socket-windows-10-connection-times-out
 
-1) Make a copy of the file 'blueprint.json' in folder `\users'. Change settings as desired
+### Adding a new user
 
-2) Make a copy of file 'blueprint_client.py' in folder 'Imaging PC' and call it YOURNAME_client.py.
+1) **Create your user JSON.** Copy `users/blueprint.json` to `users/YOURNAME.json` and fill in the settings:
 
-   Then change the "host_IP" to the IP of the ripping computer and the 'user_json' variable to the name of your user file
-   in 'users\'.
+   | Field | Description | Example |
+   |---|---|---|
+   | `host_IP` | IP address of your ripping PC | `"171.65.16.149"` |
+   | `initial_browse_dir` | Starting folder for the file browser on the imaging PC | `"E:/"` |
+   | `server_target_directory` | Where received files are written on the ripping PC (ideally a fast SSD with lots of space) | `"B:/brukerbridge"` |
+   | `oak_target` | Your Oak network storage path | `"//oak-smb-trc.stanford.edu/groups/trc/data/YOURNAME/Bruker/imports"` |
+   | `convert_to` | Output format: `"nii"` or `"nii.gz"` | `"nii.gz"` |
+   | `fly_json_from_h5` | Create fly.json from stimpack h5 file | `"True"` or `"False"` |
+   | `stimpack_h5_path` | Path to stimpack h5 files on imaging PC (optional) | `"E:/YOURNAME/stimpack_data"` |
+   | `stimpack_data_path` | Remote path to stimpack/fictrac data on the fictrac computer (optional) | `"../../data/YOURNAME/stimpack_data/fictrac"` |
+   | `autotransfer_stimpack` | Auto-download stimpack data from fictrac computer | `"True"` or `"False"` |
+   | `autotransfer_jackfish` | Auto-download Jackfish video data (optional) | `"True"` or `"False"` |
+   | `jackfish_data_path` | Remote path to Jackfish data (only needed if above is True) | `"../../data/YOURNAME/jackfish"` |
+   | `max_diff_imaging_and_stimpack_start_time_second` | Max time difference (seconds) to match stimpack to imaging | `"120"` |
+   | `copy_SingleImage` | Copy SingleImage folders to Oak | `"True"` or `"False"` |
+   | `imaging_orientation` | Anatomical orientation code | `"LSP"` |
 
-3) Make copy of file 'blueprint_server.py' and name it YOURNAME_server.py
+2) **Create your user folder.** Copy `users/blueprint/` to `users/YOURNAME/` and edit the `.bat` files inside:
 
-   In that file, in line 10 change the 'target_directory' variable to where on your ripping PC you want the ripping
-   to take place (Lots of space, ideally an SSD for speed). 
+   a) **`blueprint_brukerbridge.bat`** → rename to `YOURNAME_brukerbridge.bat`. This is the shortcut used on
+      the Bruker imaging PC. Change it to call `client.py` with your name:
+      ```
+      python "%reporoot%\brukerbridge\Imaging_PC\client.py" YOURNAME
+      ```
+      Update the character count in `%mypath:~0,-XX%` so it resolves to the repo root.
+      XX = length of `\users\YOURNAME\` (including both backslashes).
+      For example: `\users\David\` = 13, `\users\Mikaela\` = 16, `\users\blueprint\` = 17.
 
-4) Create a folder with your name in folder 'users' and copy the files from folder 'blueprint' into that folder.  
+   b) **`launch_server.bat`** runs on the ripping PC. Change it to call `server.py` with your name:
+      ```
+      python "%reporoot%\brukerbridge\ripping_PC\server.py" YOURNAME
+      ```
+      Update the character count the same way as above. Also update the log path to point to
+      a log directory on your ripping PC.
 
-   a) 'blueprint_brukerbridge.bat' will be used on the Bruker imaging computer. You need to change it such 
-      that it points to the client.pyfile you created before. For example for David would say 
-      `%mypath:~0,-13%\brukerbridge\Imaging_PC\david_client.py`.
+   c) **`launch_queue_watcher.bat`** — update the character count the same way as above.
 
-      It is strongly adviced to rename the file to something unique so that no-one except you uses this link to send
-      data to your computer!
-
-      Note that the number after %mypath:~0 refers to the number of charaters to go 'back up' to the root path.
-      For example, david needs to go from '../brukerbridge/users/David/' to '../brukerbridge' and remove '/users/David/'
-      which is exactly 13 characters.
-
-   b) 'launch_queue_watcher.bat' and 'launch_server.bat' automatically activate the virtual environment
-      relative to the repo root. You only need to update the character count in `%mypath:~0,-XX%` to match
-      your folder name length. The number XX should equal the length of `\users\YOURNAME\` (including both
-      backslashes). For example, `\users\David\` is 13 characters, `\users\blueprint\` is 17 characters.
-
-   e) 'queue_wacher.py', change 'log_folder' and 'root_directory' (where the ripping on your PC happens) as desired
+   d) **`queue_watcher.py`** — change `log_folder` and `root_directory` to match your ripping PC paths.
+      `root_directory` should match the `server_target_directory` in your JSON.
