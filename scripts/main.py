@@ -18,6 +18,7 @@ from brukerbridge import tiff_to_nii
 from brukerbridge.not_used import tiffs_to_tiff_stack
 from brukerbridge import transfer_fictrac
 from brukerbridge import transfer_to_oak
+from bruker_ultima_utils import PVSCAN_VERSIONS_NO_RIPPING
 from brukerbridge import utils
 
 ### Save version of brukerbridge used for running this repo ###
@@ -160,24 +161,10 @@ def main(args):
 	PVScan_version = root.get('version') # i.e. '5.8.64.800'
 	print('PVScan version: ' + repr(PVScan_version))
 
-	if PVScan_version == '5.8.64.800':
-		print('DANGER WITH PV5.8!!!!')
+	if PVScan_version in PVSCAN_VERSIONS_NO_RIPPING:
+		print('DANGER WITH PV {}!!!!'.format(PVScan_version))
 		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
 		print('skipping ripping')
-	elif PVScan_version == "5.8.64.814":
-		print('DANGER WITH PV5.8!!!!')
-		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
-		print('skipping ripping')
-	elif PVScan_version == "5.8.64.818":
-		print('DANGER WITH PV5.8!!!!')
-		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
-		print('skipping ripping')
-	elif PVScan_version == "5.8.64.900":
-		# print('DANGER WITH PV5.8!!!!')
-		# print('DONT PERFORM RIPPING ON THIS COMPUTER!')
-		# print('skipping ripping')
-		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
-		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
 	else:
 		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
 		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))

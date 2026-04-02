@@ -65,6 +65,8 @@ install dependencies:
 
 `pip install git+https://github.com/davidtadres/anatomical_orientation.git`
 
+`pip install git+https://github.com/DavidTadres/bruker_ultima_utils.git`
+
 changed windows defender settings on ripping PC: 
 https://stackoverflow.com/questions/53231849/python-socket-windows-10-connection-times-out
 

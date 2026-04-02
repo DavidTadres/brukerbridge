@@ -11,33 +11,14 @@ import pathlib
 import json
 import imageio
 import h5py
-from anatomical_orientation import make_direction_2d, make_direction_3d, make_direction_4d
+from anatomical_orientation import make_direction_for_nifty
+from bruker_ultima_utils import parse_xml
 import datetime
 parent_path = str(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
 sys.path.insert(0, parent_path)
 
 from brukerbridge import utils
 
-def get_channel_ids(sequence):
-    """
-    The original code just assigned 'channel 1' to the first
-    channel, even if only channel 2 was recorded from.
-    To stay faithful to the original channel designation (made
-    by the microscope), use this function to define the existing
-    channels for a given experiment
-    :param sequence:
-    :return:
-    """
-    channels = []
-
-    if isinstance(sequence, list):
-        sequence = sequence[0]
-    first_frame = sequence.findall('Frame')[0]
-    first_frame_file_list = first_frame.findall('File')
-    for current_file in first_frame_file_list:
-        channels.append(current_file.attrib['channel'])
-
-    return(channels)
 
 def tiff_to_nii(xml_file,
                 brukerbridge_version_info,
@@ -78,81 +59,27 @@ def tiff_to_nii(xml_file,
     ##########################################################################################################
 
 
-    # Parse xml file
+    # Parse xml file using bruker_ultima_utils (single source of truth for
+    # Bruker metadata extraction, including the Sequence-level ZAxis fix)
+    md = parse_xml(xml_file)
+
+    # We still need raw XML elements for iterating frames/files downstream
     tree = ET.parse(xml_file)
     root = tree.getroot()
     sequences = root.findall('Sequence')
 
-    # Check if multipage tiff
-    companion_filepath = pathlib.Path(str(xml_file).split('.')[0] + '.companion.ome')
-    if companion_filepath.exists():
-        is_multi_page_tiff = True
-    else:
-        is_multi_page_tiff = False
-
-    # get x/y dimensions from the top-level PVStateShard
-    statevalues = root.findall("PVStateShard")[0].findall("PVStateValue")
-    for statevalue in statevalues:
-        key = statevalue.get("key")
-        # Get y dimension (pixel count)
-        if key == "linesPerFrame":
-            num_y = int(statevalue.get("value"))
-        # Get x dimension (pixel count)
-        if key == "pixelsPerLine":
-            num_x = int(statevalue.get("value"))
-
-    # get x/y/z voxel size from the first Sequence's PVStateShard
-    # NOTE: The top-level PVStateShard can have a WRONG ZAxis value (e.g. 5
-    # instead of 1). The Sequence-level shard has the correct acquisition values.
-    # Fallback: if the Sequence has no PVStateShard (rare), use the top-level values.
-    first_seq = root.find("Sequence")
-    seq_shard = first_seq.find("PVStateShard") if first_seq is not None else None
-    if seq_shard is not None:
-        for sv in seq_shard.findall("PVStateValue"):
-            if sv.get("key") == "micronsPerPixel":
-                for idx in sv.findall("IndexedValue"):
-                    axis = idx.get("index")
-                    if axis == "XAxis":
-                        x_voxel_size = float(idx.get("value"))
-                    elif axis == "YAxis":
-                        y_voxel_size = float(idx.get("value"))
-                    elif axis == "ZAxis":
-                        z_voxel_size = float(idx.get("value"))
-    else:
-        # Fallback to top-level PVStateShard (may have wrong ZAxis)
-        for statevalue in statevalues:
-            if statevalue.get("key") == "micronsPerPixel":
-                for index in statevalue.findall("IndexedValue"):
-                    axis = index.get("index")
-                    if axis == "XAxis":
-                        x_voxel_size = float(index.get("value"))
-                    elif axis == "YAxis":
-                        y_voxel_size = float(index.get("value"))
-                    elif axis == "ZAxis":
-                        z_voxel_size = float(index.get("value"))
-
-    # Identify scan type, get t/z axis dims
-    if root.find('Sequence').get('type') == 'TSeries Timed Element': # Plane time series
-        num_timepoints = len(sequences[0].findall('Frame'))
-        num_z = 1
-        is_volume_series = False
-
-    elif root.find('Sequence').get('type') == 'TSeries ZSeries Element': # Volume time series
-        num_timepoints = len(sequences)
-        num_z = len(sequences[0].findall('Frame'))
-        is_volume_series = True
-    else:
-         TypeError('Could not determine type of sequence, not recognized as "TSeries Timed Element" or a "TSeries ZSeries Element".')
-
-    # Check if bidirectional - will affect loading order
-    is_bidirectional_z = sequences[0].get('bidirectionalZ')
-    if is_bidirectional_z == 'True':
-        is_bidirectional_z = True
-    else:
-        is_bidirectional_z = False
-
-    # Get existing channels as strings
-    channels = get_channel_ids(sequences)
+    # Unpack metadata into local variables used by the rest of this function
+    is_multi_page_tiff = md.is_multi_page_tiff
+    num_x = md.x_dim
+    num_y = md.y_dim
+    num_z = md.z_dim
+    num_timepoints = md.num_timepoints
+    x_voxel_size = md.x_voxel_size
+    y_voxel_size = md.y_voxel_size
+    z_voxel_size = md.z_voxel_size
+    is_volume_series = md.is_volume_series
+    is_bidirectional_z = md.is_bidirectional_z
+    channels = md.channel_ids
 
     # print scan info
     print('is_multi_page_tiff is {}'.format(is_multi_page_tiff))
@@ -486,14 +413,20 @@ def tiff_to_nii(xml_file,
         # Keep track of how this is done to make sure the logic stays the same
         if is_volume_series:
             # 3D volume
-            dir_3x3 = make_direction_3d(imaging_orientation)
-            affine = np.eye(4)
-            affine[:3, :3] = dir_3x3.T @ np.diag((x_voxel_size, y_voxel_size, z_voxel_size))
+            affine = make_direction_for_nifty(orientation=imaging_orientation,
+                                               spacing=(x_voxel_size, y_voxel_size, z_voxel_size),
+                                               origin=None)
+            # dir_3x3 = make_direction_3d_f(imaging_orientation)
+            # affine = np.eye(4)
+            # affine[:3, :3] = dir_3x3.T @ np.diag((x_voxel_size, y_voxel_size, z_voxel_size))
         else:
-            # 2D image: derive out-of-plane axis automatically from cross product
-            dir_3x3 = make_direction_2d(imaging_orientation)
-            affine = np.eye(4)
-            affine[:3, :3] = dir_3x3.T @ np.diag((x_voxel_size, y_voxel_size, 1))
+            affine = make_direction_for_nifty(orientation=imaging_orientation,
+                                               spacing=(x_voxel_size, y_voxel_size, 1),
+                                               origin=None)
+            # # 2D image: derive out-of-plane axis automatically from cross product
+            # dir_3x3 = make_direction_2d(imaging_orientation)
+            # affine = np.eye(4)
+            # affine[:3, :3] = dir_3x3.T @ np.diag((x_voxel_size, y_voxel_size, 1))
 
         # aff = np.eye(4)
         #save_name = xml_file[:-4] + '_channel_{}'.format(current_channel+1) + '.nii'
