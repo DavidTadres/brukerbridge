@@ -1,4 +1,7 @@
 {
+    "host_IP": "PLACEHOLDER_RIPPING_PC_IP",
+    "initial_browse_dir": "F:/",
+    "server_target_directory": "PLACEHOLDER_RIPPING_DIRECTORY",
     "oak_target": "PLACEHOLDER_OAK_PATH",
     "convert_to": "nii.gz",
     "add_to_build_que": "False",

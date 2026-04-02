@@ -4,5 +4,7 @@
 @echo YOU MUST START FILE TRANSFER FROM THE BRUKER COMPUTER.
 @echo LOOK AT MY OUTPUT IN DATAFLOW_LOGS\SERVER_LOG.TXT. USING MTAIL PROGRAM IS CONVENIENT.
 SET mypath=%~dp0
-PLACEHOLDER_PYTHON_EXE_PATH %mypath:~0,-16%\brukerbridge\ripping_PC\mikaela_server.py >> PLACEHOLDER_LOG_PATH\server_log.txt 2>&1
+SET reporoot=%mypath:~0,-16%
+call "%reporoot%\env_brukerbridge\Scripts\activate.bat"
+python "%reporoot%\brukerbridge\ripping_PC\server.py" Mikaela >> PLACEHOLDER_LOG_PATH\server_log.txt 2>&1
 cmd /k

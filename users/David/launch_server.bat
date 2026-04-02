@@ -6,5 +6,5 @@
 SET mypath=%~dp0
 SET reporoot=%mypath:~0,-13%
 call "%reporoot%\env_brukerbridge\Scripts\activate.bat"
-python "%reporoot%\brukerbridge\ripping_PC\david_server.py" >> C:\Users\David\Desktop\brukerbridge_datalogs\server_log.txt 2>&1
+python "%reporoot%\brukerbridge\ripping_PC\server.py" David >> C:\Users\David\Desktop\brukerbridge_datalogs\server_log.txt 2>&1
 cmd /k

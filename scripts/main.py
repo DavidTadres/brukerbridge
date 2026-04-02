@@ -15,7 +15,6 @@ sys.path.insert(0, parent_path)
 # This just imports '*.py' files from the folder 'brainsss'.
 from brukerbridge import raw_to_tiff
 from brukerbridge import tiff_to_nii
-from brukerbridge.not_used import tiffs_to_tiff_stack
 from brukerbridge import transfer_fictrac
 from brukerbridge import transfer_to_oak
 from bruker_ultima_utils import PVSCAN_VERSIONS_NO_RIPPING
@@ -191,12 +190,9 @@ def main(args):
 													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
 													imaging_orientation=imaging_orientation,
 													save_suffix='.nii.gz')
-	elif convert_to == 'tiff':
-		# NOT TESTED! LIKELY WONT WORK!
-		tiffs_to_tiff_stack.convert_tiff_collections_to_stack(dir_to_process)
 	else:
 		print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
-		print("Must be nii or tiff, with no period")
+		print("Must be 'nii' or 'nii.gz'")
 	#######################
 	### Transfer to Oak ###
 	#######################
