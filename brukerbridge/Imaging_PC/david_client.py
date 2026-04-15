@@ -125,7 +125,7 @@ else:
                                         local_target_path=local_target_path_jackfish_data
                                         )
 
-
+            print('successfully finished working on fictrac computer')
     #########################
     ### CONNECT TO SERVER ###
     #########################
