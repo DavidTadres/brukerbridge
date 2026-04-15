@@ -139,6 +139,7 @@ if stimpack_h5_path is not None:
 #########################
 
 sock = socket.socket()
+print(f"Connecting to host_IP={host_IP!r} on port={port}")
 sock.connect((host_IP, port))
 
 ##########################
