@@ -461,7 +461,7 @@ def write_h5_metadata_in_stimpack_folder(directory):
     flyID.json is a dict that looks like:
      {'fly': 'fly1', 'series': '1', 'series_start_time': '1718310030.084193'}
 
-    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :param directory: source directory, i.e. F:/brukerbridge/David/20240613__queue__
     :return:
     """
     success_writing_to_stimpack_loco_folder = False
@@ -581,7 +581,7 @@ def write_h5_metadata_in_stimpack_folder_one_fly_per_h5(directory):
     flyID.json is a dict that looks like:
      {'fly': 'fly1', 'series': '1', 'series_start_time': '1718310030.084193'}
 
-    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :param directory: source directory, i.e. F:/brukerbridge/David/20240613__queue__
     :return:
     NOTE: Jacob - updated version of get_fly_json_data_from_h5 to work on hdf5 with 
     single fly placed in each fly folder instead of one hdf5 per day in experiment folder
@@ -687,7 +687,7 @@ def add_stimpack_data_to_imaging_folder(directory,
                                         max_diff_imaging_and_stimpack_start_time_second):
     """
     Copy stimpack data from bespoke folder INTO corresponding imaging folder.
-    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :param directory: source directory, i.e. F:/brukerbridge/David/20240613__queue__
     :return:
     """
     # Dict with error messages
@@ -846,7 +846,7 @@ def write_h5_metadata_in_jackfish_folder(directory):
         flyID.json is a dict that looks like:
         {'fly': 'fly1', 'series': '1', 'series_start_time': '1718310030.084193'}
 
-    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :param directory: source directory, i.e. F:/brukerbridge/David/20240613__queue__
     :return:
     """
 
@@ -905,6 +905,7 @@ def write_h5_metadata_in_jackfish_folder(directory):
             current_series = str(int(current_string.split('-')[0].split('series_')[-1]))
             current_series_start_time = current_string.split('-')[-1]
             current_series_path = pathlib.Path(jackfish_data_folder, current_fly, current_series)
+            print('  Looking for jackfish data at: {}'.format(current_series_path.as_posix()))
 
             relevant_metadata = {}
             relevant_metadata['fly'] = current_fly
@@ -916,14 +917,16 @@ def write_h5_metadata_in_jackfish_folder(directory):
                 # Save as json
                 with open(save_path, 'w') as file:
                     json.dump(relevant_metadata, file, sort_keys=True, indent=4)
-                # If we have a single case where we were successfull in writing
+                # If we have a single case where we were successful in writing
                 # the file, assume that at least some experiments where done with
                 # online fictrac tracking.
                 success_writing_to_jackfish_folder = True
             else:
                 print('>>>>>>>>INFORMATION<<<<<<<<<<')
-                print('Tried writing flyID.json to sjackfish folder but relevant series does not exists:')
-                print(current_series_path.as_posix())
+                print('Tried writing flyID.json to jackfish folder but path does not exist: {}'.format(
+                    current_series_path.as_posix()))
+                print('  Required structure: {}/{}/{}/'.format(
+                    jackfish_data_folder.name, current_fly, current_series))
 
     return (success_writing_to_jackfish_folder)
 
@@ -932,7 +935,7 @@ def add_jackfish_data_to_imaging_folder(directory,
     """
     Copy stimpack data from bespoke folder INTO corresponding imaging folder
 
-    :param directory: source directory, i.e. F:\brukerbridge\David\20240613__queue__
+    :param directory: source directory, i.e. F:/brukerbridge/David/20240613__queue__
     :param max_diff_imaging_and_stimpack_start_time_second: int
     :return:
     """

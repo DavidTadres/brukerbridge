@@ -467,15 +467,30 @@ def convert_tiff_collections_to_nii(directory,
                                     fly_json_from_h5,
                                     fly_json_already_created,
                                     autotransfer_stimpack,
-                                    autotransfer_jackfish,
                                     max_diff_imaging_and_stimpack_start_time_second,
                                     imaging_orientation,
                                     save_suffix):
-    #for item in os.listdir(directory):
-    # Here we are in the parent directory. By definition (to be documented) this
-    # must be a folder like 20240613 which contains subfolders such as 'fly_001'
-    # and, optionally, a stimpack produced h5 file!
-    #print('called convert_tiff_collections_to_nii with directory ' + repr(directory))
+    """Recursively find PVScan XML files and convert their TIFF data to NIfTI.
+
+    Also handles fly.json creation from stimpack h5 and stimpack/loco data
+    assignment to imaging folders (when autotransfer_stimpack is True).
+
+    Note: jackfish/fictrac assignment was moved to main.py (runs after
+    wait_for_fictrac to avoid race conditions with WSL FicTrac processes).
+
+    TODO: move autotransfer_stimpack, fly_json_from_h5, and related logic
+    out of this function into main.py to make tiff-to-nii purely about
+    file conversion.
+
+    :param directory: root directory containing fly folders and optionally h5
+    :param brukerbridge_version_info: version string saved alongside NIfTIs
+    :param fly_json_from_h5: bool, create fly.json from stimpack h5
+    :param fly_json_already_created: bool, skip fly.json if already done
+    :param autotransfer_stimpack: bool, assign stimpack/loco data to imaging dirs
+    :param max_diff_imaging_and_stimpack_start_time_second: float or None
+    :param imaging_orientation: str, anatomical orientation code (e.g. 'LSP')
+    :param save_suffix: str, '.nii' or '.nii.gz'
+    """
 
     if fly_json_from_h5 and not fly_json_already_created:
         print('Attempting to create fly.json from stimpack h5 file')
@@ -585,32 +600,6 @@ def convert_tiff_collections_to_nii(directory,
                 print(e)
                 print('\n')
 
-        if autotransfer_jackfish:
-            #try:
-            print('Attempting to automatically assign jackfish data to imaging folder')
-            success_writing_flyID_json_in_jackfish_folder = (
-                utils.write_h5_metadata_in_jackfish_folder(directory))
-            if success_writing_flyID_json_in_jackfish_folder:
-                print('Wrote h5 metadata in jackfish folder'
-                      )
-                jackfish_erros = utils.add_jackfish_data_to_imaging_folder(
-                    directory, max_diff_imaging_and_stimpack_start_time_second
-                )
-                if bool(jackfish_erros):
-                    print('***** ERROR ENCOUNTERED DURING JACKFISH FOLDER ASSIGNMENT *****')
-                    for current_error in stimpack_errors:
-                        print(current_error)
-                        print(':\n')
-                        print(jackfish_erros[current_error])
-                        print('\n\n')
-                else:
-                    print('Successfully copied all jackfish data into corresponding imaging folder!')
-
-            else:
-                print('>>>>>>>>INFORMATION<<<<<<<<<<')
-                print('Unable to transfer any stimpack/jackfish files (post-hoc fictrac recordings).')
-                print('This is normal behavior if you have done real-time fictrac recordings instead.')
-
     for current_path in directory.iterdir():
         #new_path = directory + '/' + item
 
@@ -619,13 +608,17 @@ def convert_tiff_collections_to_nii(directory,
         #    print(1) #debug
         #    convert_tiff_collections_to_nii(new_path)
         if current_path.is_dir():
+            # Skip MarkPoints (photostimulation) folders — their XML has root tag
+            # 'PVScan' but no PVStateShard, which breaks parse_xml.
+            if current_path.name.startswith('MarkPoints'):
+                print('Skipping MarkPoints folder: {}'.format(current_path.name))
+                continue
             #print(1) # debug
             convert_tiff_collections_to_nii(directory=current_path,
                                             brukerbridge_version_info=brukerbridge_version_info,
                                             fly_json_from_h5=fly_json_from_h5,
                                             fly_json_already_created=fly_json_already_created,
                                             autotransfer_stimpack=autotransfer_stimpack,
-                                            autotransfer_jackfish=autotransfer_jackfish,
                                             max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
                                             imaging_orientation=imaging_orientation,
                                             save_suffix=save_suffix)
@@ -641,6 +634,19 @@ def convert_tiff_collections_to_nii(directory,
                 root = tree.getroot()
                 # If the item is an xml file with scan info
                 if root.tag == 'PVScan':
+
+                    # Guard: some PVScan-rooted XMLs (e.g., MarkPoints) have no
+                    # PVStateShard, which would crash parse_xml. Skip those.
+                    if not root.findall("PVStateShard"):
+                        print('Skipping PVScan XML without PVStateShard: {}'.format(current_path))
+                        continue
+
+                    # Guard: aborted/empty scans have Sequences but no Frame
+                    # elements, which crashes parse_xml's get_channel_ids.
+                    first_seq = root.find("Sequence")
+                    if first_seq is not None and not first_seq.findall("Frame"):
+                        print('Skipping {} because its Sequence contains no Frame elements (empty/aborted scan)'.format(current_path))
+                        continue
 
                     # Also, verify that this folder doesn't already contain any .niis
                     # This is useful if rebooting the pipeline due to some error, and

@@ -17,6 +17,7 @@ from brukerbridge import raw_to_tiff
 from brukerbridge import tiff_to_nii
 from brukerbridge import transfer_fictrac
 from brukerbridge import transfer_to_oak
+from brukerbridge import fictrac_wsl
 from bruker_ultima_utils import PVSCAN_VERSIONS_NO_RIPPING
 from brukerbridge import utils
 
@@ -124,6 +125,13 @@ def main(args):
 		print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 		imaging_orientation = 'LSP'
 
+	############################
+	### Run FicTrac (WSL)    ###
+	############################
+	fictrac_markers = []
+	if autotransfer_jackfish:
+		fictrac_markers = fictrac_wsl.launch_fictrac_wsl(dir_to_process, users_directory, user, settings)
+
 	#################################
 	### Convert from raw to tiffs ###
 	#################################
@@ -176,7 +184,6 @@ def main(args):
 													fly_json_from_h5=fly_json_from_h5,
 													fly_json_already_created=fly_json_already_created,
 													autotransfer_stimpack=autotransfer_stimpack,
-													autotransfer_jackfish=autotransfer_jackfish,
 													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
 													imaging_orientation=imaging_orientation,
 													save_suffix='.nii')
@@ -186,13 +193,41 @@ def main(args):
 													fly_json_from_h5=fly_json_from_h5,
 													fly_json_already_created=fly_json_already_created,
 													autotransfer_stimpack=autotransfer_stimpack,
-													autotransfer_jackfish=autotransfer_jackfish,
 													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
 													imaging_orientation=imaging_orientation,
 													save_suffix='.nii.gz')
 	else:
 		print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
 		print("Must be 'nii' or 'nii.gz'")
+	#######################################
+	### Wait for FicTrac to finish     ###
+	#######################################
+	fictrac_wsl.wait_for_fictrac(fictrac_markers)
+
+	############################################
+	### Assign jackfish data to imaging dirs ###
+	############################################
+	if autotransfer_jackfish:
+		print('Attempting to automatically assign jackfish data to imaging folder')
+		success = utils.write_h5_metadata_in_jackfish_folder(dir_to_process)
+		if success:
+			print('Wrote h5 metadata in jackfish folder')
+			jackfish_errors = utils.add_jackfish_data_to_imaging_folder(
+				dir_to_process, max_diff_imaging_and_stimpack_start_time_second)
+			if bool(jackfish_errors):
+				print('***** ERROR ENCOUNTERED DURING JACKFISH FOLDER ASSIGNMENT *****')
+				for current_error in jackfish_errors:
+					print(current_error)
+					print(':\n')
+					print(jackfish_errors[current_error])
+					print('\n\n')
+			else:
+				print('Successfully copied all jackfish data into corresponding imaging folder!')
+		else:
+			print('>>>>>>>>INFORMATION<<<<<<<<<<')
+			print('Unable to transfer any stimpack/jackfish files (post-hoc fictrac recordings).')
+			print('This is normal behavior if you have done real-time fictrac recordings instead.')
+
 	#######################
 	### Transfer to Oak ###
 	#######################
