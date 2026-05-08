@@ -132,77 +132,105 @@ def main(args):
 	if autotransfer_jackfish:
 		fictrac_markers = fictrac_wsl.launch_fictrac_wsl(dir_to_process, users_directory, user, settings)
 
-	#################################
-	### Convert from raw to tiffs ###
-	#################################
-	# New 2025/04/29:
-	# Automatically detects what PVScan Version was used for recording
-	# and calls that version
+	# If anything below crashes before we reach wait_for_fictrac, the launched
+	# FicTrac would keep running with open handles in dir_to_process, blocking
+	# queue_watcher from renaming the folder ([WinError 5] Access is denied).
+	# The finally: clause guarantees we wait for FicTrac even on crash.
+	try:
+		#################################
+		### Convert from raw to tiffs ###
+		#################################
+		# New 2025/04/29:
+		# Automatically detects what PVScan Version was used for recording
+		# and calls that version
 
-	
-	t0 = time.time()
-	# Find out what version of PV was used for the recording
-	xml_paths = []
-	def recursive_search(path):
-		"""
-		Recursive function to find xml file with identical name
-		as the folder defining the large xml file Bruker writes which
-		contains the PVScan version
-		:param path:
-		:return:
-		"""
-		for current_file in path.iterdir():
-			if current_file.is_dir():
-				recursive_search(current_file)
-			else:
-				# Check if the file/folder has xml extension
-				if ('xml' in current_file.suffix and
-						not 'Voltage' in current_file.name): # Might be necessary to add more if in the future
-					# have the xml file, read it
-					xml_paths.append(current_file)
-					return()
-	# Run recursive function, use list to keep track of xml_paths
-	recursive_search(dir_to_process)
-	tree = ET.parse(xml_paths[0])
-	root = tree.getroot()
-	PVScan_version = root.get('version') # i.e. '5.8.64.800'
-	print('PVScan version: ' + repr(PVScan_version))
 
-	if PVScan_version in PVSCAN_VERSIONS_NO_RIPPING:
-		print('DANGER WITH PV {}!!!!'.format(PVScan_version))
-		print('DONT PERFORM RIPPING ON THIS COMPUTER!')
-		print('skipping ripping')
-	else:
-		raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
-		print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
-	#########################################
-	### Convert tiff to nii or tiff stack ###
-	#########################################
-	if convert_to == 'nii':
-		tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
-													brukerbridge_version_info=VERSION_INFO,
-													fly_json_from_h5=fly_json_from_h5,
-													fly_json_already_created=fly_json_already_created,
-													autotransfer_stimpack=autotransfer_stimpack,
-													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
-													imaging_orientation=imaging_orientation,
-													save_suffix='.nii')
-	elif convert_to == 'nii.gz':
-		tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
-													brukerbridge_version_info=VERSION_INFO,
-													fly_json_from_h5=fly_json_from_h5,
-													fly_json_already_created=fly_json_already_created,
-													autotransfer_stimpack=autotransfer_stimpack,
-													max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
-													imaging_orientation=imaging_orientation,
-													save_suffix='.nii.gz')
-	else:
-		print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
-		print("Must be 'nii' or 'nii.gz'")
-	#######################################
-	### Wait for FicTrac to finish     ###
-	#######################################
-	fictrac_wsl.wait_for_fictrac(fictrac_markers)
+		t0 = time.time()
+		# Find out what version of PV was used for the recording
+		xml_paths = []
+		def recursive_search(path):
+			"""
+			Recursive function to find xml file with identical name
+			as the folder defining the large xml file Bruker writes which
+			contains the PVScan version
+			:param path:
+			:return:
+			"""
+			for current_file in path.iterdir():
+				if current_file.is_dir():
+					recursive_search(current_file)
+				else:
+					# Check if the file/folder has xml extension
+					if ('xml' in current_file.suffix and
+							not 'Voltage' in current_file.name): # Might be necessary to add more if in the future
+						# have the xml file, read it
+						xml_paths.append(current_file)
+						return()
+		# Diagnostic for FileNotFoundError seen 2026-04-22 crash: if dir_to_process
+		# disappears between launch_fictrac_wsl and here, capture what replaced it.
+		if not dir_to_process.exists():
+			print('!!! dir_to_process missing before recursive_search at {} !!!'.format(
+				time.strftime('%Y%m%d-%H%M%S')))
+			print('dir_to_process was: {}'.format(dir_to_process))
+			try:
+				print('siblings of {} now:'.format(dir_to_process.parent))
+				for sibling in dir_to_process.parent.iterdir():
+					mtime = time.strftime('%Y%m%d-%H%M%S',
+						time.localtime(sibling.stat().st_mtime))
+					print('  {}  (mtime={})'.format(sibling.name, mtime))
+			except Exception as diag_err:
+				print('  sibling listing failed: {}'.format(diag_err))
+		# Run recursive function, use list to keep track of xml_paths
+		recursive_search(dir_to_process)
+		tree = ET.parse(xml_paths[0])
+		root = tree.getroot()
+		PVScan_version = root.get('version') # i.e. '5.8.64.800'
+		print('PVScan version: ' + repr(PVScan_version))
+
+		if PVScan_version in PVSCAN_VERSIONS_NO_RIPPING:
+			print('DANGER WITH PV {}!!!!'.format(PVScan_version))
+			print('DONT PERFORM RIPPING ON THIS COMPUTER!')
+			print('skipping ripping')
+		else:
+			raw_to_tiff.convert_raw_to_tiff(dir_to_process, PVScan_version)
+			print("RAW TO TIFF DURATION: {} MIN".format(int((time.time()-t0)/60)))
+		#########################################
+		### Convert tiff to nii or tiff stack ###
+		#########################################
+		if convert_to == 'nii':
+			tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
+														brukerbridge_version_info=VERSION_INFO,
+														fly_json_from_h5=fly_json_from_h5,
+														fly_json_already_created=fly_json_already_created,
+														autotransfer_stimpack=autotransfer_stimpack,
+														max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+														imaging_orientation=imaging_orientation,
+														save_suffix='.nii')
+		elif convert_to == 'nii.gz':
+			tiff_to_nii.convert_tiff_collections_to_nii(directory=dir_to_process,
+														brukerbridge_version_info=VERSION_INFO,
+														fly_json_from_h5=fly_json_from_h5,
+														fly_json_already_created=fly_json_already_created,
+														autotransfer_stimpack=autotransfer_stimpack,
+														max_diff_imaging_and_stimpack_start_time_second=max_diff_imaging_and_stimpack_start_time_second,
+														imaging_orientation=imaging_orientation,
+														save_suffix='.nii.gz')
+		else:
+			print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
+			print("Must be 'nii' or 'nii.gz'")
+		#######################################
+		### Wait for FicTrac to finish     ###
+		#######################################
+		fictrac_wsl.wait_for_fictrac(fictrac_markers)
+		fictrac_markers = []  # consumed; finally: has nothing left to wait on
+	finally:
+		if fictrac_markers:
+			print('!!! main.py crashed before wait_for_fictrac. Blocking on FicTrac so files release before exit. !!!')
+			try:
+				fictrac_wsl.wait_for_fictrac(fictrac_markers)
+			except Exception as wait_err:
+				# Don't mask the original exception from the try block
+				print('wait_for_fictrac in finally also failed: {}'.format(wait_err))
 
 	############################################
 	### Assign jackfish data to imaging dirs ###

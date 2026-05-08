@@ -38,9 +38,11 @@ def _process_series_folder(series_folder, sample_config, wsl_distro, fictrac_dir
 	drive = series_folder.parts[0][0].lower()
 	wsl_path = '/mnt/{}/{}'.format(drive, '/'.join(series_folder.parts[1:]))
 
-	# configGui -> fictrac -> touch marker file on completion
-	cmd = "cd '{}' && {}/configGui {} && {}/fictrac {} && touch {}".format(
-		wsl_path, fictrac_dir, CONFIG_FILE, fictrac_dir, CONFIG_FILE, MARKER_FILE)
+	# configGui -> fictrac -> touch marker file on bash exit.
+	# Use a bash EXIT trap instead of "; touch ..." because wt.exe parses ';'
+	# in its command line as a tab separator, even inside a quoted bash -c arg.
+	cmd = "trap 'touch {}' EXIT && cd '{}' && {}/configGui {} && {}/fictrac {}".format(
+		MARKER_FILE, wsl_path, fictrac_dir, CONFIG_FILE, fictrac_dir, CONFIG_FILE)
 
 	label = series_folder.parent.name + '/' + series_folder.name
 	print('Launching configGui + fictrac for {} ...'.format(label))
@@ -99,6 +101,8 @@ def wait_for_fictrac(marker_paths, poll_interval=10):
 
 	print('Waiting for {} FicTrac session(s) to finish...'.format(len(marker_paths)))
 	remaining = set(range(len(marker_paths)))
+	last_log_time = time.time()
+	log_interval = 300  # 5 minutes
 
 	while remaining:
 		time.sleep(poll_interval)
@@ -106,8 +110,11 @@ def wait_for_fictrac(marker_paths, poll_interval=10):
 			if marker_paths[i].exists():
 				print('  FicTrac finished: {}'.format(marker_paths[i].parent.name))
 				remaining.discard(i)
-		if remaining:
-			print('  Still waiting on {} session(s)...'.format(len(remaining)))
+		if remaining and (time.time() - last_log_time) >= log_interval:
+			elapsed = int((time.time() - last_log_time) / 60)
+			print('  Still waiting on {} FicTrac session(s) after ~{} min...'.format(
+				len(remaining), elapsed))
+			last_log_time = time.time()
 
 	# Clean up marker files
 	for marker in marker_paths:

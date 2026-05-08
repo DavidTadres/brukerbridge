@@ -630,7 +630,14 @@ def convert_tiff_collections_to_nii(directory,
                 create_nii = True
                 #print(3) #debug
                 #tree = ET.parse(new_path)
-                tree = ET.parse(current_path)
+                try:
+                    tree = ET.parse(current_path)
+                except ET.ParseError as e:
+                    print('********** WARNING **********')
+                    print('Skipping malformed XML (likely aborted/incomplete scan):')
+                    print('  {}'.format(current_path))
+                    print('  ParseError: {}'.format(e))
+                    continue
                 root = tree.getroot()
                 # If the item is an xml file with scan info
                 if root.tag == 'PVScan':
