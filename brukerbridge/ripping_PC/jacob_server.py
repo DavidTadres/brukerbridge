@@ -15,6 +15,16 @@ print(parent_path)
 sys.path.insert(0, parent_path)
 # This just imports '*.py' files from the folder 'brainsss'.
 from brukerbridge import utils
+from brukerbridge import disk_check, notify
+
+# Load Telegram alert config once at startup. None if not configured.
+TELEGRAM_CONFIG = notify.load_telegram_config()
+if TELEGRAM_CONFIG is None:
+	print('No telegram config at {} - Telegram alerts disabled.'.format(
+		notify.CONFIG_PATH), flush=True)
+else:
+	print('Telegram alerts enabled for: {}'.format(
+		list(TELEGRAM_CONFIG.get('chat_ids', {}).keys())), flush=True)
 
 verbose = False
 CHUNKSIZE = 1_000_000
@@ -48,6 +58,8 @@ while True:
 	do_checksums_match = []
 	num_files_transfered = 0
 	total_gb_transfered = 0
+	low_disk = False
+	disk_info = None
 	# https://realpython.com/python-sockets/
 	# After .accept() provides the client socket object conn, an infinite
 	# while loop is used to loop over blocking calls to conn.recv().
@@ -63,6 +75,21 @@ while True:
 				start_time = time.time()
 				print(F"FIRST LOOP START TIME: {start_time}",flush=True)
 
+				# Pre-upload disk-space check
+				low_disk, disk_info = disk_check.check_disk_space(
+					target_directory, source_directory_size)
+				if low_disk:
+					print('!' * 60, flush=True)
+					print('!!! LOW DISK SPACE on {} ({})'.format(
+						disk_info['drive'], disk_info['hostname']), flush=True)
+					print('!!! upload: {:.1f} GB, {:,} files'.format(
+						source_directory_size, total_num_files), flush=True)
+					print('!!! free:   {:.1f} GB; need {:.1f} GB (margin {:.0f} GB)'.format(
+						disk_info['free_gb'], disk_info['required_gb'],
+						disk_info['margin_gb']), flush=True)
+					print('!!! upload will proceed but may fail mid-transfer.', flush=True)
+					print('!' * 60, flush=True)
+
 			raw = clientfile.readline()
 
 			### This is what will finally break the loop when this message is received ###
@@ -75,6 +102,14 @@ while True:
 				break
 
 			filename = raw.strip().decode()
+
+			# Send Telegram alert once, on the first file, only if low_disk
+			if low_disk and num_files_transfered == 0:
+				user_folder = pathlib.Path(filename).parts[0]
+				notify.send_low_disk_alert(
+					TELEGRAM_CONFIG, user_folder, disk_info, total_num_files)
+				low_disk = False  # one alert per upload
+
 			length = int(clientfile.readline()) # don't need to decode because casting as int
 			size_in_gb = length*10**-9
 			checksum_original = str(clientfile.readline().strip().decode())
