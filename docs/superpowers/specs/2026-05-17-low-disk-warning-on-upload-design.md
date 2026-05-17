@@ -65,7 +65,7 @@ Small, single-responsibility module. Two functions:
 A single function:
 
 - `check_disk_space(target_directory: pathlib.Path, source_size_gb: float) -> tuple[bool, dict]`
-  - Returns `(low_disk, info)` where `info` has `free_gb`, `required_gb`, `margin_gb`, `drive_letter`, `hostname`.
+  - Returns `(low_disk, info)` where `info` has `free_gb`, `required_gb`, `margin_gb`, `source_size_gb`, `drive`, `hostname`.
   - Pure — no side effects. Caller decides what to print/send.
 
 New module rather than appending to `brukerbridge/utils.py` because `utils.py` is already large and mixed-purpose.
