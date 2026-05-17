@@ -178,6 +178,32 @@ If your jackfish computer stores videos flat (e.g., `20260415/2/`, `20260415/3/`
 Looking for jackfish data at: .../20260415_jackfish/fly1/5
 ```
 
+## Telegram alerts on low disk (optional)
+
+The ripping server can send a Telegram message when an inbound upload looks like it won't fit on the target drive. The upload proceeds either way — this is a warning, not a hard gate.
+
+### Config file (per ripping PC, outside the repo)
+
+`%USERPROFILE%\.brukerbridge\telegram.json` (Windows) or `~/.brukerbridge/telegram.json` (Linux/Mac):
+
+```json
+{
+  "bot_token": "<bot token from BotFather>",
+  "chat_ids": {
+    "David": "<chat id>",
+    "Mikaela": "<chat id>"
+  }
+}
+```
+
+### Pairing a new user
+
+1. User opens Telegram and sends `/start` to the bot.
+2. Admin visits `https://api.telegram.org/bot<TOKEN>/getUpdates` and reads the `chat.id` field from the JSON response.
+3. Admin adds an entry to `chat_ids` in `~/.brukerbridge/telegram.json` on each ripping PC.
+
+If the config file is missing, alerts are silently disabled and only the console warning fires. The token is a hard secret — keep it out of the repo and rotate via BotFather (`/revoke` then `/token`) if it leaks.
+
 ## Troubleshooting
 
 ### Client socket timeout: `TimeoutError` at `sock.connect((host_IP, port))`
