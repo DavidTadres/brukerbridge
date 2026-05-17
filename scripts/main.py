@@ -218,6 +218,25 @@ def main(args):
 		else:
 			print('{} is an invalid convert_to variable from user metadata.'.format(convert_to))
 			print("Must be 'nii' or 'nii.gz'")
+		###########################################################
+		### Oak pass 1 (FicTrac still running, build_que=False) ###
+		###########################################################
+		# Overlap upload with FicTrac. Pass 2 below sweeps up FicTrac
+		# files after wait_for_fictrac + jackfish assignment. Partial
+		# FicTrac files uploaded here self-heal in pass 2 via the
+		# filesize check in transfer_to_oak.oak_transfer.
+		if fictrac_markers:
+			print('*** Oak pass 1 (FicTrac still running) ***')
+			oak_pass1_t0 = time.time()
+			transfer_to_oak.start_oak_transfer(
+				root_path_name=dir_to_process.name,
+				directory_from=dir_to_process,
+				oak_target=oak_target,
+				allowable_extensions=extensions_for_oak_transfer,
+				add_to_build_que=False,
+				copy_SingleImage=copy_SingleImage)
+			print('OAK PASS 1 DURATION: {} MIN'.format(
+				int((time.time() - oak_pass1_t0) / 60)))
 		#######################################
 		### Wait for FicTrac to finish     ###
 		#######################################
@@ -256,9 +275,9 @@ def main(args):
 			print('Unable to transfer any stimpack/jackfish files (post-hoc fictrac recordings).')
 			print('This is normal behavior if you have done real-time fictrac recordings instead.')
 
-	#######################
-	### Transfer to Oak ###
-	#######################
+	###########################################################
+	### Oak pass 2 (FicTrac done, sweep + trigger build_que) ###
+	###########################################################
 	start_time = time.time()
 	#size_transfered = transfer_to_oak.start_oak_transfer(directory_from=str(dir_to_process),
 	#													 oak_target=oak_target,
