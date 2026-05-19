@@ -276,7 +276,7 @@ The server PC reports it is listening correctly:
    ```
    Test-NetConnection <server_ip> -Port 5005
    ```
-   If `PingSucceeded: True` but `TcpTestSucceeded: False` (or both fail while the server→client direction works), the server PC is blocking inbound traffic.
+   Only `TcpTestSucceeded` matters here — `PingSucceeded: False` is not diagnostic on its own, since many Windows images block ICMP by default. If `TcpTestSucceeded: False` while the server→client direction works, the server PC is blocking inbound traffic.
 
 **Root cause.** Windows Defender Firewall on the server PC has **inbound block rules for Python** that override any allow rules. These are typically created automatically the first time Python tried to open a listening socket and someone clicked "Cancel" on the firewall popup.
 
@@ -285,6 +285,12 @@ The server PC reports it is listening correctly:
 2. Find any rules named `Python` (e.g., two entries for `Python 3.13`) with **Action = Block**.
 3. Right-click each → **Disable Rule** (or delete them).
 4. Re-run `server.py`. If Windows shows a firewall popup, click **Allow access** for both Private and Public profiles.
+
+Alternatively, from an **admin** PowerShell on the server PC, find and disable all Python inbound block rules in one shot:
+```
+Get-NetFirewallRule -Direction Inbound -Action Block | Where-Object DisplayName -like "*python*"
+Get-NetFirewallRule -Direction Inbound -Action Block | Where-Object DisplayName -like "*python*" | Disable-NetFirewallRule
+```
 
 Optionally, to make the allow explicit, run in an **admin** command prompt on the server PC:
 ```
