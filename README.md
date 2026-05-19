@@ -118,6 +118,56 @@ https://stackoverflow.com/questions/53231849/python-socket-windows-10-connection
    d) **`queue_watcher.py`** — change `log_folder` and `root_directory` to match your ripping PC paths.
       `root_directory` should match the `server_target_directory` in your JSON.
 
+## Daily usage
+
+The pipeline has three long-lived processes:
+
+- **Server** on the ripping PC — receives files from the Bruker imaging PC over TCP and flags completed transfers with `__queue__`.
+- **Queue watcher** on the ripping PC — polls for `*__queue__` folders and launches `scripts/main.py` on each.
+- **Client** on the Bruker imaging PC — launched once per acquisition; user picks a folder and the client streams files to the server.
+
+Server and queue watcher are intended to stay running 24/7. The client is launched per session.
+
+### David's and Mikaela's setup (unified scripts) — recommended
+
+The unified `client.py` / `server.py` take a username argument and read per-user settings from `users/<Name>.json`. New users should follow this pattern.
+
+**On the ripping PC** (start these once and leave them running):
+
+1. Double-click `users/<Name>/launch_server.bat`.
+   - Activates the `env_brukerbridge` venv and runs `server.py <Name>`.
+   - Logs append to the path baked into the `.bat` (e.g. `C:\Users\David\Desktop\brukerbridge_datalogs\server_log.txt`).
+   - On startup, prints whether Telegram low-disk alerts are enabled (see Telegram section below).
+2. Double-click `users/<Name>/launch_queue_watcher.bat`.
+   - Runs the per-user `queue_watcher.py`, which polls `server_target_directory` for `*__queue__` folders and launches `scripts/main.py` for each one found.
+
+**On the Bruker imaging PC** (once per acquisition):
+
+1. Double-click `users/<Name>/<Name>_brukerbridge.bat`.
+   - Runs `Imaging_PC/client.py <Name>`, which opens a folder-picker GUI.
+2. Pick the scan folder, hit OK, watch the client send files.
+3. When the client finishes, close the window. The server renames the folder to `*__queue__` and the rest of the pipeline runs autonomously on the ripping PC.
+
+### Jacob's setup (legacy per-user scripts)
+
+Jacob's setup predates the consolidation (commit `9f90e6b`, 2026-04-02) and still uses bespoke per-user scripts. Functionally identical, but file names differ and the target paths are hardcoded inside the scripts instead of read from a JSON.
+
+**On the ripping PC:**
+
+1. Double-click `users/Jacob/launch_server.bat` — runs `brukerbridge/ripping_PC/jacob_server.py` via Jacob's miniconda env. No username argument; target directory is hardcoded inside the script.
+2. Double-click `users/Jacob/launch_queue_watcher.bat`.
+
+**On the Bruker imaging PC:**
+
+1. Double-click `users/Jacob/jacob_brukerbridge.bat` — runs `Imaging_PC/jacob_client.py` (no argument).
+2. Pick folder, transfer, close.
+
+To migrate Jacob to the unified setup later: add a `Jacob.json` mirroring `David.json`, edit `launch_server.bat` to call `server.py Jacob`, and edit `jacob_brukerbridge.bat` to call `client.py Jacob`. Then `jacob_server.py` / `jacob_client.py` become dead code and can be deleted (as `david_server.py` / `mikaela_server.py` were in commit `dec49fb`).
+
+### Maintainer note: which file is actually running?
+
+The `brukerbridge/ripping_PC/` and `brukerbridge/Imaging_PC/` directories still contain per-user `<name>_server.py` / `<name>_client.py` scripts alongside the unified `server.py` / `client.py`. **When in doubt, check the user's `launch_server.bat` and `<Name>_brukerbridge.bat`** to see which file the launcher actually invokes — that's the source of truth. Editing the wrong file is a silent bug: no error, just inert behavior. The unified `server.py` is the canonical file for new development; per-user `*_server.py` files only exist for the un-migrated user (Jacob) and the blueprint template.
+
 ## FicTrac post-hoc analysis
 
 When `autotransfer_jackfish` is `"True"` in the user JSON, the pipeline automatically launches FicTrac ball-tracking on Jackfish video data via WSL. This runs in parallel with the rest of the pipeline (raw-to-tiff, tiff-to-nii), and the pipeline waits for all FicTrac sessions to finish before assigning jackfish data to imaging folders and transferring to Oak.
